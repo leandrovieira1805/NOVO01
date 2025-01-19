@@ -323,7 +323,7 @@ function App() {
 
   const calculateTotal = () => {
     let subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
-    if (isDelivery) {
+    if (isDelivery && subtotal > 0) {
       subtotal += 5; // Adiciona a taxa de entrega
     }
     setTotal(subtotal);
@@ -417,7 +417,7 @@ function App() {
                   <div className="flex justify-between items-center mt-4">
                     <label>
                       <input type="checkbox" checked={isDelivery} onChange={handleDeliveryChange} />
-                      Deseja entrega? (Taxa de R$ 5,00)
+                      <span className="text-sm text-gray-700">Deseja entrega? (Taxa de R$ 5,00)</span>
                     </label>
                     <span>R$ {total.toFixed(2)}</span>
                   </div>
@@ -585,6 +585,16 @@ function App() {
         </div>
       </section>
 
+      {/* Cabeçalho com Seleções */}
+      <header className="bg-white shadow p-4">
+        <div className="flex space-x-4 mb-4">
+          <button onClick={() => handleCategoryChange('Bebidas')} className={selectedCategory === 'Bebidas' ? 'bg-green-600 text-white py-2 rounded-lg' : 'bg-gray-100 py-2 rounded-lg'}>Bebidas</button>
+          <button onClick={() => handleCategoryChange('Petiscos')} className={selectedCategory === 'Petiscos' ? 'bg-green-600 text-white py-2 rounded-lg' : 'bg-gray-100 py-2 rounded-lg'}>Petiscos</button>
+          <button onClick={() => handleCategoryChange('Doces')} className={selectedCategory === 'Doces' ? 'bg-green-600 text-white py-2 rounded-lg' : 'bg-gray-100 py-2 rounded-lg'}>Doces</button>
+          <button onClick={() => handleCategoryChange('Combos')} className={selectedCategory === 'Combos' ? 'bg-green-600 text-white py-2 rounded-lg' : 'bg-gray-100 py-2 rounded-lg'}>Combos</button>
+        </div>
+      </header>
+
       {/* Seção do Cardápio */}
       <section className="py-16 bg-gray-50">
         <div className="container mx-auto px-4">
@@ -614,13 +624,6 @@ function App() {
                 </div>
               ))}
             </div>
-          </div>
-
-          <div className="flex space-x-4 mb-4" ref={headerRef}>
-            <button onClick={() => handleCategoryChange('Bebidas')} className={selectedCategory === 'Bebidas' ? 'bg-green-600 text-white py-2 rounded-lg' : 'bg-gray-100 py-2 rounded-lg'}>Bebidas</button>
-            <button onClick={() => handleCategoryChange('Petiscos')} className={selectedCategory === 'Petiscos' ? 'bg-green-600 text-white py-2 rounded-lg' : 'bg-gray-100 py-2 rounded-lg'}>Petiscos</button>
-            <button onClick={() => handleCategoryChange('Doces')} className={selectedCategory === 'Doces' ? 'bg-green-600 text-white py-2 rounded-lg' : 'bg-gray-100 py-2 rounded-lg'}>Doces</button>
-            <button onClick={() => handleCategoryChange('Combos')} className={selectedCategory === 'Combos' ? 'bg-green-600 text-white py-2 rounded-lg' : 'bg-gray-100 py-2 rounded-lg'}>Combos</button>
           </div>
 
           {selectedCategory === 'Bebidas' && <BebidasComponent addToCart={addToCart} />}
