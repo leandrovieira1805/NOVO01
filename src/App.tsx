@@ -18,6 +18,21 @@ import COMBODUPLOIMAGE from './assets/COMBOS/COMBO-DUPLO.png';
 import COMBOTRIPLOIMAGE from './assets/COMBOS/COMBO-BAITA-BURGAO.png';
 import COMBOARRETAADOIMAGE from './assets/COMBOS/COMBO-ARRETAADO.png';
 import { QRCodeSVG } from 'qrcode.react';
+import MISTOIMAGE from './assets/HANBURGES/MISTO.png';
+import HANBURGUERIMAGE from './assets/HANBURGES/HANBURGUER.png';
+import XBATATABURGAOIMAGE from './assets/HANBURGES/XBATATA-BURGAO.png';
+import XBURGUERBACONIMAGE from './assets/HANBURGES/XBURGUER-BACON.png';
+import XCALABRESAIMAGE from './assets/HANBURGES/XCALABRESA.png';
+import XDUPLOEGGIMAGE from './assets/HANBURGES/XDUPLO-EGG.png';
+import XEGGIMAGE from './assets/HANBURGES/XEGG.png';
+import XEGGBACONIMAGE from './assets/HANBURGES/XEGG-BACON.png';
+import XPRESUNTOIMAGE from './assets/HANBURGES/XPRESUNTO.png';
+import ITAIPAVA473IMAGE from './assets/BEBIDAS/ITAIPAVA-473ML.png';
+import ITAIPAVA600IMAGE from './assets/BEBIDAS/ITAIPAVA-600ML.png';
+import CARNESOLIMAGE from './assets/Petiscos/CARNE-SOL.png';
+import CALDOIMAGE from './assets/Petiscos/CALDO-COSTELA.png';
+import BISTECAIMAGE from './assets/Petiscos/BISTECA.png';
+import CUZIMAGE from './assets/CUZCUZ-PEQUENO.png';
 
 interface Item {
   name: string;
@@ -43,10 +58,11 @@ function App() {
     neighborhood: '',
     number: '',
     referencePoint: '',
-    paymentMethod: 'dinheiro',
+    paymentMethod: '',
     needChange: false,
     changeFor: '',
-    deliveryType: 'delivery'
+    deliveryType: '',
+    deliveryFee: 0
   });
   const [showOrderForm, setShowOrderForm] = useState(false);
 
@@ -127,7 +143,7 @@ function App() {
         return;
       }
 
-      const deliveryFee = orderForm.deliveryType === 'delivery' ? 5 : 0;
+      const deliveryFee = orderForm.deliveryType === 'delivery' ? orderForm.deliveryFee : 0;
       const total = getTotalPrice() + deliveryFee;
 
       const message = `*🍔 NOVO PEDIDO - ARRETADO BURGUER 🍔*\n\n` +
@@ -145,7 +161,7 @@ function App() {
         ).join('\n') +
         `\n\n*💰 RESUMO DO PEDIDO:*` +
         `\n*Subtotal:* R$ ${getTotalPrice().toFixed(2)}` +
-        (orderForm.deliveryType === 'delivery' ? `\n*Taxa de entrega:* R$ ${deliveryFee.toFixed(2)}` : '') +
+        (orderForm.deliveryType === 'delivery' ? `\n*Taxa de entrega:* R$ ${orderForm.deliveryFee.toFixed(2)}` : '') +
         `\n*Total:* R$ ${total.toFixed(2)}\n\n` +
         `*💳 PAGAMENTO:*\n` +
         `*Forma:* ${
@@ -176,10 +192,11 @@ function App() {
         neighborhood: '',
         number: '',
         referencePoint: '',
-        paymentMethod: 'dinheiro',
+        paymentMethod: '',
         needChange: false,
         changeFor: '',
-        deliveryType: 'delivery'
+        deliveryType: '',
+        deliveryFee: 0
       });
     } catch (error) {
       console.error('Erro ao enviar pedido:', error);
@@ -196,16 +213,17 @@ function App() {
   ];
 
   const HANBURGES: Item[] = [
-    { name: 'Misto Quente', price: 6.00, image: XBURGUERIMAGE, description: 'Pão, Presunto, Queijo e Creme de Requeijão.' },
-    { name: 'Hamburguer', price: 7.00, image: XBURGUERIMAGE, description: 'Pão, Carne, Creme de Requeijão e Salada.' },
+    { name: 'Hot Dog', price: 8.00, image: PICOLEIMAGE },
+    { name: 'Misto Quente', price: 6.00, image: MISTOIMAGE, description: 'Pão, Presunto, Queijo e Creme de Requeijão.' },
+    { name: 'Hamburguer', price: 7.00, image: HANBURGUERIMAGE, description: 'Pão, Carne, Creme de Requeijão e Salada.' },
     { name: 'X-Burguer', price: 9.00, image: XBURGUERIMAGE, description: 'Pão, Carne, Queijo, Presunto, Maionese e Salada.' },
-    { name: 'X-Presunto', price: 9.00, image: XBURGUERIMAGE, description: 'Pão, Carne, Queijo e Presunto.' },
-    { name: 'X-Egg', price: 9.00, image: XBURGUERIMAGE, description: 'Pão, Carne, Queijo, Ovo e Salada.' },
-    { name: 'X-Calabresa', price: 9.00, image: XBURGUERIMAGE, description: 'Pão, Linguiça Calabresa, Queijo e Salada.' },
-    { name: 'X-Burguer Bacon', price: 10.00, image: XBURGUERIMAGE, description: 'Pão, Carne, Queijo, Bacon e Salada.' },
-    { name: 'X-Egg Bacon', price: 11.00, image: XBURGUERIMAGE, description: 'Pão, Carne, Queijo, Bacon e Ovo.' },
-    { name: 'X-Duplo Egg', price: 14.00, image: XBURGUERIMAGE, description: 'Pão, Duas Carnes, Queijo e Dois Ovos.' },
-    { name: 'X-Batata Burgão', price: 13.00, image: XBURGUERIMAGE, description: 'Pão, Carne, Queijo e Batata Palha.' },
+    { name: 'X-Presunto', price: 9.00, image: XPRESUNTOIMAGE, description: 'Pão, Carne, Queijo e Presunto.' },
+    { name: 'X-Egg', price: 9.00, image: XEGGIMAGE, description: 'Pão, Carne, Queijo, Ovo e Salada.' },
+    { name: 'X-Calabresa', price: 9.00, image: XCALABRESAIMAGE, description: 'Pão, Linguiça Calabresa, Queijo e Salada.' },
+    { name: 'X-Burguer Bacon', price: 10.00, image: XBURGUERBACONIMAGE, description: 'Pão, Carne, Queijo, Bacon e Salada.' },
+    { name: 'X-Egg Bacon', price: 11.00, image: XEGGBACONIMAGE, description: 'Pão, Carne, Queijo, Bacon e Ovo.' },
+    { name: 'X-Duplo Egg', price: 14.00, image: XDUPLOEGGIMAGE, description: 'Pão, Duas Carnes, Queijo e Dois Ovos.' },
+    { name: 'X-Batata Burgão', price: 13.00, image: XBATATABURGAOIMAGE, description: 'Pão, Carne, Queijo e Batata Palha.' },
     { name: 'X-Arretado', price: 16.00, image: XBURGUERARRETADOIMAGE, description: 'Pão, Carne, Queijo, Jalapeño e Salada.' }
   ];
 
@@ -215,23 +233,23 @@ function App() {
     { name: 'Suco 500ml', price: 6.00, image: ACAIIMAGE },
     { name: 'Skol 600ml', price: 9.00, image: AGUAIMAGE },
     { name: 'Skol Latão', price: 6.00, image: AGUAGASIMAGE },
-    { name: 'Itaipava 600ml', price: 8.00, image: AGUAIMAGE },
-    { name: 'Itaipava Latão', price: 5.00, image: AGUAGASIMAGE }
+    { name: 'Itaipava 600ml', price: 8.00, image: ITAIPAVA600IMAGE },
+    { name: 'Itaipava Latão', price: 5.00, image: ITAIPAVA473IMAGE }
   ];
 
   const doces: Item[] = [
     { name: 'Bolo de Chocolate', price: 5.00, image: MILKSHAKEIMAGE },
-    { name: 'Hot Dog', price: 8.00, image: PICOLEIMAGE },
+  
   ];
 
   const petiscos: Item[] = [
-    { name: 'Carne de Sol', price: 27.00, image: ISCADEFRANGOIMAGE },
-    { name: 'Bisteca', price: 27.00, image: ISCADEFRANGOIMAGE },
+    { name: 'Carne de Sol', price: 27.00, image: CARNESOLIMAGE },
+    { name: 'Bisteca', price: 27.00, image: BISTECAIMAGE },
     { name: 'Coxinha da Asa de Frango', price: 27.00, image: ISCADEFRANGOIMAGE },
-    { name: 'Caldo de Costela', price: 7.00, image: ISCADEFRANGOIMAGE },
+    { name: 'Caldo de Costela', price: 7.00, image: CALDOIMAGE },
     { name: 'Batata Frita Simples', price: 11.00, image: BATATAIMAGE },
     { name: 'Batata Frita Especial', price: 13.00, image: BATATASPECIALIMAGE },
-    { name: 'Cuscuz Pequeno', price: 9.00, image: BATATAIMAGE },
+    { name: 'Cuscuz Pequeno', price: 9.00, image: CUZIMAGE },
   ];
 
   const combos: Item[] = [
@@ -361,28 +379,37 @@ function App() {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Tipo de Entrega</label>
-                      <select
-                        value={orderForm.deliveryType}
-                        onChange={(e) => setOrderForm(prev => ({ ...prev, deliveryType: e.target.value }))}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                      >
-                        <option value="delivery">Entrega</option>
-                        <option value="retirada">Retirada</option>
-                      </select>
-                    </div>
-                    <div>
                       <label className="block text-sm font-medium text-gray-700">Forma de Pagamento</label>
                       <select
                         value={orderForm.paymentMethod}
-                        onChange={(e) => setOrderForm(prev => ({ ...prev, paymentMethod: e.target.value }))}
+                        onChange={(e) => {
+                          const method = e.target.value;
+                          setOrderForm(prev => ({ ...prev, paymentMethod: method }));
+                          if (method === 'dinheiro') {
+                            const needsChange = window.confirm('Você precisa de troco?');
+                            setOrderForm(prev => ({ ...prev, needChange: needsChange }));
+                          }
+                        }}
                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                       >
+                        <option value="">Selecione uma forma de pagamento</option>
                         <option value="dinheiro">Dinheiro</option>
                         <option value="cartao">Cartão</option>
                         <option value="pix">PIX</option>
                       </select>
                     </div>
+                    {orderForm.needChange && (
+                      <div className="mt-2">
+                        <label className="block text-sm font-medium text-gray-700">Valor para troco</label>
+                        <input
+                          type="text"
+                          value={orderForm.changeFor}
+                          onChange={(e) => setOrderForm(prev => ({ ...prev, changeFor: e.target.value }))}
+                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                          placeholder="R$ 0,00"
+                        />
+                      </div>
+                    )}
                     {orderForm.paymentMethod === 'pix' && (
                       <div className="mt-4 p-4 bg-gray-100 rounded-lg">
                         <h3 className="text-lg font-bold text-center mb-4">Pagamento PIX</h3>
@@ -400,6 +427,48 @@ function App() {
                         </div>
                       </div>
                     )}
+                    <div className="mt-4">
+                      <label className="block text-sm font-medium text-gray-700">Tipo de Entrega</label>
+                      <select
+                        value={orderForm.deliveryType}
+                        onChange={(e) => {
+                          const type = e.target.value;
+                          setOrderForm(prev => ({ ...prev, deliveryType: type }));
+                          if (type === 'delivery') {
+                            setOrderForm(prev => ({ ...prev, deliveryFee: 5 }));
+                          } else {
+                            setOrderForm(prev => ({ ...prev, deliveryFee: 0 }));
+                          }
+                        }}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                      >
+                        <option value="">Selecione um tipo de entrega</option>
+                        <option value="delivery">Entrega</option>
+                        <option value="retirada">Retirada</option>
+                      </select>
+                    </div>
+                    <div className="border-t pt-4">
+                      <div className="flex justify-between items-center mb-4">
+                        <span className="font-bold">Subtotal:</span>
+                        <span className="text-xl font-bold text-green-600">
+                          R$ {getTotalPrice().toFixed(2)}
+                        </span>
+                      </div>
+                      {orderForm.deliveryType === 'delivery' && (
+                        <div className="flex justify-between items-center mb-4">
+                          <span className="font-bold">Taxa de Entrega:</span>
+                          <span className="text-xl font-bold text-green-600">
+                            R$ {orderForm.deliveryFee.toFixed(2)}
+                          </span>
+                        </div>
+                      )}
+                      <div className="flex justify-between items-center mb-4">
+                        <span className="font-bold">Total:</span>
+                        <span className="text-xl font-bold text-green-600">
+                          R$ {(getTotalPrice() + orderForm.deliveryFee).toFixed(2)}
+                        </span>
+                      </div>
+                    </div>
                     <button
                       onClick={handleSubmitOrder}
                       className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition-colors"
@@ -487,7 +556,7 @@ function App() {
                   <div key={item.name} className="bg-white p-3 rounded-lg shadow-md">
                     <div className="flex justify-center">
                       {item.image && (
-                        <img src={item.image} alt={item.name} className="h-44 object-cover mb-2 rounded-lg" style={{ width: '280px' }} />
+                        <img src={item.image} alt={item.name} className="h-auto object-cover mb-2 rounded-lg" style={{ width: '80%' }} />
                       )}
                     </div>
                     <h4 className="text-base font-semibold text-center">{item.name}</h4>
@@ -515,7 +584,7 @@ function App() {
                   <div key={item.name} className="bg-white p-3 rounded-lg shadow-md">
                     <div className="flex justify-center">
                       {item.image && (
-                        <img src={item.image} alt={item.name} className="h-44 object-cover mb-2 rounded-lg" style={{ width: '280px' }} />
+                        <img src={item.image} alt={item.name} className="h-auto object-cover mb-2 rounded-lg" style={{ width: '80%' }} />
                       )}
                     </div>
                     <h4 className="text-base font-semibold text-center">{item.name}</h4>
@@ -540,7 +609,7 @@ function App() {
                   <div key={item.name} className="bg-white p-3 rounded-lg shadow-md">
                     <div className="flex justify-center">
                       {item.image && (
-                        <img src={item.image} alt={item.name} className="h-44 object-cover mb-2 rounded-lg" style={{ width: '280px' }} />
+                        <img src={item.image} alt={item.name} className="h-auto object-cover mb-2 rounded-lg" style={{ width: '80%' }} />
                       )}
                     </div>
                     <h4 className="text-base font-semibold text-center">{item.name}</h4>
@@ -565,7 +634,7 @@ function App() {
                   <div key={item.name} className="bg-white p-3 rounded-lg shadow-md">
                     <div className="flex justify-center">
                       {item.image && (
-                        <img src={item.image} alt={item.name} className="h-44 object-cover mb-2 rounded-lg" style={{ width: '280px' }} />
+                        <img src={item.image} alt={item.name} className="h-auto object-cover mb-2 rounded-lg" style={{ width: '80%' }} />
                       )}
                     </div>
                     <h4 className="text-base font-semibold text-center">{item.name}</h4>
@@ -590,7 +659,7 @@ function App() {
                   <div key={item.name} className="bg-white p-3 rounded-lg shadow-md">
                     <div className="flex justify-center">
                       {item.image && (
-                        <img src={item.image} alt={item.name} className="h-44 object-cover mb-2 rounded-lg" style={{ width: '280px' }} />
+                        <img src={item.image} alt={item.name} className="h-auto object-cover mb-2 rounded-lg" style={{ width: '80%' }} />
                       )}
                     </div>
                     <h4 className="text-base font-semibold text-center">{item.name}</h4>
