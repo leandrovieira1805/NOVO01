@@ -80,7 +80,6 @@ const petiscos = [
   { name: 'Cuscuz Pequeno', price: 9.00, image: CUZCUZPEQUENOIMAGE },
 ];
 
-
 const bebidas = [
   { name: 'Suco 500ml', price: 6.00, image: SUCOSIMAGE },
   { name: '1L Guaraná Pet', price: 8.00, image: GUARANA1LIMAGE },
@@ -90,6 +89,93 @@ const bebidas = [
   { name: 'Latão Itaipava', price: 5.00, image: ITAIPAVA1LIMAGE },
   { name: 'Latão Skol', price: 6.00, image: SKOL473MLIMAGE }
 ];
+
+interface BebidasComponentProps {
+  addToCart: (item: Item) => void;
+}
+
+const BebidasComponent = ({ addToCart }: BebidasComponentProps) => (
+  <div>
+    <h3 className="text-2xl font-semibold mb-6">Bebidas</h3>
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 justify-items-center">
+      {bebidas.map((item) => (
+        <div key={item.name} className="bg-white p-6 rounded-lg shadow-md flex flex-col items-center">
+          {item.image && (
+            <img src={item.image} alt={item.name} className="w-48 h-auto object-cover mb-4" />
+          )}
+          <h4 className="text-xl font-semibold">{item.name}</h4>
+          <p className="text-3xl text-green-600 font-bold mt-2">R$ {item.price.toFixed(2)}</p>
+          <div className="flex justify-between items-center mt-4">
+            <button
+              onClick={() => addToCart(item)}
+              className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
+            >
+              Adicionar
+            </button>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+interface PetiscosComponentProps {
+  addToCart: (item: Item) => void;
+}
+
+const PetiscosComponent = ({ addToCart }: PetiscosComponentProps) => (
+  <div>
+    <h3 className="text-2xl font-semibold mb-6">Petiscos</h3>
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 justify-items-center">
+      {petiscos.map((item) => (
+        <div key={item.name} className="bg-white p-6 rounded-lg shadow-md flex flex-col items-center">
+          {item.image && (
+            <img src={item.image} alt={item.name} className="w-48 h-auto object-cover mb-4" />
+          )}
+          <h4 className="text-xl font-semibold">{item.name}</h4>
+          <p className="text-3xl text-green-600 font-bold mt-2">R$ {item.price.toFixed(2)}</p>
+          <div className="flex justify-between items-center mt-4">
+            <button
+              onClick={() => addToCart(item)}
+              className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
+            >
+              Adicionar
+            </button>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+interface DocesComponentProps {
+  addToCart: (item: Item) => void;
+}
+
+const DocesComponent = ({ addToCart }: DocesComponentProps) => (
+  <div>
+    <h3 className="text-2xl font-semibold mb-6">Doces</h3>
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 justify-items-center">
+      {doces.map((item) => (
+        <div key={item.name} className="bg-white p-6 rounded-lg shadow-md flex flex-col items-center">
+          {item.image && (
+            <img src={item.image} alt={item.name} className="w-48 h-auto object-cover mb-4" />
+          )}
+          <h4 className="text-xl font-semibold">{item.name}</h4>
+          <p className="text-3xl text-green-600 font-bold mt-2">R$ {item.price.toFixed(2)}</p>
+          <div className="flex justify-between items-center mt-4">
+            <button
+              onClick={() => addToCart(item)}
+              className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
+            >
+              Adicionar
+            </button>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+);
 
 function App() {
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -105,18 +191,20 @@ function App() {
   });
 
   const addToCart = (item: Item) => {
-    setCart(currentCart => {
-      const existingItem = currentCart.find(cartItem => cartItem.name === item.name);
+    setCart((prevCart) => {
+      const existingItem = prevCart.find(cartItem => cartItem.name === item.name);
       if (existingItem) {
-        return currentCart.map(cartItem =>
+        // Se o item já existe, aumente a quantidade
+        return prevCart.map(cartItem =>
           cartItem.name === item.name
-            ? { ...cartItem, quantity: cartItem.quantity + 1 }
+            ? { ...cartItem, quantity: (cartItem.quantity || 0) + 1 }
             : cartItem
         );
       }
-      return [...currentCart, { ...item, quantity: 1 }];
+      // Se o item não existe, adicione ao carrinho com quantity 1
+      return [...prevCart, { ...item, quantity: 1 }];
     });
-    toast.success('Item adicionado ao carrinho!');
+    toast.success(`${item.name} adicionado ao carrinho!`);
   };
 
   const removeFromCart = (itemName: string) => {
@@ -407,65 +495,9 @@ function App() {
             </div>
           </div>
 
-          <div className="mb-12">
-            <h3 className="text-2xl font-semibold mb-6">Doces</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 justify-items-center">
-              {doces.map((doce) => (
-                <div key={doce.name} className="bg-white p-6 rounded-lg shadow-md flex flex-col items-center">
-                  <h4 className="text-xl font-semibold">{doce.name}</h4>
-                  <p className="text-3xl text-green-600 font-bold mt-2">R$ {doce.price.toFixed(2)}</p>
-                  <div className="flex justify-between items-center mt-4">
-                    <button
-                      onClick={() => addToCart(doce)}
-                      className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
-                    >
-                      Adicionar
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="mb-12">
-            <h3 className="text-2xl font-semibold mb-6">Petiscos</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 justify-items-center">
-              {petiscos.map((petisco) => (
-                <div key={petisco.name} className="bg-white p-6 rounded-lg shadow-md flex flex-col items-center">
-                  <h4 className="text-xl font-semibold">{petisco.name}</h4>
-                  <p className="text-3xl text-green-600 font-bold mt-2">R$ {petisco.price.toFixed(2)}</p>
-                  <div className="flex justify-between items-center mt-4">
-                    <button
-                      onClick={() => addToCart(petisco)}
-                      className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
-                    >
-                      Adicionar
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="mb-12">
-            <h3 className="text-2xl font-semibold mb-6">Bebidas</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 justify-items-center">
-              {bebidas.map((bebida) => (
-                <div key={bebida.name} className="bg-white p-6 rounded-lg shadow-md flex flex-col items-center">
-                  <h4 className="text-xl font-semibold">{bebida.name}</h4>
-                  <p className="text-3xl text-green-600 font-bold mt-2">R$ {bebida.price.toFixed(2)}</p>
-                  <div className="flex justify-between items-center mt-4">
-                    <button
-                      onClick={() => addToCart(bebida)}
-                      className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
-                    >
-                      Adicionar
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+          <BebidasComponent addToCart={addToCart} />
+          <PetiscosComponent addToCart={addToCart} />
+          <DocesComponent addToCart={addToCart} />
         </div>
       </section>
 
