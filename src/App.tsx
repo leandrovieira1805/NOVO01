@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Phone, MapPin, Clock, CreditCard, Truck, ShoppingCart, Plus, Minus, X } from 'lucide-react';
 import { Toaster, toast } from 'react-hot-toast';
 import MISTOIMAGE from './assets/HANBURGES/MISTO.png';
@@ -105,30 +105,76 @@ interface BebidasComponentProps {
   addToCart: (item: Item) => void;
 }
 
-const BebidasComponent = ({ addToCart }: BebidasComponentProps) => (
-  <div>
-    <h3 className="text-2xl font-semibold mb-6">Bebidas</h3>
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 justify-items-center">
-      {bebidas.map((item) => (
-        <div key={item.name} className="bg-white p-6 rounded-lg shadow-md flex flex-col items-center">
-          {item.image && (
-            <img src={item.image} alt={item.name} className="w-48 h-auto object-cover mb-4" />
-          )}
-          <h4 className="text-xl font-semibold">{item.name}</h4>
-          <p className="text-3xl text-green-600 font-bold mt-2">R$ {item.price.toFixed(2)}</p>
-          <div className="flex justify-between items-center mt-4">
-            <button
-              onClick={() => addToCart(item)}
-              className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
-            >
-              Adicionar
-            </button>
+const BebidasComponent = ({ addToCart }: BebidasComponentProps) => {
+  const [selectedFlavor, setSelectedFlavor] = useState('');
+  const flavors = [
+    'Goiaba', 'Acerola', 'Graviola', 'Cacau', 'Maracujá',
+    'Manga', 'Ymbú', 'Abacaxi', 'Caju', 'Cajá',
+    'Guaraná Açaí', 'Morango', 'Clorofila'
+  ];
+
+  const handleFlavorChange = (flavor: string) => {
+    setSelectedFlavor(flavor);
+  };
+
+  const addJuiceToCart = () => {
+    if (selectedFlavor) {
+      const juiceItem = {
+        name: `Suco de ${selectedFlavor}`,
+        price: 6.00,
+        description: `Suco de ${selectedFlavor}`,
+      };
+      addToCart(juiceItem);
+    } else {
+      toast.error('Por favor, selecione um sabor.');
+    }
+  };
+
+  return (
+    <div>
+      <h3 className="text-2xl font-semibold mb-6">Bebidas</h3>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 justify-items-center">
+        {bebidas.map((item) => (
+          <div key={item.name} className="bg-white p-6 rounded-lg shadow-md flex flex-col items-center">
+            {item.image && (
+              <img src={item.image} alt={item.name} className="w-48 h-auto object-cover mb-4" />
+            )}
+            <h4 className="text-xl font-semibold">{item.name}</h4>
+            <p className="text-3xl text-green-600 font-bold mt-2">R$ {item.price.toFixed(2)}</p>
+            {item.name === 'Suco 500ml' ? (
+              <div>
+                <h3>Selecione o Sabor do Suco</h3>
+                <div className="flex flex-wrap">
+                  {flavors.map(flavor => (
+                    <button
+                      key={flavor}
+                      onClick={() => handleFlavorChange(flavor)}
+                      className={`m-2 p-2 border ${selectedFlavor === flavor ? 'bg-green-600 text-white' : 'bg-gray-200'}`}
+                    >
+                      {flavor}
+                    </button>
+                  ))}
+                </div>
+                <button onClick={addJuiceToCart} className="mt-4 bg-blue-500 text-white p-2 rounded">
+                  Adicionar Suco ao Carrinho
+                </button>
+              </div>
+            ) : (
+              <div className="flex justify-between items-center mt-4">
+                <button
+                  onClick={() => addToCart(item)}
+                  className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
+                >
+                  Adicionar
+                </button>
+              </div>
+            )}
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 interface PetiscosComponentProps {
   addToCart: (item: Item) => void;
@@ -231,6 +277,15 @@ function App() {
     changeFor: ''
   });
   const [selectedCategory, setSelectedCategory] = useState('Bebidas');
+  const [isDelivery, setIsDelivery] = useState(false);
+  const [total, setTotal] = useState(0);
+  const headerRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (headerRef.current) {
+      headerRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, []);
 
   const addToCart = (item: Item) => {
     setCart((prevCart) => {
@@ -264,6 +319,19 @@ function App() {
         item.name === itemName ? { ...item, quantity: newQuantity } : item
       )
     );
+  };
+
+  const calculateTotal = () => {
+    let subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
+    if (isDelivery) {
+      subtotal += 5; // Adiciona a taxa de entrega
+    }
+    setTotal(subtotal);
+  };
+
+  const handleDeliveryChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setIsDelivery(event.target.checked);
+    calculateTotal();
   };
 
   const getTotalPrice = () => {
@@ -345,6 +413,13 @@ function App() {
                   <div className="flex justify-between font-bold">
                     <span>Total:</span>
                     <span>R$ {getTotalPrice().toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between items-center mt-4">
+                    <label>
+                      <input type="checkbox" checked={isDelivery} onChange={handleDeliveryChange} />
+                      Deseja entrega? (Taxa de R$ 5,00)
+                    </label>
+                    <span>R$ {total.toFixed(2)}</span>
                   </div>
                   <button
                     onClick={() => {
@@ -541,7 +616,7 @@ function App() {
             </div>
           </div>
 
-          <div className="flex space-x-4 mb-4">
+          <div className="flex space-x-4 mb-4" ref={headerRef}>
             <button onClick={() => handleCategoryChange('Bebidas')} className={selectedCategory === 'Bebidas' ? 'bg-green-600 text-white py-2 rounded-lg' : 'bg-gray-100 py-2 rounded-lg'}>Bebidas</button>
             <button onClick={() => handleCategoryChange('Petiscos')} className={selectedCategory === 'Petiscos' ? 'bg-green-600 text-white py-2 rounded-lg' : 'bg-gray-100 py-2 rounded-lg'}>Petiscos</button>
             <button onClick={() => handleCategoryChange('Doces')} className={selectedCategory === 'Doces' ? 'bg-green-600 text-white py-2 rounded-lg' : 'bg-gray-100 py-2 rounded-lg'}>Doces</button>
