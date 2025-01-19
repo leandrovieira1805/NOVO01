@@ -323,7 +323,7 @@ function App() {
 
   const calculateTotal = () => {
     let subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
-    if (isDelivery && subtotal > 0) {
+    if (isDelivery && subtotal > 0 && orderForm.paymentMethod !== 'Dinheiro') {
       subtotal += 5; // Adiciona a taxa de entrega
     }
     setTotal(subtotal);
@@ -356,7 +356,7 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 background">
       <Toaster position="top-right" />
       
       {/* Botão do Carrinho */}
@@ -592,6 +592,7 @@ function App() {
           <button onClick={() => handleCategoryChange('Petiscos')} className={selectedCategory === 'Petiscos' ? 'bg-green-600 text-white py-2 rounded-lg' : 'bg-gray-100 py-2 rounded-lg'}>Petiscos</button>
           <button onClick={() => handleCategoryChange('Doces')} className={selectedCategory === 'Doces' ? 'bg-green-600 text-white py-2 rounded-lg' : 'bg-gray-100 py-2 rounded-lg'}>Doces</button>
           <button onClick={() => handleCategoryChange('Combos')} className={selectedCategory === 'Combos' ? 'bg-green-600 text-white py-2 rounded-lg' : 'bg-gray-100 py-2 rounded-lg'}>Combos</button>
+          <button onClick={() => handleCategoryChange('Hanburgues')} className={selectedCategory === 'Hanburgues' ? 'bg-green-600 text-white py-2 rounded-lg' : 'bg-gray-100 py-2 rounded-lg'}>Hanburgues</button>
         </div>
       </header>
 
@@ -601,7 +602,7 @@ function App() {
           <h2 className="text-3xl font-bold text-center mb-12">Cardápio</h2>
           
           <div className="mb-12">
-            <h3 className="text-2xl font-semibold mb-6">Lanches</h3>
+            <h3 className="text-2xl font-semibold mb-6">Hanburgues</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 justify-items-center">
               {HANBURGES.map((item) => (
                 <div key={item.name} className="bg-white p-6 rounded-lg shadow-md flex flex-col items-center">
