@@ -10,3 +10,8 @@
   background-repeat: no-repeat; /* Para não repetir a imagem */
   background-position: center; /* Para centralizar a imagem */
 }
+
+body {
+  background-color: black !important;
+  color: white !important;
+}

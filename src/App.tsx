@@ -1,665 +1,644 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Phone, MapPin, Clock, CreditCard, Truck, ShoppingCart, Plus, Minus, X } from 'lucide-react';
-import { Toaster, toast } from 'react-hot-toast';
-import MISTOIMAGE from './assets/HANBURGES/MISTO.png';
-import XDUPLOEGGIMAGE from './assets/HANBURGES/XDUPLO-EGG.png';
-import XARRETADOIMAGE from './assets/HANBURGES/XARRETADO.png';
-import XBATATABURGAOIMAGE from './assets/HANBURGES/XBATATA-BURGAO.png';
+import { useState } from 'react';
+import { ShoppingCart, X as XIcon, Trash2 as TrashIcon, MapPin, Phone, Clock } from 'lucide-react';
+import HEROIMAGE from './assets/HERO.jpeg';
+import LOGOIMAGE from './assets/LOGO.png';
 import XBURGUERIMAGE from './assets/HANBURGES/XBURGUER.png';
-import XBurguerBACONIMAGE from './assets/HANBURGES/XBURGUER-BACON.png';
-import XCALABRESAIMAGE from './assets/HANBURGES/XCALABRESA.png';
-import XEGGIMAGE from './assets/HANBURGES/XEGG.png';
-import XPRESUNTOImage from './assets/HANBURGES/XPRESUNTO.png';
-import HANBURGUERIMAGE from './assets/HANBURGES/HANBURGUER.png';
-import XEggBaconImage from './assets/HANBURGES/XEGG-BACON.png';
-import BATATAESPECIALIMAGE from './assets/BATATA-ESPECIAL.png';
-import BATATASIMPLESIMAGE from './assets/BATATA-SIMPLES.png';
-import BISTECAIMAGE from './assets/Petiscos/BISTECA.png';
-import BOLOCHOCOLATEIMAGE from './assets/BOLO-CHOCOLATE.png';
-import CALDOCOSTELAIMAGE from './assets/Petiscos/CALDO-COSTELA.png';
-import CARNESOLIMAGE from './assets/Petiscos/CARNE-SOL.png';
-import COXINHAASAIMAGE from './assets/Petiscos/COXINHA-ASA.png';
-import CUZCUZPEQUENOIMAGE from './assets/CUZCUZ-PEQUENO.png';
-import HOTDOGIMAGE from './assets/HOT-DOG.png';
-import SUCOSIMAGE from './assets/BEBIDAS/SUCOS.png';
-import COCACOLA1LIMAGE from './assets/BEBIDAS/COCA-COLA-1L.png';
-import GUARANA1LIMAGE from './assets/BEBIDAS/GUARANA-1L.png';
-import ITAIPAVA1LIMAGE from './assets/BEBIDAS/ITAIPAVA-473ML.png';
-import ITAIPAVA600MLIMAGE from './assets/BEBIDAS/ITAIPAVA-600ML.png';
-import SKOL473MLIMAGE from './assets/BEBIDAS/SKOL-473ML.png';
-import SKOL600MLIMAGE from './assets/BEBIDAS/SKOL-600ML.png';
-import COMBOARRETAADOIMAGE from './assets/COMBOS/COMBO-ARRETAADO.png';
-import COMBOBAITABURGAOIMAGE from './assets/COMBOS/COMBO-BAITA-BURGAO.png';
+import XBURGUERARRETADOIMAGE from './assets/HANBURGES/XARRETADO.png';
+import COCAIMAGE from './assets/BEBIDAS/COCA-COLA-1L.png';
+import GUARANAIMAGE from './assets/BEBIDAS/GUARANA-1L.png';
+import AGUAIMAGE from './assets/BEBIDAS/SKOL-600ML.png';
+import AGUAGASIMAGE from './assets/BEBIDAS/SKOL-473ML.png';
+import ACAIIMAGE from './assets/BEBIDAS/SUCOS.png';
+import PICOLEIMAGE from './assets/HOT-DOG.png';
+import MILKSHAKEIMAGE from './assets/BOLO-CHOCOLATE.png';
+import BATATAIMAGE from './assets/BATATA-SIMPLES.png';
+import BATATASPECIALIMAGE from './assets/BATATA-ESPECIAL.png';
+import ISCADEFRANGOIMAGE from './assets/Petiscos/COXINHA-ASA.png';
 import COMBODUPLOIMAGE from './assets/COMBOS/COMBO-DUPLO.png';
-
-
-import LOGO from './assets/LOGO.png';
+import COMBOTRIPLOIMAGE from './assets/COMBOS/COMBO-BAITA-BURGAO.png';
+import COMBOARRETAADOIMAGE from './assets/COMBOS/COMBO-ARRETAADO.png';
+import { QRCodeSVG } from 'qrcode.react';
 
 interface Item {
   name: string;
   price: number;
-  description?: string;
-  quantity?: number;
   image?: string;
+  description?: string;
 }
 
-interface CartItem extends Item {
+interface CartItem {
+  name: string;
+  price: number;
   quantity: number;
 }
 
-interface OrderForm {
-  name: string;
-  phone: string;
-  address: string;
-  paymentMethod: string;
-  needChange: boolean;
-  changeFor?: string;
-}
-
-const HANBURGES = [
-  { name: 'Misto Quente', price: 6.00, image: MISTOIMAGE, description: 'Pão, Presunto, Queijo e Creme de Requeijão.' },
-  { name: 'Hamburguer', price: 7.00, image: HANBURGUERIMAGE, description: 'Pão, Carne, Creme de Requeijão e Salada.' },
-  { name: 'X-Burguer', price: 9.00, image: XBURGUERIMAGE, description: 'Pão, Carne, Queijo, Presunto, Maionese e Salada.' },
-  { name: 'X-Presunto', price: 9.00, image: XPRESUNTOImage, description: 'Pão, Carne, Queijo e Presunto.' },
-  { name: 'X-Egg', price: 9.00, image: XEGGIMAGE, description: 'Pão, Carne, Queijo, Ovo e Salada.' },
-  { name: 'X-Calabresa', price: 9.00, image: XCALABRESAIMAGE, description: 'Pão, Linguiça Calabresa, Queijo e Salada.' },
-  { name: 'X-Burguer Bacon', price: 10.00, image: XBurguerBACONIMAGE, description: 'Pão, Carne, Queijo, Bacon e Salada.' },
-  { name: 'X-Egg Bacon', price: 11.00, image: XEggBaconImage, description: 'Pão, Carne, Queijo, Bacon e Ovo.' },
-  { name: 'X-Duplo Egg', price: 14.00, image: XDUPLOEGGIMAGE, description: 'Pão, Duas Carnes, Queijo e Dois Ovos.' },
-  { name: 'X-Batata Burgão', price: 13.00, image: XBATATABURGAOIMAGE, description: 'Pão, Carne, Queijo e Batata Palha.' },
-  { name: 'X-Arretado', price: 16.00, image: XARRETADOIMAGE, description: 'Pão, Carne, Queijo, Jalapeño e Salada.' }
-];
-
-const doces = [
-  { name: 'Bolo de Chocolate', price: 5.00, image: BOLOCHOCOLATEIMAGE },
-  { name: 'Hot Dog', price: 8.00, image: HOTDOGIMAGE },
-];
-
-const petiscos = [
-  { name: 'Carne de Sol', price: 27.00, image: CARNESOLIMAGE },
-  { name: 'Bisteca', price: 27.00, image: BISTECAIMAGE },
-  { name: 'Coxinha da Asa de Frango', price: 27.00, image: COXINHAASAIMAGE },
-  { name: 'Caldo de Costela', price: 7.00, image: CALDOCOSTELAIMAGE },
-  { name: 'Batata Frita Simples', price: 11.00, image: BATATASIMPLESIMAGE },
-  { name: 'Batata Frita Especial', price: 13.00, image: BATATAESPECIALIMAGE },
-  { name: 'Cuscuz Pequeno', price: 9.00, image: CUZCUZPEQUENOIMAGE },
-];
-
-const bebidas = [
-  { name: 'Suco 500ml', price: 6.00, image: SUCOSIMAGE },
-  { name: '1L Guaraná Pet', price: 8.00, image: GUARANA1LIMAGE },
-  { name: '1L Coca-Cola Pet', price: 9.00, image: COCACOLA1LIMAGE },
-  { name: 'Itaipava 600ml', price: 8.00, image: ITAIPAVA600MLIMAGE },
-  { name: 'Skol 600ml', price: 9.00, image: SKOL600MLIMAGE },
-  { name: 'Latão Itaipava', price: 5.00, image: ITAIPAVA1LIMAGE },
-  { name: 'Latão Skol', price: 6.00, image: SKOL473MLIMAGE }
-];
-
-const combos = [
-  { name: 'Combo Duplo', description: '2 Duplo Egg + Guaraná 1L', price: 36.00, image: COMBODUPLOIMAGE },
-  { name: 'Combo Baita Burgao', description: '2 Baita Burgao + Guaraná 1L', price: 34.00, image: COMBOBAITABURGAOIMAGE },
-  { name: 'Combo Arretado', description: '2 x Arretado + Guaraná 1L', price: 40.00, image: COMBOARRETAADOIMAGE },
-];
-
-interface BebidasComponentProps {
-  addToCart: (item: Item) => void;
-}
-
-const BebidasComponent = ({ addToCart }: BebidasComponentProps) => {
-  const [selectedFlavor, setSelectedFlavor] = useState('');
-  const flavors = [
-    'Goiaba', 'Acerola', 'Graviola', 'Cacau', 'Maracujá',
-    'Manga', 'Ymbú', 'Abacaxi', 'Caju', 'Cajá',
-    'Guaraná Açaí', 'Morango', 'Clorofila'
-  ];
-
-  const handleFlavorChange = (flavor: string) => {
-    setSelectedFlavor(flavor);
-  };
-
-  const addJuiceToCart = () => {
-    if (selectedFlavor) {
-      const juiceItem = {
-        name: `Suco de ${selectedFlavor}`,
-        price: 6.00,
-        description: `Suco de ${selectedFlavor}`,
-      };
-      addToCart(juiceItem);
-    } else {
-      toast.error('Por favor, selecione um sabor.');
-    }
-  };
-
-  return (
-    <div>
-      <h3 className="text-2xl font-semibold mb-6">Bebidas</h3>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 justify-items-center">
-        {bebidas.map((item) => (
-          <div key={item.name} className="bg-white p-6 rounded-lg shadow-md flex flex-col items-center">
-            {item.image && (
-              <img src={item.image} alt={item.name} className="w-48 h-auto object-cover mb-4" />
-            )}
-            <h4 className="text-xl font-semibold">{item.name}</h4>
-            <p className="text-3xl text-green-600 font-bold mt-2">R$ {item.price.toFixed(2)}</p>
-            {item.name === 'Suco 500ml' ? (
-              <div>
-                <h3>Selecione o Sabor do Suco</h3>
-                <div className="flex flex-wrap">
-                  {flavors.map(flavor => (
-                    <button
-                      key={flavor}
-                      onClick={() => handleFlavorChange(flavor)}
-                      className={`m-2 p-2 border ${selectedFlavor === flavor ? 'bg-green-600 text-white' : 'bg-gray-200'}`}
-                    >
-                      {flavor}
-                    </button>
-                  ))}
-                </div>
-                <button onClick={addJuiceToCart} className="mt-4 bg-blue-500 text-white p-2 rounded">
-                  Adicionar Suco ao Carrinho
-                </button>
-              </div>
-            ) : (
-              <div className="flex justify-between items-center mt-4">
-                <button
-                  onClick={() => addToCart(item)}
-                  className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
-                >
-                  Adicionar
-                </button>
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};
-
-interface PetiscosComponentProps {
-  addToCart: (item: Item) => void;
-}
-
-const PetiscosComponent = ({ addToCart }: PetiscosComponentProps) => (
-  <div>
-    <h3 className="text-2xl font-semibold mb-6">Petiscos</h3>
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 justify-items-center">
-      {petiscos.map((item) => (
-        <div key={item.name} className="bg-white p-6 rounded-lg shadow-md flex flex-col items-center">
-          {item.image && (
-            <img src={item.image} alt={item.name} className="w-48 h-auto object-cover mb-4" />
-          )}
-          <h4 className="text-xl font-semibold">{item.name}</h4>
-          <p className="text-3xl text-green-600 font-bold mt-2">R$ {item.price.toFixed(2)}</p>
-          <div className="flex justify-between items-center mt-4">
-            <button
-              onClick={() => addToCart(item)}
-              className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
-            >
-              Adicionar
-            </button>
-          </div>
-        </div>
-      ))}
-    </div>
-  </div>
-);
-
-interface DocesComponentProps {
-  addToCart: (item: Item) => void;
-}
-
-const DocesComponent = ({ addToCart }: DocesComponentProps) => (
-  <div>
-    <h3 className="text-2xl font-semibold mb-6">Doces</h3>
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 justify-items-center">
-      {doces.map((item) => (
-        <div key={item.name} className="bg-white p-6 rounded-lg shadow-md flex flex-col items-center">
-          {item.image && (
-            <img src={item.image} alt={item.name} className="w-48 h-auto object-cover mb-4" />
-          )}
-          <h4 className="text-xl font-semibold">{item.name}</h4>
-          <p className="text-3xl text-green-600 font-bold mt-2">R$ {item.price.toFixed(2)}</p>
-          <div className="flex justify-between items-center mt-4">
-            <button
-              onClick={() => addToCart(item)}
-              className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
-            >
-              Adicionar
-            </button>
-          </div>
-        </div>
-      ))}
-    </div>
-  </div>
-);
-
-interface CombosComponentProps {
-  addToCart: (item: Item) => void;
-}
-
-const CombosComponent = ({ addToCart }: CombosComponentProps) => (
-  <div>
-    <h3 className="text-2xl font-semibold mb-6">Combos</h3>
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 justify-items-center">
-      {combos.map((combo) => (
-        <div key={combo.name} className="bg-white p-6 rounded-lg shadow-md flex flex-col items-center">
-          {combo.image && (
-            <img src={combo.image} alt={combo.name} className="w-48 h-auto object-cover mb-4" />
-          )}
-          <h4 className="text-xl font-semibold">{combo.name}</h4>
-          <p>{combo.description}</p>
-          <p className="text-3xl text-green-600 font-bold mt-2">R$ {combo.price.toFixed(2)}</p>
-          <div className="flex justify-between items-center mt-4">
-            <button
-              onClick={() => addToCart(combo)}
-              className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
-            >
-              Adicionar
-            </button>
-          </div>
-        </div>
-      ))}
-    </div>
-  </div>
-);
-
 function App() {
-  const [cart, setCart] = useState<CartItem[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState('hamburgueres');
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
-  const [orderForm, setOrderForm] = useState<OrderForm>({
+  const [orderForm, setOrderForm] = useState({
     name: '',
     phone: '',
     address: '',
-    paymentMethod: '',
+    neighborhood: '',
+    number: '',
+    referencePoint: '',
+    paymentMethod: 'dinheiro',
     needChange: false,
-    changeFor: ''
+    changeFor: '',
+    deliveryType: 'delivery'
   });
-  const [selectedCategory, setSelectedCategory] = useState('Bebidas');
-  const [isDelivery, setIsDelivery] = useState(false);
-  const [total, setTotal] = useState(0);
-  const headerRef = useRef<HTMLDivElement | null>(null);
+  const [showOrderForm, setShowOrderForm] = useState(false);
 
-  useEffect(() => {
-    if (headerRef.current) {
-      headerRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, []);
+  const PIX_CODE = "00020126330014BR.GOV.BCB.PIX0111130436084965204000053039865802BR5925LEANDRO VIEIRA NASCIMENTO6012Lagoa grande62070503***63049093";
+  const PIX_INFO = {
+    nome: "LEANDRO VIEIRA NASCIMENTO",
+    chave: "13043608496",
+    cidade: "Lagoa Grande"
+  };
 
   const addToCart = (item: Item) => {
-    setCart((prevCart) => {
-      const existingItem = prevCart.find(cartItem => cartItem.name === item.name);
-      if (existingItem) {
-        // Se o item já existe, aumente a quantidade
-        return prevCart.map(cartItem =>
-          cartItem.name === item.name
-            ? { ...cartItem, quantity: (cartItem.quantity || 0) + 1 }
-            : cartItem
-        );
-      }
-      // Se o item não existe, adicione ao carrinho com quantity 1
-      return [...prevCart, { ...item, quantity: 1 }];
-    });
-    toast.success(`${item.name} adicionado ao carrinho!`);
+    try {
+      setCartItems(prevItems => [...prevItems, {
+        name: item.name,
+        price: item.price,
+        quantity: 1
+      }]);
+    } catch (error) {
+      console.error('Erro ao adicionar item ao carrinho:', error);
+    }
   };
 
   const removeFromCart = (itemName: string) => {
-    setCart(currentCart => currentCart.filter(item => item.name !== itemName));
-    toast.success('Item removido do carrinho!');
+    try {
+      setCartItems(prevItems => 
+        prevItems.filter(item => item.name !== itemName)
+      );
+    } catch (error) {
+      console.error('Erro ao remover item do carrinho:', error);
+    }
   };
 
   const updateQuantity = (itemName: string, newQuantity: number) => {
-    if (newQuantity < 1) {
-      removeFromCart(itemName);
-      return;
-    }
-    setCart(currentCart =>
-      currentCart.map(item =>
-        item.name === itemName ? { ...item, quantity: newQuantity } : item
-      )
-    );
-  };
+    try {
+      if (newQuantity <= 0) {
+        removeFromCart(itemName);
+        return;
+      }
 
-  const calculateTotal = () => {
-    let subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
-    if (isDelivery && subtotal > 0 && orderForm.paymentMethod !== 'Dinheiro') {
-      subtotal += 5; // Adiciona a taxa de entrega
+      setCartItems(prevItems =>
+        prevItems.map(item =>
+          item.name === itemName
+            ? { ...item, quantity: newQuantity }
+            : item
+        )
+      );
+    } catch (error) {
+      console.error('Erro ao atualizar quantidade:', error);
     }
-    setTotal(subtotal);
-  };
-
-  const handleDeliveryChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setIsDelivery(event.target.checked);
-    calculateTotal();
   };
 
   const getTotalPrice = () => {
-    return cart.reduce((total, item) => total + item.price * item.quantity, 0);
+    try {
+      return cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+    } catch (error) {
+      console.error('Erro ao calcular total:', error);
+      return 0;
+    }
   };
 
-  const handleSubmitOrder = (e: React.FormEvent) => {
-    e.preventDefault();
-    const total = getTotalPrice();
-    const orderMessage = `*Novo Pedido*\n\nCliente: ${orderForm.name}\nTelefone: ${orderForm.phone}\nEndereço: ${orderForm.address}\n\nItens:\n${cart.map(item => `${item.quantity}x ${item.name} - R$ ${(item.price * item.quantity).toFixed(2)}`).join('\n')}\n\nTotal: R$ ${total.toFixed(2)}\nForma de Pagamento: ${orderForm.paymentMethod}${orderForm.needChange ? `\nTroco para: R$ ${orderForm.changeFor}` : ''}`;
-    
-    const whatsappUrl = `https://wa.me/+5587996175314?text=${encodeURIComponent(orderMessage)}`;
-    window.open(whatsappUrl, '_blank');
-    
-    setCart([]);
-    setIsCheckoutOpen(false);
-    toast.success('Pedido enviado com sucesso!');
+  const handleFinishOrder = () => {
+    if (cartItems.length === 0) {
+      alert('Adicione itens ao carrinho antes de finalizar o pedido');
+      return;
+    }
+    setShowOrderForm(true);
   };
 
-  const handleCategoryChange = (category: string) => {
-    setSelectedCategory(category);
+  const handleSubmitOrder = () => {
+    try {
+      if (!orderForm.name || !orderForm.phone) {
+        alert('Por favor, preencha nome e telefone');
+        return;
+      }
+
+      if (orderForm.deliveryType === 'delivery' && !orderForm.address) {
+        alert('Por favor, preencha o endereço para entrega');
+        return;
+      }
+
+      const deliveryFee = orderForm.deliveryType === 'delivery' ? 5 : 0;
+      const total = getTotalPrice() + deliveryFee;
+
+      const message = `*🍔 NOVO PEDIDO - ARRETADO BURGUER 🍔*\n\n` +
+        `*DADOS DO CLIENTE*\n` +
+        `*Nome:* ${orderForm.name}\n` +
+        `*Telefone:* ${orderForm.phone}\n` +
+        `*Tipo:* ${orderForm.deliveryType === 'delivery' ? '🛵 Entrega' : '🏃 Retirada'}\n` +
+        (orderForm.deliveryType === 'delivery' ? `*Endereço:* ${orderForm.address}\n` +
+        `*Bairro:* ${orderForm.neighborhood}\n` +
+        `*Número:* ${orderForm.number}\n` +
+        `*Ponto de Referência:* ${orderForm.referencePoint}\n` : '') +
+        '\n*📋 ITENS DO PEDIDO:*\n' +
+        cartItems.map(item => 
+          `• ${item.name} (${item.quantity}x) - R$ ${(item.price * item.quantity).toFixed(2)}`
+        ).join('\n') +
+        `\n\n*💰 RESUMO DO PEDIDO:*` +
+        `\n*Subtotal:* R$ ${getTotalPrice().toFixed(2)}` +
+        (orderForm.deliveryType === 'delivery' ? `\n*Taxa de entrega:* R$ ${deliveryFee.toFixed(2)}` : '') +
+        `\n*Total:* R$ ${total.toFixed(2)}\n\n` +
+        `*💳 PAGAMENTO:*\n` +
+        `*Forma:* ${
+          orderForm.paymentMethod === 'pix' ? '💠 PIX' :
+          orderForm.paymentMethod === 'cartao' ? '💳 Cartão' :
+          '💵 Dinheiro'
+        }` +
+        (orderForm.paymentMethod === 'pix' ? 
+          `\n*Chave PIX (CPF):* ${PIX_INFO.chave}\n*Nome:* ${PIX_INFO.nome}\n*Cidade:* ${PIX_INFO.cidade}` : '') +
+        (orderForm.paymentMethod === 'dinheiro' && orderForm.needChange ? 
+          `\n*Troco para:* R$ ${orderForm.changeFor}` : '') +
+        '\n\n*⏰ Tempo estimado de entrega: 30-45 minutos*\n' +
+        '*📍 Acompanhe seu pedido pelo WhatsApp*';
+
+      window.open(
+        `https://wa.me/5587996175314?text=${encodeURIComponent(message)}`,
+        '_blank'
+      );
+
+      // Limpa o carrinho e fecha o modal
+      setCartItems([]);
+      setIsCartOpen(false);
+      setShowOrderForm(false);
+      setOrderForm({
+        name: '',
+        phone: '',
+        address: '',
+        neighborhood: '',
+        number: '',
+        referencePoint: '',
+        paymentMethod: 'dinheiro',
+        needChange: false,
+        changeFor: '',
+        deliveryType: 'delivery'
+      });
+    } catch (error) {
+      console.error('Erro ao enviar pedido:', error);
+      alert('Erro ao enviar pedido. Tente novamente.');
+    }
   };
+
+  const categories = [
+    { id: 'hamburgueres', label: 'Hambúrgueres', icon: ShoppingCart },
+    { id: 'bebidas', label: 'Bebidas', icon: ShoppingCart },
+    { id: 'sobremesas', label: 'Sobremesas', icon: ShoppingCart },
+    { id: 'combos', label: 'Combos', icon: ShoppingCart },
+    { id: 'petiscos', label: 'Petiscos', icon: ShoppingCart },
+  ];
+
+  const HANBURGES: Item[] = [
+    { name: 'Misto Quente', price: 6.00, image: XBURGUERIMAGE, description: 'Pão, Presunto, Queijo e Creme de Requeijão.' },
+    { name: 'Hamburguer', price: 7.00, image: XBURGUERIMAGE, description: 'Pão, Carne, Creme de Requeijão e Salada.' },
+    { name: 'X-Burguer', price: 9.00, image: XBURGUERIMAGE, description: 'Pão, Carne, Queijo, Presunto, Maionese e Salada.' },
+    { name: 'X-Presunto', price: 9.00, image: XBURGUERIMAGE, description: 'Pão, Carne, Queijo e Presunto.' },
+    { name: 'X-Egg', price: 9.00, image: XBURGUERIMAGE, description: 'Pão, Carne, Queijo, Ovo e Salada.' },
+    { name: 'X-Calabresa', price: 9.00, image: XBURGUERIMAGE, description: 'Pão, Linguiça Calabresa, Queijo e Salada.' },
+    { name: 'X-Burguer Bacon', price: 10.00, image: XBURGUERIMAGE, description: 'Pão, Carne, Queijo, Bacon e Salada.' },
+    { name: 'X-Egg Bacon', price: 11.00, image: XBURGUERIMAGE, description: 'Pão, Carne, Queijo, Bacon e Ovo.' },
+    { name: 'X-Duplo Egg', price: 14.00, image: XBURGUERIMAGE, description: 'Pão, Duas Carnes, Queijo e Dois Ovos.' },
+    { name: 'X-Batata Burgão', price: 13.00, image: XBURGUERIMAGE, description: 'Pão, Carne, Queijo e Batata Palha.' },
+    { name: 'X-Arretado', price: 16.00, image: XBURGUERARRETADOIMAGE, description: 'Pão, Carne, Queijo, Jalapeño e Salada.' }
+  ];
+
+  const bebidas: Item[] = [
+    { name: 'Coca-Cola 1L', price: 9.00, image: COCAIMAGE },
+    { name: 'Guaraná 1L', price: 8.00, image: GUARANAIMAGE },
+    { name: 'Suco 500ml', price: 6.00, image: ACAIIMAGE },
+    { name: 'Skol 600ml', price: 9.00, image: AGUAIMAGE },
+    { name: 'Skol Latão', price: 6.00, image: AGUAGASIMAGE },
+    { name: 'Itaipava 600ml', price: 8.00, image: AGUAIMAGE },
+    { name: 'Itaipava Latão', price: 5.00, image: AGUAGASIMAGE }
+  ];
+
+  const doces: Item[] = [
+    { name: 'Bolo de Chocolate', price: 5.00, image: MILKSHAKEIMAGE },
+    { name: 'Hot Dog', price: 8.00, image: PICOLEIMAGE },
+  ];
+
+  const petiscos: Item[] = [
+    { name: 'Carne de Sol', price: 27.00, image: ISCADEFRANGOIMAGE },
+    { name: 'Bisteca', price: 27.00, image: ISCADEFRANGOIMAGE },
+    { name: 'Coxinha da Asa de Frango', price: 27.00, image: ISCADEFRANGOIMAGE },
+    { name: 'Caldo de Costela', price: 7.00, image: ISCADEFRANGOIMAGE },
+    { name: 'Batata Frita Simples', price: 11.00, image: BATATAIMAGE },
+    { name: 'Batata Frita Especial', price: 13.00, image: BATATASPECIALIMAGE },
+    { name: 'Cuscuz Pequeno', price: 9.00, image: BATATAIMAGE },
+  ];
+
+  const combos: Item[] = [
+    { name: 'Combo Duplo', description: '2 Duplo Egg + Guaraná 1L', price: 36.00, image: COMBODUPLOIMAGE },
+    { name: 'Combo Triplo', description: '3 Triplo Egg + Guaraná 1L', price: 54.00, image: COMBOTRIPLOIMAGE },
+    { name: 'Combo Arretado', description: '2 x Arretado + Guaraná 1L', price: 40.00, image: COMBOARRETAADOIMAGE },
+  ];
 
   return (
-    <div className="min-h-screen bg-gray-50 background">
-      <Toaster position="top-right" />
-      
-      {/* Botão do Carrinho */}
+    <div className="min-h-screen bg-zinc-900">
       <button
-        onClick={() => setIsCartOpen(true)}
-        className="fixed bottom-4 right-4 bg-green-600 text-white p-4 rounded-full shadow-lg z-50 flex items-center space-x-2"
+        onClick={() => setIsCartOpen(!isCartOpen)}
+        className="fixed top-4 right-4 bg-green-600 text-white p-2 rounded-full shadow-lg z-50 hover:bg-green-700"
       >
-        <ShoppingCart className="w-6 h-6" />
-        <span className="bg-white text-green-600 rounded-full w-6 h-6 flex items-center justify-center">
-          {cart.length}
-        </span>
+        <div className="relative">
+          <ShoppingCart className="w-6 h-6" />
+          {cartItems.length > 0 && (
+            <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
+              {cartItems.length}
+            </span>
+          )}
+        </div>
       </button>
 
-      {/* Modal do Carrinho */}
       {isCartOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-          <div className="bg-white p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-2xl font-bold">Carrinho</h2>
-              <button onClick={() => setIsCartOpen(false)} className="text-gray-500">
-                <X className="w-6 h-6" />
+              <h2 className="text-xl font-bold">Carrinho</h2>
+              <button onClick={() => setIsCartOpen(false)} className="text-gray-500 hover:text-gray-700">
+                <XIcon size={24} />
               </button>
             </div>
-            
-            {cart.length === 0 ? (
-              <p className="text-gray-500 text-center py-4">Seu carrinho está vazio</p>
+
+            {cartItems.length === 0 ? (
+              <p className="text-center text-gray-500">Seu carrinho está vazio</p>
             ) : (
               <>
-                {cart.map(item => (
-                  <div key={item.name} className="flex items-center justify-between py-2 border-b">
+                {/* Lista de itens */}
+                <div className="space-y-4 mb-4">
+                  {cartItems.map(item => (
+                    <div key={item.name} className="flex items-center justify-between bg-gray-50 p-2 rounded-lg">
+                      <div className="flex-1">
+                        <p className="font-semibold">{item.name}</p>
+                        <p className="text-green-600">R$ {(item.price * item.quantity).toFixed(2)}</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => updateQuantity(item.name, item.quantity - 1)}
+                          className="text-gray-500 hover:text-gray-700"
+                        >
+                          -
+                        </button>
+                        <span className="w-8 text-center">{item.quantity}</span>
+                        <button
+                          onClick={() => updateQuantity(item.name, item.quantity + 1)}
+                          className="text-gray-500 hover:text-gray-700"
+                        >
+                          +
+                        </button>
+                        <button
+                          onClick={() => removeFromCart(item.name)}
+                          className="text-red-500 hover:text-red-700 ml-2"
+                        >
+                          <TrashIcon className="w-5 h-5" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Formulário de pedido */}
+                {showOrderForm ? (
+                  <div className="space-y-4">
                     <div>
-                      <h3 className="font-semibold">{item.name}</h3>
-                      <p className="text-gray-600">R$ {item.price.toFixed(2)}</p>
+                      <label className="block text-sm font-medium text-gray-700">Nome</label>
+                      <input
+                        type="text"
+                        value={orderForm.name}
+                        onChange={(e) => setOrderForm(prev => ({ ...prev, name: e.target.value }))}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                      />
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <button
-                        onClick={() => updateQuantity(item.name, item.quantity - 1)}
-                        className="p-1 rounded-full bg-gray-100"
-                      >
-                        <Minus className="w-4 h-4" />
-                      </button>
-                      <span>{item.quantity}</span>
-                      <button
-                        onClick={() => updateQuantity(item.name, item.quantity + 1)}
-                        className="p-1 rounded-full bg-gray-100"
-                      >
-                        <Plus className="w-4 h-4" />
-                      </button>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Telefone</label>
+                      <input
+                        type="text"
+                        value={orderForm.phone}
+                        onChange={(e) => setOrderForm(prev => ({ ...prev, phone: e.target.value }))}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                      />
                     </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Endereço de Rua</label>
+                      <input
+                        type="text"
+                        value={orderForm.address}
+                        onChange={(e) => setOrderForm(prev => ({ ...prev, address: e.target.value }))}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Bairro</label>
+                      <input
+                        type="text"
+                        value={orderForm.neighborhood}
+                        onChange={(e) => setOrderForm(prev => ({ ...prev, neighborhood: e.target.value }))}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Número</label>
+                      <input
+                        type="text"
+                        value={orderForm.number}
+                        onChange={(e) => setOrderForm(prev => ({ ...prev, number: e.target.value }))}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Ponto de Referência</label>
+                      <input
+                        type="text"
+                        value={orderForm.referencePoint}
+                        onChange={(e) => setOrderForm(prev => ({ ...prev, referencePoint: e.target.value }))}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Tipo de Entrega</label>
+                      <select
+                        value={orderForm.deliveryType}
+                        onChange={(e) => setOrderForm(prev => ({ ...prev, deliveryType: e.target.value }))}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                      >
+                        <option value="delivery">Entrega</option>
+                        <option value="retirada">Retirada</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Forma de Pagamento</label>
+                      <select
+                        value={orderForm.paymentMethod}
+                        onChange={(e) => setOrderForm(prev => ({ ...prev, paymentMethod: e.target.value }))}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                      >
+                        <option value="dinheiro">Dinheiro</option>
+                        <option value="cartao">Cartão</option>
+                        <option value="pix">PIX</option>
+                      </select>
+                    </div>
+                    {orderForm.paymentMethod === 'pix' && (
+                      <div className="mt-4 p-4 bg-gray-100 rounded-lg">
+                        <h3 className="text-lg font-bold text-center mb-4">Pagamento PIX</h3>
+                        <div className="flex justify-center mb-4">
+                          <QRCodeSVG value={PIX_CODE} size={200} />
+                        </div>
+                        <div className="space-y-2 text-sm">
+                          <p className="font-semibold text-center">Informações PIX</p>
+                          <p><span className="font-medium">Nome:</span> {PIX_INFO.nome}</p>
+                          <p><span className="font-medium">Chave PIX (CPF):</span> {PIX_INFO.chave}</p>
+                          <p><span className="font-medium">Cidade:</span> {PIX_INFO.cidade}</p>
+                          <p className="text-xs text-gray-500 mt-2 text-center">
+                            Após realizar o pagamento, clique em "Finalizar Pedido"
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                    <button
+                      onClick={handleSubmitOrder}
+                      className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition-colors"
+                    >
+                      Finalizar Pedido
+                    </button>
                   </div>
-                ))}
-                
-                <div className="mt-4 pt-4 border-t">
-                  <div className="flex justify-between font-bold">
-                    <span>Total:</span>
-                    <span>R$ {getTotalPrice().toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between items-center mt-4">
-                    <label>
-                      <input type="checkbox" checked={isDelivery} onChange={handleDeliveryChange} />
-                      <span className="text-sm text-gray-700">Deseja entrega? (Taxa de R$ 5,00)</span>
-                    </label>
-                    <span>R$ {total.toFixed(2)}</span>
-                  </div>
+                ) : (
+                  // ... botão existente para ir para o formulário
                   <button
-                    onClick={() => {
-                      setIsCartOpen(false);
-                      setIsCheckoutOpen(true);
-                    }}
-                    className="w-full mt-4 bg-green-600 text-white py-2 rounded-lg"
+                    onClick={handleFinishOrder}
+                    className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition-colors"
                   >
                     Finalizar Pedido
                   </button>
-                </div>
+                )}
               </>
             )}
           </div>
         </div>
       )}
 
-      {/* Modal de Checkout */}
-      {isCheckoutOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-          <div className="bg-white p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-2xl font-bold">Finalizar Pedido</h2>
-              <button onClick={() => setIsCheckoutOpen(false)} className="text-gray-500">
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-
-            <form onSubmit={handleSubmitOrder} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Nome</label>
-                <input
-                  type="text"
-                  required
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                  value={orderForm.name}
-                  onChange={e => setOrderForm({ ...orderForm, name: e.target.value })}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Telefone</label>
-                <input
-                  type="tel"
-                  required
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                  value={orderForm.phone}
-                  onChange={e => setOrderForm({ ...orderForm, phone: e.target.value })}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Endereço</label>
-                <textarea
-                  required
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                  value={orderForm.address}
-                  onChange={e => setOrderForm({ ...orderForm, address: e.target.value })}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Forma de Pagamento</label>
-                <select
-                  required
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                  value={orderForm.paymentMethod}
-                  onChange={e => setOrderForm({ ...orderForm, paymentMethod: e.target.value })}
-                >
-                  <option value="">Selecione...</option>
-                  <option value="PIX">PIX</option>
-                  <option value="Dinheiro">Dinheiro</option>
-                  <option value="Cartão">Cartão</option>
-                </select>
-              </div>
-
-              {orderForm.paymentMethod === 'Dinheiro' && (
-                <div>
-                  <label className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      checked={orderForm.needChange}
-                      onChange={e => setOrderForm({ ...orderForm, needChange: e.target.checked })}
-                      className="rounded text-green-600 focus:ring-green-500"
-                    />
-                    <span className="text-sm text-gray-700">Precisa de troco?</span>
-                  </label>
-                  
-                  {orderForm.needChange && (
-                    <div className="mt-2">
-                      <label className="block text-sm font-medium text-gray-700">Troco para quanto?</label>
-                      <input
-                        type="text"
-                        required
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                        value={orderForm.changeFor}
-                        onChange={e => setOrderForm({ ...orderForm, changeFor: e.target.value })}
-                      />
-                    </div>
-                  )}
+      <div className="max-w-5xl mx-auto">
+        <section className="relative h-[300px] flex items-center justify-center">
+          <div className="absolute inset-0">
+            <img src={HEROIMAGE} alt="Hero Background" className="w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-black/50"></div>
+          </div>
+          <div className="relative z-10 text-center">
+            <img
+              src={LOGOIMAGE}
+              alt="Logo"
+              className="w-28 h-28 mx-auto mb-4"
+            />
+            <h1 className="text-4xl font-bold text-yellow-400 mb-4">ARRETADO BURGUER</h1>
+            <div className="text-white space-y-2 max-w-xl mx-auto px-4">
+              <div className="grid grid-cols-3 gap-4 text-sm mt-6">
+                <div className="flex items-center justify-center">
+                  <MapPin className="w-5 h-5 text-yellow-400 mr-2" />
+                  <span>Rua Principal, 123</span>
                 </div>
-              )}
-
-              <button
-                type="submit"
-                className="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition-colors"
-              >
-                Enviar Pedido
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Seção Principal */}
-      <header className="relative h-[60vh] bg-black">
-        <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{
-            backgroundImage: 'url("https://images.unsplash.com/photo-1586816001966-79b736744398?q=80&w=3270&auto=format&fit=crop")',
-            opacity: 0.6
-          }}
-        />
-        <div className="relative h-full flex flex-col items-center justify-center text-center">
-          <div className="flex flex-col items-center justify-center">
-            <img src={LOGO} alt='Logo' className='w-32 h-auto mb-4' />
-            <h1 className="text-6xl md:text-8xl font-bold mb-4 text-yellow-400 shadow-lg">
-              ARRETADO BURGUER
-            </h1>
-            <p className="text-2xl md:text-3xl text-white">
-              Os melhores hambúrgueres artesanais da região
-            </p>
-          </div>
-        </div>
-      </header>
-
-      {/* Seção de Informações */}
-      <section className="py-12 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="flex items-center space-x-4">
-              <Clock className="w-8 h-8 text-green-600" />
-              <div>
-                <h3 className="font-semibold">Horário</h3>
-                <p>18:00 - 23:00</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-4">
-              <Truck className="w-8 h-8 text-green-600" />
-              <div>
-                <h3 className="font-semibold">Entrega</h3>
-                <p>Taxa R$ 5,00</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-4">
-              <CreditCard className="w-8 h-8 text-green-600" />
-              <div>
-                <h3 className="font-semibold">Pagamento</h3>
-                <p>PIX, Dinheiro, Cartão</p>
+                <div className="flex items-center justify-center">
+                  <Phone className="w-5 h-5 text-yellow-400 mr-2" />
+                  <span>(87) 99617-5314</span>
+                </div>
+                <div className="flex items-center justify-center">
+                  <Clock className="w-5 h-5 text-yellow-400 mr-2" />
+                  <span>18:00 - 23:00</span>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Cabeçalho com Seleções */}
-      <header className="bg-white shadow p-4">
-        <div className="flex space-x-4 mb-4">
-          <button onClick={() => handleCategoryChange('Bebidas')} className={selectedCategory === 'Bebidas' ? 'bg-green-600 text-white py-2 rounded-lg' : 'bg-gray-100 py-2 rounded-lg'}>Bebidas</button>
-          <button onClick={() => handleCategoryChange('Petiscos')} className={selectedCategory === 'Petiscos' ? 'bg-green-600 text-white py-2 rounded-lg' : 'bg-gray-100 py-2 rounded-lg'}>Petiscos</button>
-          <button onClick={() => handleCategoryChange('Doces')} className={selectedCategory === 'Doces' ? 'bg-green-600 text-white py-2 rounded-lg' : 'bg-gray-100 py-2 rounded-lg'}>Doces</button>
-          <button onClick={() => handleCategoryChange('Combos')} className={selectedCategory === 'Combos' ? 'bg-green-600 text-white py-2 rounded-lg' : 'bg-gray-100 py-2 rounded-lg'}>Combos</button>
-          <button onClick={() => handleCategoryChange('Hanburgues')} className={selectedCategory === 'Hanburgues' ? 'bg-green-600 text-white py-2 rounded-lg' : 'bg-gray-100 py-2 rounded-lg'}>Hanburgues</button>
+        <div className="bg-zinc-800 sticky top-0 z-10">
+          <nav className="max-w-3xl mx-auto px-4 py-2">
+            <div className="flex justify-center items-center space-x-8">
+              {categories.map((category) => {
+                const Icon = category.icon;
+                return (
+                  <button
+                    key={category.id}
+                    onClick={() => setSelectedCategory(category.id)}
+                    className={`flex flex-col items-center p-1 rounded-lg transition-colors ${
+                      selectedCategory === category.id
+                        ? 'text-yellow-500'
+                        : 'text-white hover:text-yellow-500'
+                    }`}
+                  >
+                    <Icon className="w-4 h-4 mb-0.5" />
+                    <span className="text-xs">{category.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </nav>
         </div>
-      </header>
 
-      {/* Seção do Cardápio */}
-      <section className="py-16 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-12">Cardápio</h2>
-          
-          <div className="mb-12">
-            <h3 className="text-2xl font-semibold mb-6">Hanburgues</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 justify-items-center">
-              {HANBURGES.map((item) => (
-                <div key={item.name} className="bg-white p-6 rounded-lg shadow-md flex flex-col items-center">
-                  {item.image && (
-                    <img src={item.image} alt={item.name} className="w-48 h-auto object-cover mb-4" />
-                  )}
-                  <h4 className="text-xl font-semibold">{item.name}</h4>
-                  {item.description && (
-                    <p className="text-gray-600 text-center mb-2">{item.description}</p>
-                  )}
-                  <p className="text-3xl text-green-600 font-bold mt-2">R$ {item.price.toFixed(2)}</p>
-                  <div className="flex justify-between items-center mt-4">
+        <main className="max-w-xl mx-auto px-4 py-6">
+          {selectedCategory === 'hamburgueres' && (
+            <div>
+              <h3 className="text-lg font-semibold mb-3 text-white text-center">Hambúrgueres</h3>
+              <div className="space-y-4">
+                {HANBURGES.map((item) => (
+                  <div key={item.name} className="bg-white p-3 rounded-lg shadow-md">
+                    <div className="flex justify-center">
+                      {item.image && (
+                        <img src={item.image} alt={item.name} className="h-44 object-cover mb-2 rounded-lg" style={{ width: '280px' }} />
+                      )}
+                    </div>
+                    <h4 className="text-base font-semibold text-center">{item.name}</h4>
+                    {item.description && (
+                      <p className="text-gray-600 mb-2 text-sm text-center">{item.description}</p>
+                    )}
+                    <p className="text-xl text-green-600 font-bold mb-2 text-center">R$ {item.price.toFixed(2)}</p>
                     <button
                       onClick={() => addToCart(item)}
-                      className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
+                      className="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition-colors text-sm"
                     >
-                      Adicionar
+                      Adicionar ao Carrinho
                     </button>
                   </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {selectedCategory === 'Bebidas' && <BebidasComponent addToCart={addToCart} />}
-          {selectedCategory === 'Petiscos' && <PetiscosComponent addToCart={addToCart} />}
-          {selectedCategory === 'Doces' && <DocesComponent addToCart={addToCart} />}
-          {selectedCategory === 'Combos' && <CombosComponent addToCart={addToCart} />}
-        </div>
-      </section>
-
-      {/* Rodapé */}
-      <footer className="bg-gray-900 text-white py-8">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="text-center md:text-left mb-4 md:mb-0">
-              <h2 className="text-2xl font-bold">ARRETADO BURGUER</h2>
-              <p className="mt-2">Os melhores hambúrgueres artesanais</p>
-            </div>
-            <div className="flex flex-col items-center md:items-end">
-              <a 
-                href="https://wa.me/+5587996175314"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center space-x-2 text-green-400 hover:text-green-300"
-              >
-                <Phone className="w-5 h-5" />
-                <span>(87) 99617-5314</span>
-              </a>
-              <div className="flex items-center space-x-2 mt-2">
-                <MapPin className="w-5 h-5" />
-                <span>Petrolina, PE</span>
+                ))}
               </div>
             </div>
+          )}
+
+          {selectedCategory === 'bebidas' && (
+            <div>
+              <h3 className="text-lg font-semibold mb-3 text-white text-center">Bebidas</h3>
+              <div className="space-y-4">
+                {bebidas.map((item) => (
+                  <div key={item.name} className="bg-white p-3 rounded-lg shadow-md">
+                    <div className="flex justify-center">
+                      {item.image && (
+                        <img src={item.image} alt={item.name} className="h-44 object-cover mb-2 rounded-lg" style={{ width: '280px' }} />
+                      )}
+                    </div>
+                    <h4 className="text-base font-semibold text-center">{item.name}</h4>
+                    <p className="text-xl text-green-600 font-bold mb-2 text-center">R$ {item.price.toFixed(2)}</p>
+                    <button
+                      onClick={() => addToCart(item)}
+                      className="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition-colors text-sm"
+                    >
+                      Adicionar ao Carrinho
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {selectedCategory === 'sobremesas' && (
+            <div>
+              <h3 className="text-lg font-semibold mb-3 text-white text-center">Sobremesas</h3>
+              <div className="space-y-4">
+                {doces.map((item) => (
+                  <div key={item.name} className="bg-white p-3 rounded-lg shadow-md">
+                    <div className="flex justify-center">
+                      {item.image && (
+                        <img src={item.image} alt={item.name} className="h-44 object-cover mb-2 rounded-lg" style={{ width: '280px' }} />
+                      )}
+                    </div>
+                    <h4 className="text-base font-semibold text-center">{item.name}</h4>
+                    <p className="text-xl text-green-600 font-bold mb-2 text-center">R$ {item.price.toFixed(2)}</p>
+                    <button
+                      onClick={() => addToCart(item)}
+                      className="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition-colors text-sm"
+                    >
+                      Adicionar ao Carrinho
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {selectedCategory === 'petiscos' && (
+            <div>
+              <h3 className="text-lg font-semibold mb-3 text-white text-center">Petiscos</h3>
+              <div className="space-y-4">
+                {petiscos.map((item) => (
+                  <div key={item.name} className="bg-white p-3 rounded-lg shadow-md">
+                    <div className="flex justify-center">
+                      {item.image && (
+                        <img src={item.image} alt={item.name} className="h-44 object-cover mb-2 rounded-lg" style={{ width: '280px' }} />
+                      )}
+                    </div>
+                    <h4 className="text-base font-semibold text-center">{item.name}</h4>
+                    <p className="text-xl text-green-600 font-bold mb-2 text-center">R$ {item.price.toFixed(2)}</p>
+                    <button
+                      onClick={() => addToCart(item)}
+                      className="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition-colors text-sm"
+                    >
+                      Adicionar ao Carrinho
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {selectedCategory === 'combos' && (
+            <div>
+              <h3 className="text-lg font-semibold mb-3 text-white text-center">Combos</h3>
+              <div className="space-y-4">
+                {combos.map((item) => (
+                  <div key={item.name} className="bg-white p-3 rounded-lg shadow-md">
+                    <div className="flex justify-center">
+                      {item.image && (
+                        <img src={item.image} alt={item.name} className="h-44 object-cover mb-2 rounded-lg" style={{ width: '280px' }} />
+                      )}
+                    </div>
+                    <h4 className="text-base font-semibold text-center">{item.name}</h4>
+                    {item.description && (
+                      <p className="text-gray-600 mb-2 text-sm text-center">{item.description}</p>
+                    )}
+                    <p className="text-xl text-green-600 font-bold mb-2 text-center">R$ {item.price.toFixed(2)}</p>
+                    <button
+                      onClick={() => addToCart(item)}
+                      className="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition-colors text-sm"
+                    >
+                      Adicionar ao Carrinho
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </main>
+
+        <footer className="bg-gray-900 text-white py-6">
+          <div className="max-w-xl mx-auto px-4 text-center">
+            <div className="flex flex-col items-center space-y-3">
+              <img src={LOGOIMAGE} alt="Logo" className="w-16 h-16" />
+              <div>
+                <h2 className="text-xl font-bold text-yellow-400">ARRETADO BURGUER</h2>
+                <p className="mt-1 text-sm">Os melhores hambúrgueres artesanais da região</p>
+              </div>
+              <div className="flex items-center gap-4 mt-2">
+                <a
+                  href="https://wa.me/5587996175314"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 hover:text-yellow-400"
+                >
+                  <Phone className="w-5 h-5 text-yellow-400 mr-2" />
+                  <span>(87) 99617-5314</span>
+                </a>
+                <div className="flex items-center gap-2">
+                  <MapPin className="w-5 h-5 text-yellow-400 mr-2" />
+                  <span>Lagoa Grande-PE</span>
+                </div>
+              </div>
+              <p className="text-xs text-gray-400"> 2024 Todos os direitos reservados</p>
+            </div>
           </div>
-        </div>
-      </footer>
+        </footer>
+      </div>
     </div>
   );
 }
