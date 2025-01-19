@@ -1,20 +1,17 @@
 import React, { useState } from 'react';
 import { Phone, MapPin, Clock, CreditCard, Truck, ShoppingCart, Plus, Minus, X } from 'lucide-react';
 import { Toaster, toast } from 'react-hot-toast';
-import XBurguerImage from './assets/HANBURGES/X_BURGUER.png';
-import xArretadoImage from './assets/HANBURGES/X_ARRETADO.png';
-import xBurguerBaconImage from './assets/HANBURGES/X_BURGUER_BACON.png';
-import XEggImage from './assets/HANBURGES/X_EGG.png';
-import XEggBaconImage from './assets/HANBURGES/X_EGG_BACON.png';
-import XPRESUNTOImage from './assets/HANBURGES/X_PRESUNTO.png';
-import xDuploEggImage from './assets/HANBURGES/X_DUPLO_EGG.png';
-import XCalabresaImage from './assets/HANBURGES/X_CALABRESA.png';
-import SUCODELARANJAIMAGE from './assets/BEBIDAS/SUCO_LARANJA.png';
-import SUCODEGUARANAIMAGE from './assets/BEBIDAS/SUCO_GUARANA.png';
-import SUCODEMORANGOIMAGE from './assets/BEBIDAS/SUCO_MORANGO.png';
-import BROTINHOMUCARELAIMAGE from './assets/PIZZAS/BROTINHO_MUCARELA.png';
-import BROTINHOCALABRESAIMAGE from './assets/PIZZAS/BROTINHO_CALABRESA.png';
-import BROTINHOMILHOIMAGE from './assets/PIZZAS/BROTINHO_MILHO.png';
+import MISTOIMAGE from './assets/HANBURGES/MISTO.png';
+import XDUPLOEGGIMAGE from './assets/HANBURGES/XDUPLO-EGG.png';
+import XARRETADOIMAGE from './assets/HANBURGES/XARRETADO.png';
+import XBATATABURGAOIMAGE from './assets/HANBURGES/XBATATA-BURGAO.png';
+import XBURGUERIMAGE from './assets/HANBURGES/XBURGUER.png';
+import XBurguerBACONIMAGE from './assets/HANBURGES/XBURGUER-BACON.png';
+import XCALABRESAIMAGE from './assets/HANBURGES/XCALABRESA.png';
+import XEGGIMAGE from './assets/HANBURGES/XEGG.png';
+import XPRESUNTOImage from './assets/HANBURGES/XPRESUNTO.png';
+import HANBURGUERIMAGE from './assets/HANBURGES/HANBURGUER.png';
+import XEggBaconImage from './assets/HANBURGES/XEGG-BACON.png';
 import LOGO from './assets/LOGO.png';
 
 interface Item {
@@ -39,17 +36,17 @@ interface OrderForm {
 }
 
 const HANBURGES = [
-  { name: 'Misto Quente', price: 6.00, image: XBurguerImage, description: 'Pão, Presunto, Queijo e Creme de Requeijão.' },
-  { name: 'Hamburguer', price: 7.00, image: xArretadoImage, description: 'Pão, Carne, Creme de Requeijão e Salada.' },
-  { name: 'X-Burguer', price: 9.00, image: xBurguerBaconImage, description: 'Pão, Carne, Queijo, Presunto, Maionese e Salada.' },
+  { name: 'Misto Quente', price: 6.00, image: MISTOIMAGE, description: 'Pão, Presunto, Queijo e Creme de Requeijão.' },
+  { name: 'Hamburguer', price: 7.00, image: HANBURGUERIMAGE, description: 'Pão, Carne, Creme de Requeijão e Salada.' },
+  { name: 'X-Burguer', price: 9.00, image: XBURGUERIMAGE, description: 'Pão, Carne, Queijo, Presunto, Maionese e Salada.' },
   { name: 'X-Presunto', price: 9.00, image: XPRESUNTOImage, description: 'Pão, Carne, Queijo e Presunto.' },
-  { name: 'X-Egg', price: 9.00, image: XEggImage, description: 'Pão, Carne, Queijo, Ovo e Salada.' },
-  { name: 'X-Calabresa', price: 9.00, image: XCalabresaImage, description: 'Pão, Linguiça Calabresa, Queijo e Salada.' },
-  { name: 'X-Burguer Bacon', price: 10.00, image: xBurguerBaconImage, description: 'Pão, Carne, Queijo, Bacon e Salada.' },
+  { name: 'X-Egg', price: 9.00, image: XEGGIMAGE, description: 'Pão, Carne, Queijo, Ovo e Salada.' },
+  { name: 'X-Calabresa', price: 9.00, image: XCALABRESAIMAGE, description: 'Pão, Linguiça Calabresa, Queijo e Salada.' },
+  { name: 'X-Burguer Bacon', price: 10.00, image: XBurguerBACONIMAGE, description: 'Pão, Carne, Queijo, Bacon e Salada.' },
   { name: 'X-Egg Bacon', price: 11.00, image: XEggBaconImage, description: 'Pão, Carne, Queijo, Bacon e Ovo.' },
-  { name: 'X-Duplo Egg', price: 14.00, image: xDuploEggImage, description: 'Pão, Duas Carnes, Queijo e Dois Ovos.' },
-  { name: 'X-Batata Burgão', price: 13.00, description: 'Pão, Carne, Queijo e Batata Palha.' },
-  { name: 'X-Arretado', price: 16.00, image: xArretadoImage, description: 'Pão, Carne, Queijo, Jalapeño e Salada.' }
+  { name: 'X-Duplo Egg', price: 14.00, image: XDUPLOEGGIMAGE, description: 'Pão, Duas Carnes, Queijo e Dois Ovos.' },
+  { name: 'X-Batata Burgão', price: 13.00, image: XBATATABURGAOIMAGE, description: 'Pão, Carne, Queijo e Batata Palha.' },
+  { name: 'X-Arretado', price: 16.00, image: XARRETADOIMAGE, description: 'Pão, Carne, Queijo, Jalapeño e Salada.' }
 ];
 
 const doces = [
@@ -69,22 +66,16 @@ const petiscos = [
 ];
 
 const bebidas = [
-  { name: 'Suco 500ml', price: 6.00, image: SUCODELARANJAIMAGE },
-  { name: 'Latinha 350ml', price: 5.00, image: SUCODEGUARANAIMAGE },
-  { name: '1L Guaraná Pet', price: 8.00, image: SUCODEGUARANAIMAGE },
-  { name: '1L Coca-Cola Pet', price: 9.00, image: SUCODEGUARANAIMAGE },
-  { name: '1L Refrigerante Vidro', price: 9.00, image: SUCODEGUARANAIMAGE },
-  { name: '2L Refrigerante Pet', price: 12.00, image: SUCODEGUARANAIMAGE },
-  { name: 'Itaipava 600ml', price: 8.00, image: SUCODEGUARANAIMAGE },
+  { name: 'Suco 500ml', price: 6.00 },
+  { name: 'Latinha 350ml', price: 5.00 },
+  { name: '1L Guaraná Pet', price: 8.00 },
+  { name: '1L Coca-Cola Pet', price: 9.00 },
+  { name: '1L Refrigerante Vidro', price: 9.00 },
+  { name: '2L Refrigerante Pet', price: 12.00 },
+  { name: 'Itaipava 600ml', price: 8.00 },
   { name: 'Skol 600ml', price: 9.00 },
   { name: 'Latão Itaipava', price: 5.00 },
   { name: 'Latão Skol', price: 6.00 }
-];
-
-const pizzas = [
-  { name: 'Brotinho de Muçarela', price: 10.00, image: BROTINHOMUCARELAIMAGE },
-  { name: 'Brotinho de Milho', price: 10.00, image: BROTINHOMILHOIMAGE },
-  { name: 'Brotinho de Calabresa', price: 10.00, image: BROTINHOCALABRESAIMAGE }
 ];
 
 function App() {
@@ -453,29 +444,6 @@ function App() {
                   <div className="flex justify-between items-center mt-4">
                     <button
                       onClick={() => addToCart(bebida)}
-                      className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
-                    >
-                      Adicionar
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <h3 className="text-2xl font-semibold mb-6">Pizzas Brotinho</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 justify-items-center">
-              {pizzas.map((pizza) => (
-                <div key={pizza.name} className="bg-white p-6 rounded-lg shadow-md flex flex-col items-center">
-                  {pizza.image && (
-                    <img src={pizza.image} alt={pizza.name} className="w-48 h-auto object-cover mb-4" />
-                  )}
-                  <h4 className="text-xl font-semibold">{pizza.name}</h4>
-                  <p className="text-3xl text-green-600 font-bold mt-2">R$ {pizza.price.toFixed(2)}</p>
-                  <div className="flex justify-between items-center mt-4">
-                    <button
-                      onClick={() => addToCart(pizza)}
                       className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
                     >
                       Adicionar
