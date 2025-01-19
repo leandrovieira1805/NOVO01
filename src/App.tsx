@@ -12,6 +12,22 @@ import XEGGIMAGE from './assets/HANBURGES/XEGG.png';
 import XPRESUNTOImage from './assets/HANBURGES/XPRESUNTO.png';
 import HANBURGUERIMAGE from './assets/HANBURGES/HANBURGUER.png';
 import XEggBaconImage from './assets/HANBURGES/XEGG-BACON.png';
+import BATATAESPECIALIMAGE from './assets/BATATA-ESPECIAL.png';
+import BATATASIMPLESIMAGE from './assets/BATATA-SIMPLES.png';
+import BISTECAIMAGE from './assets/BISTECA.png';
+import BOLOCHOCOLATEIMAGE from './assets/BOLO-CHOCOLATE.png';
+import CALDOCOSTELAIMAGE from './assets/CALDO-COSTELA.png';
+import CARNESOLIMAGE from './assets/CARNE-SOL.png';
+import COXINHAASAIMAGE from './assets/COXINHA-ASA.png';
+import CUZCUZPEQUENOIMAGE from './assets/CUZCUZ-PEQUENO.png';
+import HOTDOGIMAGE from './assets/HOT-DOG.png';
+import SUCOSIMAGE from './assets/SUCOS.png';
+import COCACOLA1LIMAGE from './assets/BEBIDAS/COCA-COLA-1L.png';
+import GUARANA1LIMAGE from './assets/BEBIDAS/GUARANA-1L.png';
+import ITAIPAVA1LIMAGE from './assets/BEBIDAS/ITAIPAVA-473ML.png';
+import ITAIPAVA600MLIMAGE from './assets/BEBIDAS/ITAIPAVA-600ML.png';
+import SKOL473MLIMAGE from './assets/BEBIDAS/SKOL-473ML.png';
+import SKOL600MLIMAGE from './assets/BEBIDAS/SKOL-600ML.png';
 import LOGO from './assets/LOGO.png';
 
 interface Item {
@@ -50,32 +66,29 @@ const HANBURGES = [
 ];
 
 const doces = [
-  { name: 'Bolo de Chocolate', price: 5.00 },
-  { name: 'Hot Dog', price: 8.00 }
+  { name: 'Bolo de Chocolate', price: 5.00, image: BOLOCHOCOLATEIMAGE },
+  { name: 'Hot Dog', price: 8.00, image: HOTDOGIMAGE },
 ];
 
 const petiscos = [
-  { name: 'Carne de Sol', price: 27.00 },
-  { name: 'Bisteca', price: 27.00 },
-  { name: 'Coxinha da Asa de Frango', price: 27.00 },
-  { name: 'Caldo de Costela', price: 7.00 },
-  { name: 'Batata Frita Simples', price: 11.00 },
-  { name: 'Batata Frita Especial', price: 13.00 },
+  { name: 'Carne de Sol', price: 27.00, image: CARNESOLIMAGE },
+  { name: 'Bisteca', price: 27.00, image: BISTECAIMAGE },
+  { name: 'Coxinha da Asa de Frango', price: 27.00, image: COXINHAASAIMAGE },
+  { name: 'Caldo de Costela', price: 7.00, image: CALDOCOSTELAIMAGE },
+  { name: 'Batata Frita Simples', price: 11.00, image: BATATASIMPLESIMAGE },
+  { name: 'Batata Frita Especial', price: 13.00, image: BATATAESPECIALIMAGE },
   { name: 'Cuscuz Grande', price: 11.00 },
-  { name: 'Cuscuz Pequeno', price: 9.00 }
+  { name: 'Cuscuz Pequeno', price: 9.00, image: CUZCUZPEQUENOIMAGE },
 ];
 
 const bebidas = [
-  { name: 'Suco 500ml', price: 6.00 },
-  { name: 'Latinha 350ml', price: 5.00 },
-  { name: '1L Guaraná Pet', price: 8.00 },
-  { name: '1L Coca-Cola Pet', price: 9.00 },
-  { name: '1L Refrigerante Vidro', price: 9.00 },
-  { name: '2L Refrigerante Pet', price: 12.00 },
-  { name: 'Itaipava 600ml', price: 8.00 },
-  { name: 'Skol 600ml', price: 9.00 },
-  { name: 'Latão Itaipava', price: 5.00 },
-  { name: 'Latão Skol', price: 6.00 }
+  { name: 'Suco 500ml', price: 6.00, image: SUCOSIMAGE },
+  { name: '1L Guaraná Pet', price: 8.00, image: GUARANA1LIMAGE },
+  { name: '1L Coca-Cola Pet', price: 9.00, image: COCACOLA1LIMAGE },
+  { name: 'Itaipava 600ml', price: 8.00, image: ITAIPAVA600MLIMAGE },
+  { name: 'Skol 600ml', price: 9.00, image: SKOL600MLIMAGE },
+  { name: 'Latão Itaipava', price: 5.00, image: ITAIPAVA1LIMAGE },
+  { name: 'Latão Skol', price: 6.00, image: SKOL473MLIMAGE }
 ];
 
 function App() {
@@ -84,7 +97,7 @@ function App() {
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [orderForm, setOrderForm] = useState<OrderForm>({
     name: '',
-    phone: '+5587996175314',
+    phone: '',
     address: '',
     paymentMethod: '',
     needChange: false,
