@@ -28,6 +28,11 @@ import ITAIPAVA1LIMAGE from './assets/BEBIDAS/ITAIPAVA-473ML.png';
 import ITAIPAVA600MLIMAGE from './assets/BEBIDAS/ITAIPAVA-600ML.png';
 import SKOL473MLIMAGE from './assets/BEBIDAS/SKOL-473ML.png';
 import SKOL600MLIMAGE from './assets/BEBIDAS/SKOL-600ML.png';
+import COMBOARRETAADOIMAGE from './assets/COMBOS/COMBO-ARRETAADO.png';
+import COMBOBAITABURGAOIMAGE from './assets/COMBOS/COMBO-BAITA-BURGAO.png';
+import COMBODUPLOIMAGE from './assets/COMBOS/COMBO-DUPLO.png';
+
+
 import LOGO from './assets/LOGO.png';
 
 interface Item {
@@ -88,6 +93,12 @@ const bebidas = [
   { name: 'Skol 600ml', price: 9.00, image: SKOL600MLIMAGE },
   { name: 'Latão Itaipava', price: 5.00, image: ITAIPAVA1LIMAGE },
   { name: 'Latão Skol', price: 6.00, image: SKOL473MLIMAGE }
+];
+
+const combos = [
+  { name: 'Combo Duplo', description: '2 Duplo Egg + Guaraná 1L', price: 36.00, image: COMBODUPLOIMAGE },
+  { name: 'Combo Baita Burgao', description: '2 Baita Burgao + Guaraná 1L', price: 34.00, image: COMBOBAITABURGAOIMAGE },
+  { name: 'Combo Arretado', description: '2 x Arretado + Guaraná 1L', price: 40.00, image: COMBOARRETAADOIMAGE },
 ];
 
 interface BebidasComponentProps {
@@ -177,6 +188,36 @@ const DocesComponent = ({ addToCart }: DocesComponentProps) => (
   </div>
 );
 
+interface CombosComponentProps {
+  addToCart: (item: Item) => void;
+}
+
+const CombosComponent = ({ addToCart }: CombosComponentProps) => (
+  <div>
+    <h3 className="text-2xl font-semibold mb-6">Combos</h3>
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 justify-items-center">
+      {combos.map((combo) => (
+        <div key={combo.name} className="bg-white p-6 rounded-lg shadow-md flex flex-col items-center">
+          {combo.image && (
+            <img src={combo.image} alt={combo.name} className="w-48 h-auto object-cover mb-4" />
+          )}
+          <h4 className="text-xl font-semibold">{combo.name}</h4>
+          <p>{combo.description}</p>
+          <p className="text-3xl text-green-600 font-bold mt-2">R$ {combo.price.toFixed(2)}</p>
+          <div className="flex justify-between items-center mt-4">
+            <button
+              onClick={() => addToCart(combo)}
+              className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
+            >
+              Adicionar
+            </button>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
 function App() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -189,6 +230,7 @@ function App() {
     needChange: false,
     changeFor: ''
   });
+  const [selectedCategory, setSelectedCategory] = useState('Bebidas');
 
   const addToCart = (item: Item) => {
     setCart((prevCart) => {
@@ -239,6 +281,10 @@ function App() {
     setCart([]);
     setIsCheckoutOpen(false);
     toast.success('Pedido enviado com sucesso!');
+  };
+
+  const handleCategoryChange = (category: string) => {
+    setSelectedCategory(category);
   };
 
   return (
@@ -495,9 +541,17 @@ function App() {
             </div>
           </div>
 
-          <BebidasComponent addToCart={addToCart} />
-          <PetiscosComponent addToCart={addToCart} />
-          <DocesComponent addToCart={addToCart} />
+          <div className="flex space-x-4 mb-4">
+            <button onClick={() => handleCategoryChange('Bebidas')} className={selectedCategory === 'Bebidas' ? 'bg-green-600 text-white py-2 rounded-lg' : 'bg-gray-100 py-2 rounded-lg'}>Bebidas</button>
+            <button onClick={() => handleCategoryChange('Petiscos')} className={selectedCategory === 'Petiscos' ? 'bg-green-600 text-white py-2 rounded-lg' : 'bg-gray-100 py-2 rounded-lg'}>Petiscos</button>
+            <button onClick={() => handleCategoryChange('Doces')} className={selectedCategory === 'Doces' ? 'bg-green-600 text-white py-2 rounded-lg' : 'bg-gray-100 py-2 rounded-lg'}>Doces</button>
+            <button onClick={() => handleCategoryChange('Combos')} className={selectedCategory === 'Combos' ? 'bg-green-600 text-white py-2 rounded-lg' : 'bg-gray-100 py-2 rounded-lg'}>Combos</button>
+          </div>
+
+          {selectedCategory === 'Bebidas' && <BebidasComponent addToCart={addToCart} />}
+          {selectedCategory === 'Petiscos' && <PetiscosComponent addToCart={addToCart} />}
+          {selectedCategory === 'Doces' && <DocesComponent addToCart={addToCart} />}
+          {selectedCategory === 'Combos' && <CombosComponent addToCart={addToCart} />}
         </div>
       </section>
 
