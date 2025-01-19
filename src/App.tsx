@@ -14,14 +14,14 @@ import HANBURGUERIMAGE from './assets/HANBURGES/HANBURGUER.png';
 import XEggBaconImage from './assets/HANBURGES/XEGG-BACON.png';
 import BATATAESPECIALIMAGE from './assets/BATATA-ESPECIAL.png';
 import BATATASIMPLESIMAGE from './assets/BATATA-SIMPLES.png';
-import BISTECAIMAGE from './assets/BISTECA.png';
+import BISTECAIMAGE from './assets/Petiscos/BISTECA.png';
 import BOLOCHOCOLATEIMAGE from './assets/BOLO-CHOCOLATE.png';
-import CALDOCOSTELAIMAGE from './assets/CALDO-COSTELA.png';
-import CARNESOLIMAGE from './assets/CARNE-SOL.png';
-import COXINHAASAIMAGE from './assets/COXINHA-ASA.png';
+import CALDOCOSTELAIMAGE from './assets/Petiscos/CALDO-COSTELA.png';
+import CARNESOLIMAGE from './assets/Petiscos/CARNE-SOL.png';
+import COXINHAASAIMAGE from './assets/Petiscos/COXINHA-ASA.png';
 import CUZCUZPEQUENOIMAGE from './assets/CUZCUZ-PEQUENO.png';
 import HOTDOGIMAGE from './assets/HOT-DOG.png';
-import SUCOSIMAGE from './assets/SUCOS.png';
+import SUCOSIMAGE from './assets/BEBIDAS/SUCOS.png';
 import COCACOLA1LIMAGE from './assets/BEBIDAS/COCA-COLA-1L.png';
 import GUARANA1LIMAGE from './assets/BEBIDAS/GUARANA-1L.png';
 import ITAIPAVA1LIMAGE from './assets/BEBIDAS/ITAIPAVA-473ML.png';
@@ -77,9 +77,9 @@ const petiscos = [
   { name: 'Caldo de Costela', price: 7.00, image: CALDOCOSTELAIMAGE },
   { name: 'Batata Frita Simples', price: 11.00, image: BATATASIMPLESIMAGE },
   { name: 'Batata Frita Especial', price: 13.00, image: BATATAESPECIALIMAGE },
-  { name: 'Cuscuz Grande', price: 11.00 },
   { name: 'Cuscuz Pequeno', price: 9.00, image: CUZCUZPEQUENOIMAGE },
 ];
+
 
 const bebidas = [
   { name: 'Suco 500ml', price: 6.00, image: SUCOSIMAGE },
