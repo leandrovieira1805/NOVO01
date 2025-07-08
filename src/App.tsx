@@ -342,56 +342,64 @@ function App() {
                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                       />
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Endereço de Rua</label>
-                      <input
-                        type="text"
-                        value={orderForm.address}
-                        onChange={(e) => setOrderForm(prev => ({ ...prev, address: e.target.value }))}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Bairro</label>
-                      <select
-                        value={orderForm.neighborhood}
-                        onChange={(e) => {
-                          const bairro = e.target.value;
-                          setOrderForm(prev => {
-                            let taxa = prev.deliveryFee;
-                            if (prev.deliveryType === 'delivery') {
-                              if (bairro === 'Lagoa Grande') taxa = 4;
-                              else if (bairro === 'Izacolândia') taxa = 5;
-                              else taxa = 0;
-                            }
-                            return { ...prev, neighborhood: bairro, deliveryFee: taxa };
-                          });
-                        }}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                      >
-                        <option value="">Selecione o bairro</option>
-                        <option value="Lagoa Grande">Lagoa Grande</option>
-                        <option value="Izacolândia">Izacolândia</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Número</label>
-                      <input
-                        type="text"
-                        value={orderForm.number}
-                        onChange={(e) => setOrderForm(prev => ({ ...prev, number: e.target.value }))}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Ponto de Referência</label>
-                      <input
-                        type="text"
-                        value={orderForm.referencePoint}
-                        onChange={(e) => setOrderForm(prev => ({ ...prev, referencePoint: e.target.value }))}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                      />
-                    </div>
+                    {orderForm.deliveryType === 'delivery' && (
+                      <>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700">Endereço</label>
+                          <input
+                            type="text"
+                            value={orderForm.address}
+                            onChange={(e) => setOrderForm(prev => ({ ...prev, address: e.target.value }))}
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700">Bairro</label>
+                          <input
+                            type="text"
+                            value={orderForm.neighborhood}
+                            onChange={(e) => setOrderForm(prev => ({ ...prev, neighborhood: e.target.value }))}
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700">Localidade</label>
+                          <select
+                            value={orderForm.localidade || ''}
+                            onChange={(e) => {
+                              const localidade = e.target.value;
+                              let taxa = 0;
+                              if (localidade === 'Lagoa Grande') taxa = 4;
+                              else if (localidade === 'Izacolândia') taxa = 5;
+                              setOrderForm(prev => ({ ...prev, localidade, deliveryFee: taxa }));
+                            }}
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                          >
+                            <option value="">Selecione a localidade</option>
+                            <option value="Lagoa Grande">Lagoa Grande</option>
+                            <option value="Izacolândia">Izacolândia</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700">Número</label>
+                          <input
+                            type="text"
+                            value={orderForm.number}
+                            onChange={(e) => setOrderForm(prev => ({ ...prev, number: e.target.value }))}
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700">Ponto de Referência</label>
+                          <input
+                            type="text"
+                            value={orderForm.referencePoint}
+                            onChange={(e) => setOrderForm(prev => ({ ...prev, referencePoint: e.target.value }))}
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                          />
+                        </div>
+                      </>
+                    )}
                     <div>
                       <label className="block text-sm font-medium text-gray-700">Forma de Pagamento</label>
                       <select
