@@ -62,7 +62,8 @@ function App() {
     needChange: false,
     changeFor: '',
     deliveryType: '',
-    deliveryFee: 0
+    deliveryFee: 0,
+    localidade: '',
   });
   const [showOrderForm, setShowOrderForm] = useState(false);
 
@@ -196,7 +197,8 @@ function App() {
         needChange: false,
         changeFor: '',
         deliveryType: '',
-        deliveryFee: 0
+        deliveryFee: 0,
+        localidade: '',
       });
     } catch (error) {
       console.error('Erro ao enviar pedido:', error);
@@ -365,7 +367,7 @@ function App() {
                         <div>
                           <label className="block text-sm font-medium text-gray-700">Localidade</label>
                           <select
-                            value={orderForm.localidade || ''}
+                            value={orderForm.localidade}
                             onChange={(e) => {
                               const localidade = e.target.value;
                               let taxa = 0;
