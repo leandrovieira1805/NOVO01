@@ -256,6 +256,7 @@ function App() {
     { id: 'lanches', label: 'Lanches', icon: ShoppingCart },
     { id: 'cuscuz', label: 'Cuscuz', icon: ShoppingCart },
     { id: 'combo-salgados', label: 'Combo de Salgados', icon: ShoppingCart },
+    { id: 'doces', label: 'Doces', icon: ShoppingCart },
   ];
 
   const lanches: Item[] = [
@@ -295,8 +296,10 @@ function App() {
   ];
 
   const doces: Item[] = [
-    { name: 'Bolo de Chocolate', price: 5.00 },
-  
+    { name: 'Bolo de Chocolate (fatia)', price: 5.00 },
+    { name: 'Bolo de Cenoura com Chocolate (fatia)', price: 5.00 },
+    { name: 'Pudim', price: 5.00 },
+    { name: 'Tartelete', price: 2.00 },
   ];
 
   const cuscuz: Item[] = [
@@ -819,17 +822,12 @@ function App() {
             </div>
           )}
 
-          {selectedCategory === 'sobremesas' && (
+          {selectedCategory === 'doces' && (
             <div>
-              <h3 className="text-lg font-semibold mb-3 text-white text-center">Sobremesas</h3>
+              <h3 className="text-lg font-semibold mb-3 text-white text-center">Doces</h3>
               <div className="space-y-4">
                 {doces.map((item) => (
                   <div key={item.name} className="bg-white p-3 rounded-lg shadow-md">
-                    <div className="flex justify-center">
-                      {item.image && (
-                        <img src={item.image} alt={item.name} className="h-auto object-cover mb-2 rounded-lg" style={{ width: '80%' }} />
-                      )}
-                    </div>
                     <h4 className="text-base font-semibold text-center">{item.name}</h4>
                     <p className="text-xl text-green-600 font-bold mb-2 text-center">R$ {item.price.toFixed(2)}</p>
                     <button
