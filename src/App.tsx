@@ -36,6 +36,10 @@ import BUDWEISER_LONGNECK from './assets/BEBIDAS/Budweiser_long_neck-removebg-pr
 import HEINEKEN_LONGNECK from './assets/BEBIDAS/Heineken_long_neck-removebg-preview.png';
 import AGUA_COCO from './assets/BEBIDAS/AGUA DE COCO.jpeg';
 import H2OH_LIMONETO from './assets/BEBIDAS/H2oh_limoneto-removebg-preview.png';
+import ENROLADINHO from './assets/IMAGEN/ENROLADINHO-removebg-preview.png';
+import BARCA_COXINHA from './assets/IMAGEN/BARCA DE COXINHA.jpeg';
+import BATATA_SIMPLES from './assets/IMAGEN/BATATA SIMPLES.jpeg';
+import BATATA_COMPLETA from './assets/IMAGEN/BATATA COMPLETA.jpeg';
 
 interface Item {
   name: string;
@@ -295,8 +299,12 @@ function App() {
   const lanches: Item[] = [
     { name: 'Coxinha de carne seca com queijo', price: 6.00, image: COXINHA_CARNE_SECA },
     { name: 'Coxinha de frango cremoso', price: 5.00, image: COXINHA_FRANGO },
-    { name: 'Enroladinho (Misto, Salsicha)', price: 4.00 },
+    { name: 'Enroladinho (Misto, Salsicha)', price: 4.00, image: ENROLADINHO },
     { name: 'Hot Dog', price: 8.00, image: CACHORRO_QUENTE },
+    { name: 'Barca de Coxinha', price: 18.00, image: BARCA_COXINHA },
+    { name: 'Barca de Pastel', price: 18.00, image: PASTEL_P },
+    { name: 'Batata Frita Simples', price: 11.00, image: BATATA_SIMPLES },
+    { name: 'Batata Frita Completa', price: 18.00, image: BATATA_COMPLETA },
     // Pastel P
     { name: 'Pastel P - Carne seca com queijo', price: 7.00, image: PASTEL_P },
     { name: 'Pastel P - Carne moída com queijo', price: 7.00, image: PASTEL_P },
