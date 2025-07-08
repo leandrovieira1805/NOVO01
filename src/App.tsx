@@ -161,6 +161,11 @@ function App() {
         alert('Por favor, preencha o endereço para entrega');
         return;
       }
+      // NOVO: Validação da localidade
+      if (orderForm.deliveryType === 'delivery' && !orderForm.localidade) {
+        alert('Por favor, selecione a localidade para entrega.');
+        return;
+      }
 
       const deliveryFee = orderForm.deliveryType === 'delivery' ? orderForm.deliveryFee : 0;
       const total = getTotalPrice() + deliveryFee;
