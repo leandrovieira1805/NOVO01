@@ -16,6 +16,8 @@ import SUCO_CAJU from './assets/BEBIDAS/SUCO_CAJU-removebg-preview.png';
 import SUCO_MARACUJA from './assets/BEBIDAS/SUCO_MARACUJA-removebg-preview.png';
 import COCA_LT from './assets/BEBIDAS/COCA LT.jpg';
 import CAJUINA1L from './assets/BEBIDAS/CAJUINA-removebg-preview.png';
+import CUSCUZ1 from './assets/CUSCUZ/WhatsApp Image 2025-07-08 at 00.27.41.jpeg';
+import CUSCUZ2 from './assets/CUSCUZ/WhatsApp Image 2025-07-08 at 00.27.40 (5).jpeg';
 
 interface Item {
   name: string;
@@ -313,9 +315,9 @@ function App() {
   ];
 
   const cuscuz: Item[] = [
-    { name: 'Cuscuz com frango e catupiry', price: 14.00 },
-    { name: 'Cuscuz com costela', price: 15.00 },
-    { name: 'Cuscuz com calabresa e bacon', price: 16.00 },
+    { name: 'Cuscuz com frango e catupiry', price: 14.00, image: CUSCUZ1 },
+    { name: 'Cuscuz com costela', price: 15.00, image: CUSCUZ2 },
+    { name: 'Cuscuz com calabresa e bacon', price: 16.00, image: CUSCUZ1 },
   ];
 
   const petiscos: Item[] = [
