@@ -207,41 +207,57 @@ function App() {
   };
 
   const categories = [
-    { id: 'hamburgueres', label: 'Hambúrgueres', icon: ShoppingCart },
     { id: 'bebidas', label: 'Bebidas', icon: ShoppingCart },
-    { id: 'sobremesas', label: 'Sobremesas', icon: ShoppingCart },
-    { id: 'combos', label: 'Combos', icon: ShoppingCart },
-    { id: 'petiscos', label: 'Petiscos', icon: ShoppingCart },
+    { id: 'lanches', label: 'Lanches', icon: ShoppingCart },
+    { id: 'cuscuz', label: 'Cuscuz', icon: ShoppingCart },
+    { id: 'combo-salgados', label: 'Combo de Salgados', icon: ShoppingCart },
   ];
 
-  const HANBURGES: Item[] = [
-    { name: 'Hot Dog', price: 8.00, image: PICOLEIMAGE },
-    { name: 'Misto Quente', price: 6.00, image: MISTOIMAGE, description: 'Pão, Presunto, Queijo e Creme de Requeijão.' },
-    { name: 'Hamburguer', price: 7.00, image: HANBURGUERIMAGE, description: 'Pão, Carne, Creme de Requeijão e Salada.' },
-    { name: 'X-Burguer', price: 9.00, image: XBURGUERIMAGE, description: 'Pão, Carne, Queijo, Presunto, Maionese e Salada.' },
-    { name: 'X-Presunto', price: 9.00, image: XPRESUNTOIMAGE, description: 'Pão, Carne, Queijo e Presunto.' },
-    { name: 'X-Egg', price: 9.00, image: XEGGIMAGE, description: 'Pão, Carne, Queijo, Ovo e Salada.' },
-    { name: 'X-Calabresa', price: 9.00, image: XCALABRESAIMAGE, description: 'Pão, Linguiça Calabresa, Queijo e Salada.' },
-    { name: 'X-Burguer Bacon', price: 10.00, image: XBURGUERBACONIMAGE, description: 'Pão, Carne, Queijo, Bacon e Salada.' },
-    { name: 'X-Egg Bacon', price: 11.00, image: XEGGBACONIMAGE, description: 'Pão, Carne, Queijo, Bacon e Ovo.' },
-    { name: 'X-Duplo Egg', price: 14.00, image: XDUPLOEGGIMAGE, description: 'Pão, Duas Carnes, Queijo e Dois Ovos.' },
-    { name: 'X-Batata Burgão', price: 13.00, image: XBATATABURGAOIMAGE, description: 'Pão, Carne, Queijo e Batata Palha.' },
-    { name: 'X-Arretado', price: 16.00, image: XBURGUERARRETADOIMAGE, description: 'Pão, Carne, Queijo, Jalapeño e Salada.' }
+  const lanches: Item[] = [
+    { name: 'Coxinha de carne seca com queijo', price: 6.00 },
+    { name: 'Coxinha de frango cremoso', price: 5.00 },
+    { name: 'Enroladinho (Misto, Salsicha)', price: 4.00 },
+    { name: 'Hot Dog', price: 8.00 },
+    // Pastel P
+    { name: 'Pastel P - Carne seca com queijo', price: 7.00 },
+    { name: 'Pastel P - Carne moída com queijo', price: 7.00 },
+    { name: 'Pastel P - Calabresa com queijo', price: 7.00 },
+    { name: 'Pastel P - Frango com queijo', price: 7.00 },
+    { name: 'Pastel P - Bacon com queijo', price: 7.00 },
+    { name: 'Pastel P - Misto', price: 7.00 },
+    { name: 'Pastel P - Queijo', price: 7.00 },
+    // Pastel G (sabores e complementos podem ser descritos na descrição)
+    { name: 'Pastel G', price: 15.00, description: 'Escolha até 2 sabores: Bacon, Carne moída, Carne seca, Frango, Presunto, Queijo. Até 3 complementos: Azeitona, Catupiry, Cheddar, Cebola, Tomate, Milho.' },
   ];
 
   const bebidas: Item[] = [
-    { name: 'Coca-Cola 1L', price: 9.00, image: COCAIMAGE },
-    { name: 'Guaraná 1L', price: 8.00, image: GUARANAIMAGE },
-    { name: 'Suco 500ml', price: 6.00, image: ACAIIMAGE },
-    { name: 'Skol 600ml', price: 9.00, image: AGUAIMAGE },
-    { name: 'Skol Latão', price: 6.00, image: AGUAGASIMAGE },
-    { name: 'Itaipava 600ml', price: 8.00, image: ITAIPAVA600IMAGE },
-    { name: 'Itaipava Latão', price: 5.00, image: ITAIPAVA473IMAGE }
+    // 1L
+    { name: 'Fanta 1L', price: 10.00 },
+    { name: 'Coca-Cola 1L', price: 10.00 },
+    { name: 'Cajuína 1L', price: 10.00 },
+    { name: 'Guaraná 1L', price: 10.00 },
+    // 350ml
+    { name: 'Fanta 350ml', price: 5.00 },
+    { name: 'Coca-Cola 350ml', price: 5.00 },
+    { name: 'Coca Zero 350ml', price: 5.00 },
+    { name: 'Guaraná 350ml', price: 5.00 },
+    // Sucos 500ml
+    { name: 'Suco de Morango 500ml', price: 7.00 },
+    { name: 'Suco de Goiaba 500ml', price: 7.00 },
+    { name: 'Suco de Graviola 500ml', price: 7.00 },
+    { name: 'Suco de Caju 500ml', price: 7.00 },
+    { name: 'Suco de Maracujá 500ml', price: 7.00 },
   ];
 
   const doces: Item[] = [
     { name: 'Bolo de Chocolate', price: 5.00, image: MILKSHAKEIMAGE },
   
+  ];
+
+  const cuscuz: Item[] = [
+    { name: 'Cuscuz com frango e catupiry', price: 14.00 },
+    { name: 'Cuscuz com costela', price: 15.00 },
+    { name: 'Cuscuz com calabresa e bacon', price: 16.00 },
   ];
 
   const petiscos: Item[] = [
@@ -254,10 +270,8 @@ function App() {
     { name: 'Cuscuz Pequeno', price: 9.00, image: CUZIMAGE },
   ];
 
-  const combos: Item[] = [
-    { name: 'Combo Duplo', description: '2 Duplo Egg + Guaraná 1L', price: 36.00, image: COMBODUPLOIMAGE },
-    { name: 'Combo Triplo', description: '3 Triplo Egg + Guaraná 1L', price: 54.00, image: COMBOTRIPLOIMAGE },
-    { name: 'Combo Arretado', description: '2 x Arretado + Guaraná 1L', price: 40.00, image: COMBOARRETAADOIMAGE },
+  const comboSalgados: Item[] = [
+    { name: 'Combo de Salgados', price: 38.00, description: 'Inclui: Coxinha, Pastel, Enroladinho, Batata' },
   ];
 
   return (
@@ -574,11 +588,11 @@ function App() {
         </div>
 
         <main className="max-w-xl mx-auto px-4 py-6">
-          {selectedCategory === 'hamburgueres' && (
+          {selectedCategory === 'lanches' && (
             <div>
-              <h3 className="text-lg font-semibold mb-3 text-white text-center">Hambúrgueres</h3>
+              <h3 className="text-lg font-semibold mb-3 text-white text-center">Lanches</h3>
               <div className="space-y-4">
-                {HANBURGES.map((item) => (
+                {lanches.map((item) => (
                   <div key={item.name} className="bg-white p-3 rounded-lg shadow-md">
                     <div className="flex justify-center">
                       {item.image && (
@@ -652,6 +666,31 @@ function App() {
             </div>
           )}
 
+          {selectedCategory === 'cuscuz' && (
+            <div>
+              <h3 className="text-lg font-semibold mb-3 text-white text-center">Cuscuz</h3>
+              <div className="space-y-4">
+                {cuscuz.map((item) => (
+                  <div key={item.name} className="bg-white p-3 rounded-lg shadow-md">
+                    <div className="flex justify-center">
+                      {item.image && (
+                        <img src={item.image} alt={item.name} className="h-auto object-cover mb-2 rounded-lg" style={{ width: '80%' }} />
+                      )}
+                    </div>
+                    <h4 className="text-base font-semibold text-center">{item.name}</h4>
+                    <p className="text-xl text-green-600 font-bold mb-2 text-center">R$ {item.price.toFixed(2)}</p>
+                    <button
+                      onClick={() => addToCart(item)}
+                      className="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition-colors text-sm"
+                    >
+                      Adicionar ao Carrinho
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {selectedCategory === 'petiscos' && (
             <div>
               <h3 className="text-lg font-semibold mb-3 text-white text-center">Petiscos</h3>
@@ -677,11 +716,11 @@ function App() {
             </div>
           )}
 
-          {selectedCategory === 'combos' && (
+          {selectedCategory === 'combo-salgados' && (
             <div>
-              <h3 className="text-lg font-semibold mb-3 text-white text-center">Combos</h3>
+              <h3 className="text-lg font-semibold mb-3 text-white text-center">Combo de Salgados</h3>
               <div className="space-y-4">
-                {combos.map((item) => (
+                {comboSalgados.map((item) => (
                   <div key={item.name} className="bg-white p-3 rounded-lg shadow-md">
                     <div className="flex justify-center">
                       {item.image && (
