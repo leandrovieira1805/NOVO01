@@ -3,6 +3,18 @@ import { ShoppingCart, X as XIcon, Trash2 as TrashIcon, MapPin, Phone, Clock } f
 import HEROIMAGE from './assets/HERO.jpeg';
 import LOGOIMAGE from './assets/LOGO.png';
 import { QRCodeSVG } from 'qrcode.react';
+import FANTA1L from './assets/BEBIDAS/FANTA-removebg-preview.png';
+import COCA1L from './assets/BEBIDAS/COCA-COLA-1L.png';
+import GUARANA1L from './assets/BEBIDAS/GUARANA-1L.png';
+import FANTALT from './assets/BEBIDAS/FANTA_LT-removebg-preview.png';
+import COCAZERO_LT from './assets/BEBIDAS/COCA_ZERO_LT-removebg-preview.png';
+import GUARANA_LT from './assets/BEBIDAS/GUARANA_LT-removebg-preview.png';
+import SUCO_MORANGO from './assets/BEBIDAS/SUCO_MORANGO-removebg-preview.png';
+import SUCO_GOIABA from './assets/BEBIDAS/SUCO_GOIABA-removebg-preview.png';
+import SUCO_GRAVIOLA from './assets/BEBIDAS/SUCO_GRAVIOLA-removebg-preview.png';
+import SUCO_CAJU from './assets/BEBIDAS/SUCO_CAJU-removebg-preview.png';
+import SUCO_MARACUJA from './assets/BEBIDAS/SUCO_MARACUJA-removebg-preview.png';
+import COCA_LT from './assets/BEBIDAS/COCA LT.jpg';
 
 interface Item {
   name: string;
@@ -277,19 +289,19 @@ function App() {
   ];
 
   const bebidas: Item[] = [
-    { name: 'Fanta 1L', price: 10.00, image: '/src/assets/BEBIDAS/FANTA-removebg-preview.png' },
-    { name: 'Coca-Cola 1L', price: 10.00, image: '/src/assets/BEBIDAS/COCA-COLA-1L.png' },
-    { name: 'Cajuína 1L', price: 10.00, image: '/src/assets/BEBIDAS/CAJUINA.png' }, // Se não houver, usar uma genérica
-    { name: 'Guaraná 1L', price: 10.00, image: '/src/assets/BEBIDAS/GUARANA-1L.png' },
-    { name: 'Fanta 350ml', price: 5.00, image: '/src/assets/BEBIDAS/FANTA_LT-removebg-preview.png' },
-    { name: 'Coca-Cola 350ml', price: 5.00, image: '/src/assets/BEBIDAS/COCA LT.jpg' },
-    { name: 'Coca Zero 350ml', price: 5.00, image: '/src/assets/BEBIDAS/COCA_ZERO_LT-removebg-preview.png' },
-    { name: 'Guaraná 350ml', price: 5.00, image: '/src/assets/BEBIDAS/GUARANA_LT-removebg-preview.png' },
-    { name: 'Suco de Morango 500ml', price: 7.00, image: '/src/assets/BEBIDAS/SUCO_MORANGO-removebg-preview.png' },
-    { name: 'Suco de Goiaba 500ml', price: 7.00, image: '/src/assets/BEBIDAS/SUCO_GOIABA-removebg-preview.png' },
-    { name: 'Suco de Graviola 500ml', price: 7.00, image: '/src/assets/BEBIDAS/SUCO_GRAVIOLA-removebg-preview.png' },
-    { name: 'Suco de Caju 500ml', price: 7.00, image: '/src/assets/BEBIDAS/SUCO_CAJU-removebg-preview.png' },
-    { name: 'Suco de Maracujá 500ml', price: 7.00, image: '/src/assets/BEBIDAS/SUCO_MARACUJA-removebg-preview.png' },
+    { name: 'Fanta 1L', price: 10.00, image: FANTA1L },
+    { name: 'Coca-Cola 1L', price: 10.00, image: COCA1L },
+    { name: 'Cajuína 1L', price: 10.00, image: FANTA1L }, // Substitua se tiver imagem correta
+    { name: 'Guaraná 1L', price: 10.00, image: GUARANA1L },
+    { name: 'Fanta 350ml', price: 5.00, image: FANTALT },
+    { name: 'Coca-Cola 350ml', price: 5.00, image: COCA_LT },
+    { name: 'Coca Zero 350ml', price: 5.00, image: COCAZERO_LT },
+    { name: 'Guaraná 350ml', price: 5.00, image: GUARANA_LT },
+    { name: 'Suco de Morango 500ml', price: 7.00, image: SUCO_MORANGO },
+    { name: 'Suco de Goiaba 500ml', price: 7.00, image: SUCO_GOIABA },
+    { name: 'Suco de Graviola 500ml', price: 7.00, image: SUCO_GRAVIOLA },
+    { name: 'Suco de Caju 500ml', price: 7.00, image: SUCO_CAJU },
+    { name: 'Suco de Maracujá 500ml', price: 7.00, image: SUCO_MARACUJA },
   ];
 
   const doces: Item[] = [
