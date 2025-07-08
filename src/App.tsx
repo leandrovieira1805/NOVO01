@@ -146,7 +146,7 @@ function App() {
       const deliveryFee = orderForm.deliveryType === 'delivery' ? orderForm.deliveryFee : 0;
       const total = getTotalPrice() + deliveryFee;
 
-      const message = `*🍔 NOVO PEDIDO - ARRETADO BURGUER 🍔*\n\n` +
+      const message = `*🌭 NOVO PEDIDO - HOTDOG DA PRAÇA 🌭*\n\n` +
         `*DADOS DO CLIENTE*\n` +
         `*Nome:* ${orderForm.name}\n` +
         `*Telefone:* ${orderForm.phone}\n` +
@@ -503,7 +503,7 @@ function App() {
               alt="Logo"
               className="w-28 h-28 mx-auto mb-4"
             />
-            <h1 className="text-4xl font-bold text-yellow-400 mb-4">ARRETADO BURGUER</h1>
+            <h1 className="text-4xl font-bold text-yellow-400 mb-4">HOTDOG DA PRAÇA</h1>
             <div className="text-white space-y-2 max-w-xl mx-auto px-4">
               <div className="grid grid-cols-3 gap-4 text-sm mt-6">
                 <div className="flex items-center justify-center">
@@ -685,7 +685,7 @@ function App() {
             <div className="flex flex-col items-center space-y-3">
               <img src={LOGOIMAGE} alt="Logo" className="w-16 h-16" />
               <div>
-                <h2 className="text-xl font-bold text-yellow-400">ARRETADO BURGUER</h2>
+                <h2 className="text-xl font-bold text-yellow-400">HOTDOG DA PRAÇA</h2>
                 <p className="mt-1 text-sm">Os melhores hambúrgueres artesanais da região</p>
               </div>
               <div className="flex items-center gap-4 mt-2">
