@@ -277,22 +277,19 @@ function App() {
   ];
 
   const bebidas: Item[] = [
-    // 1L
-    { name: 'Fanta 1L', price: 10.00 },
-    { name: 'Coca-Cola 1L', price: 10.00 },
-    { name: 'Cajuína 1L', price: 10.00 },
-    { name: 'Guaraná 1L', price: 10.00 },
-    // 350ml
-    { name: 'Fanta 350ml', price: 5.00 },
-    { name: 'Coca-Cola 350ml', price: 5.00 },
-    { name: 'Coca Zero 350ml', price: 5.00 },
-    { name: 'Guaraná 350ml', price: 5.00 },
-    // Sucos 500ml
-    { name: 'Suco de Morango 500ml', price: 7.00 },
-    { name: 'Suco de Goiaba 500ml', price: 7.00 },
-    { name: 'Suco de Graviola 500ml', price: 7.00 },
-    { name: 'Suco de Caju 500ml', price: 7.00 },
-    { name: 'Suco de Maracujá 500ml', price: 7.00 },
+    { name: 'Fanta 1L', price: 10.00, image: '/src/assets/BEBIDAS/FANTA-removebg-preview.png' },
+    { name: 'Coca-Cola 1L', price: 10.00, image: '/src/assets/BEBIDAS/COCA-COLA-1L.png' },
+    { name: 'Cajuína 1L', price: 10.00, image: '/src/assets/BEBIDAS/CAJUINA.png' }, // Se não houver, usar uma genérica
+    { name: 'Guaraná 1L', price: 10.00, image: '/src/assets/BEBIDAS/GUARANA-1L.png' },
+    { name: 'Fanta 350ml', price: 5.00, image: '/src/assets/BEBIDAS/FANTA_LT-removebg-preview.png' },
+    { name: 'Coca-Cola 350ml', price: 5.00, image: '/src/assets/BEBIDAS/COCA LT.jpg' },
+    { name: 'Coca Zero 350ml', price: 5.00, image: '/src/assets/BEBIDAS/COCA_ZERO_LT-removebg-preview.png' },
+    { name: 'Guaraná 350ml', price: 5.00, image: '/src/assets/BEBIDAS/GUARANA_LT-removebg-preview.png' },
+    { name: 'Suco de Morango 500ml', price: 7.00, image: '/src/assets/BEBIDAS/SUCO_MORANGO-removebg-preview.png' },
+    { name: 'Suco de Goiaba 500ml', price: 7.00, image: '/src/assets/BEBIDAS/SUCO_GOIABA-removebg-preview.png' },
+    { name: 'Suco de Graviola 500ml', price: 7.00, image: '/src/assets/BEBIDAS/SUCO_GRAVIOLA-removebg-preview.png' },
+    { name: 'Suco de Caju 500ml', price: 7.00, image: '/src/assets/BEBIDAS/SUCO_CAJU-removebg-preview.png' },
+    { name: 'Suco de Maracujá 500ml', price: 7.00, image: '/src/assets/BEBIDAS/SUCO_MARACUJA-removebg-preview.png' },
   ];
 
   const doces: Item[] = [
