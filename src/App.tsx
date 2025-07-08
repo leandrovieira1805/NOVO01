@@ -18,6 +18,16 @@ import COCA_LT from './assets/BEBIDAS/COCA_LT-removebg-preview.png';
 import CAJUINA1L from './assets/BEBIDAS/CAJUINA-removebg-preview.png';
 import CUSCUZ1 from './assets/CUSCUZ/WhatsApp Image 2025-07-08 at 00.27.41.jpeg';
 import CUSCUZ2 from './assets/CUSCUZ/WhatsApp Image 2025-07-08 at 00.27.40 (5).jpeg';
+import TARTALETE from './assets/IMAGEN/TARTALETE.jpeg';
+import COXINHA_FRANGO from './assets/IMAGEN/COXINHA DE FRANGO.jpeg';
+import CACHORRO_QUENTE from './assets/IMAGEN/CACHORRO QUENTE.jpeg';
+import PUDIM from './assets/IMAGEN/PUDIM.jpeg';
+import COXINHA_CARNE_SECA from './assets/IMAGEN/COXINHA CARNE SECA.jpeg';
+import BOLO_CHOCOLATE from './assets/IMAGEN/BOLO DE CHOCOLATE.jpeg';
+import BOLO_SENHORA from './assets/IMAGEN/BOLO DE SENOURA.jpeg';
+import COMBO from './assets/IMAGEN/COMBO.jpeg';
+import PASTEL_P from './assets/IMAGEN/PASTEL P.jpeg';
+import PASTEL_G from './assets/IMAGEN/PASTEL G.jpeg';
 
 interface Item {
   name: string;
@@ -275,20 +285,20 @@ function App() {
   ];
 
   const lanches: Item[] = [
-    { name: 'Coxinha de carne seca com queijo', price: 6.00 },
-    { name: 'Coxinha de frango cremoso', price: 5.00 },
+    { name: 'Coxinha de carne seca com queijo', price: 6.00, image: COXINHA_CARNE_SECA },
+    { name: 'Coxinha de frango cremoso', price: 5.00, image: COXINHA_FRANGO },
     { name: 'Enroladinho (Misto, Salsicha)', price: 4.00 },
-    { name: 'Hot Dog', price: 8.00 },
+    { name: 'Hot Dog', price: 8.00, image: CACHORRO_QUENTE },
     // Pastel P
-    { name: 'Pastel P - Carne seca com queijo', price: 7.00 },
-    { name: 'Pastel P - Carne moída com queijo', price: 7.00 },
-    { name: 'Pastel P - Calabresa com queijo', price: 7.00 },
-    { name: 'Pastel P - Frango com queijo', price: 7.00 },
-    { name: 'Pastel P - Bacon com queijo', price: 7.00 },
-    { name: 'Pastel P - Misto', price: 7.00 },
-    { name: 'Pastel P - Queijo', price: 7.00 },
+    { name: 'Pastel P - Carne seca com queijo', price: 7.00, image: PASTEL_P },
+    { name: 'Pastel P - Carne moída com queijo', price: 7.00, image: PASTEL_P },
+    { name: 'Pastel P - Calabresa com queijo', price: 7.00, image: PASTEL_P },
+    { name: 'Pastel P - Frango com queijo', price: 7.00, image: PASTEL_P },
+    { name: 'Pastel P - Bacon com queijo', price: 7.00, image: PASTEL_P },
+    { name: 'Pastel P - Misto', price: 7.00, image: PASTEL_P },
+    { name: 'Pastel P - Queijo', price: 7.00, image: PASTEL_P },
     // Pastel G (sabores e complementos podem ser descritos na descrição)
-    { name: 'Pastel G', price: 15.00, description: 'Escolha até 2 sabores: Bacon, Carne moída, Carne seca, Frango, Presunto, Queijo. Até 3 complementos: Azeitona, Catupiry, Cheddar, Cebola, Tomate, Milho.' },
+    { name: 'Pastel G', price: 15.00, image: PASTEL_G, description: 'Escolha até 2 sabores: Bacon, Carne moída, Carne seca, Frango, Presunto, Queijo. Até 3 complementos: Azeitona, Catupiry, Cheddar, Cebola, Tomate, Milho.' },
   ];
 
   const bebidas: Item[] = [
@@ -308,10 +318,10 @@ function App() {
   ];
 
   const doces: Item[] = [
-    { name: 'Bolo de Chocolate (fatia)', price: 5.00 },
-    { name: 'Bolo de Cenoura com Chocolate (fatia)', price: 5.00 },
-    { name: 'Pudim', price: 5.00 },
-    { name: 'Tartelete', price: 2.00 },
+    { name: 'Bolo de Chocolate (fatia)', price: 5.00, image: BOLO_CHOCOLATE },
+    { name: 'Bolo de Cenoura com Chocolate (fatia)', price: 5.00, image: BOLO_SENHORA },
+    { name: 'Pudim', price: 5.00, image: PUDIM },
+    { name: 'Tartelete', price: 2.00, image: TARTALETE },
   ];
 
   const cuscuz: Item[] = [
@@ -331,7 +341,7 @@ function App() {
   ];
 
   const comboSalgados: Item[] = [
-    { name: 'Combo de Salgados', price: 38.00, description: 'Inclui: Coxinha, Pastel, Enroladinho, Batata' },
+    { name: 'Combo de Salgados', price: 38.00, image: COMBO, description: 'Inclui: Coxinha, Pastel, Enroladinho, Batata' },
   ];
 
   const saboresPastelG = ['Bacon', 'Carne moída', 'Carne seca', 'Frango', 'Presunto', 'Queijo'];
@@ -840,6 +850,11 @@ function App() {
               <div className="space-y-4">
                 {doces.map((item) => (
                   <div key={item.name} className="bg-white p-3 rounded-lg shadow-md">
+                    <div className="flex justify-center">
+                      {item.image && (
+                        <img src={item.image} alt={item.name} className="h-auto object-cover mb-2 rounded-lg" style={{ width: '80%' }} />
+                      )}
+                    </div>
                     <h4 className="text-base font-semibold text-center">{item.name}</h4>
                     <p className="text-xl text-green-600 font-bold mb-2 text-center">R$ {item.price.toFixed(2)}</p>
                     <button
