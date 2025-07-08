@@ -353,22 +353,26 @@ function App() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700">Bairro</label>
-                      <input
-                        type="text"
+                      <select
                         value={orderForm.neighborhood}
                         onChange={(e) => {
                           const bairro = e.target.value;
                           setOrderForm(prev => {
                             let taxa = prev.deliveryFee;
                             if (prev.deliveryType === 'delivery') {
-                              if (bairro.trim().toLowerCase() === 'lagoa grande') taxa = 4;
-                              else if (bairro.trim().toLowerCase() === 'izacolandia' || bairro.trim().toLowerCase() === 'izacolândia') taxa = 5;
+                              if (bairro === 'Lagoa Grande') taxa = 4;
+                              else if (bairro === 'Izacolândia') taxa = 5;
+                              else taxa = 0;
                             }
                             return { ...prev, neighborhood: bairro, deliveryFee: taxa };
                           });
                         }}
                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                      />
+                      >
+                        <option value="">Selecione o bairro</option>
+                        <option value="Lagoa Grande">Lagoa Grande</option>
+                        <option value="Izacolândia">Izacolândia</option>
+                      </select>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700">Número</label>
