@@ -68,8 +68,8 @@ function App() {
 
   const PIX_CODE = "00020126330014BR.GOV.BCB.PIX0111130436084965204000053039865802BR5925LEANDRO VIEIRA NASCIMENTO6012Lagoa grande62070503***63049093";
   const PIX_INFO = {
-    nome: "LEANDRO VIEIRA NASCIMENTO",
-    chave: "13043608496",
+    nome: "BRUNO OLIVEIRA SILVIA",
+    chave: "87996005036",
     cidade: "Lagoa Grande"
   };
 
@@ -356,7 +356,17 @@ function App() {
                       <input
                         type="text"
                         value={orderForm.neighborhood}
-                        onChange={(e) => setOrderForm(prev => ({ ...prev, neighborhood: e.target.value }))}
+                        onChange={(e) => {
+                          const bairro = e.target.value;
+                          setOrderForm(prev => {
+                            let taxa = prev.deliveryFee;
+                            if (prev.deliveryType === 'delivery') {
+                              if (bairro.trim().toLowerCase() === 'lagoa grande') taxa = 4;
+                              else if (bairro.trim().toLowerCase() === 'izacolandia' || bairro.trim().toLowerCase() === 'izacolândia') taxa = 5;
+                            }
+                            return { ...prev, neighborhood: bairro, deliveryFee: taxa };
+                          });
+                        }}
                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                       />
                     </div>
@@ -433,12 +443,14 @@ function App() {
                         value={orderForm.deliveryType}
                         onChange={(e) => {
                           const type = e.target.value;
-                          setOrderForm(prev => ({ ...prev, deliveryType: type }));
-                          if (type === 'delivery') {
-                            setOrderForm(prev => ({ ...prev, deliveryFee: 5 }));
-                          } else {
-                            setOrderForm(prev => ({ ...prev, deliveryFee: 0 }));
-                          }
+                          setOrderForm(prev => {
+                            let taxa = 0;
+                            if (type === 'delivery') {
+                              if (prev.neighborhood.trim().toLowerCase() === 'lagoa grande') taxa = 4;
+                              else if (prev.neighborhood.trim().toLowerCase() === 'izacolandia' || prev.neighborhood.trim().toLowerCase() === 'izacolândia') taxa = 5;
+                            }
+                            return { ...prev, deliveryType: type, deliveryFee: taxa };
+                          });
                         }}
                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                       >
