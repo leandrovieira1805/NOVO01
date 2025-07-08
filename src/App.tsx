@@ -2,35 +2,7 @@ import { useState } from 'react';
 import { ShoppingCart, X as XIcon, Trash2 as TrashIcon, MapPin, Phone, Clock } from 'lucide-react';
 import HEROIMAGE from './assets/HERO.jpeg';
 import LOGOIMAGE from './assets/LOGO.png';
-import XBURGUERARRETADOIMAGE from './assets/HANBURGES/XARRETADO.png';
-import GUARANAIMAGE from './assets/BEBIDAS/GUARANA-1L.png';
-import AGUAIMAGE from './assets/BEBIDAS/SKOL-600ML.png';
-import AGUAGASIMAGE from './assets/BEBIDAS/SKOL-473ML.png';
-import ACAIIMAGE from './assets/BEBIDAS/SUCOS.png';
-import PICOLEIMAGE from './assets/HOT-DOG.png';
-import MILKSHAKEIMAGE from './assets/BOLO-CHOCOLATE.png';
-import BATATAIMAGE from './assets/BATATA-SIMPLES.png';
-import BATATASPECIALIMAGE from './assets/BATATA-ESPECIAL.png';
-import ISCADEFRANGOIMAGE from './assets/Petiscos/COXINHA-ASA.png';
-import COMBODUPLOIMAGE from './assets/COMBOS/COMBO-DUPLO.png';
-import COMBOTRIPLOIMAGE from './assets/COMBOS/COMBO-BAITA-BURGAO.png';
-import COMBOARRETAADOIMAGE from './assets/COMBOS/COMBO-ARRETAADO.png';
 import { QRCodeSVG } from 'qrcode.react';
-import MISTOIMAGE from './assets/HANBURGES/MISTO.png';
-import HANBURGUERIMAGE from './assets/HANBURGES/HANBURGUER.png';
-import XBATATABURGAOIMAGE from './assets/HANBURGES/XBATATA-BURGAO.png';
-import XBURGUERBACONIMAGE from './assets/HANBURGES/XBURGUER-BACON.png';
-import XCALABRESAIMAGE from './assets/HANBURGES/XCALABRESA.png';
-import XDUPLOEGGIMAGE from './assets/HANBURGES/XDUPLO-EGG.png';
-import XEGGIMAGE from './assets/HANBURGES/XEGG.png';
-import XEGGBACONIMAGE from './assets/HANBURGES/XEGG-BACON.png';
-import XPRESUNTOIMAGE from './assets/HANBURGES/XPRESUNTO.png';
-import ITAIPAVA473IMAGE from './assets/BEBIDAS/ITAIPAVA-473ML.png';
-import ITAIPAVA600IMAGE from './assets/BEBIDAS/ITAIPAVA-600ML.png';
-import CARNESOLIMAGE from './assets/Petiscos/CARNE-SOL.png';
-import CALDOIMAGE from './assets/Petiscos/CALDO-COSTELA.png';
-import BISTECAIMAGE from './assets/Petiscos/BISTECA.png';
-import CUZIMAGE from './assets/CUZCUZ-PEQUENO.png';
 
 interface Item {
   name: string;
@@ -306,7 +278,7 @@ function App() {
   ];
 
   const doces: Item[] = [
-    { name: 'Bolo de Chocolate', price: 5.00, image: MILKSHAKEIMAGE },
+    { name: 'Bolo de Chocolate', price: 5.00 },
   
   ];
 
@@ -317,13 +289,13 @@ function App() {
   ];
 
   const petiscos: Item[] = [
-    { name: 'Carne de Sol', price: 27.00, image: CARNESOLIMAGE },
-    { name: 'Bisteca', price: 27.00, image: BISTECAIMAGE },
-    { name: 'Coxinha da Asa de Frango', price: 27.00, image: ISCADEFRANGOIMAGE },
-    { name: 'Caldo de Costela', price: 7.00, image: CALDOIMAGE },
-    { name: 'Batata Frita Simples', price: 11.00, image: BATATAIMAGE },
-    { name: 'Batata Frita Especial', price: 13.00, image: BATATASPECIALIMAGE },
-    { name: 'Cuscuz Pequeno', price: 9.00, image: CUZIMAGE },
+    { name: 'Carne de Sol', price: 27.00 },
+    { name: 'Bisteca', price: 27.00 },
+    { name: 'Coxinha da Asa de Frango', price: 27.00 },
+    { name: 'Caldo de Costela', price: 7.00 },
+    { name: 'Batata Frita Simples', price: 11.00 },
+    { name: 'Batata Frita Especial', price: 13.00 },
+    { name: 'Cuscuz Pequeno', price: 9.00 },
   ];
 
   const comboSalgados: Item[] = [
