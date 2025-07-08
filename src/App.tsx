@@ -66,6 +66,11 @@ function App() {
     localidade: '',
   });
   const [showOrderForm, setShowOrderForm] = useState(false);
+  const [isPastelGModalOpen, setIsPastelGModalOpen] = useState(false);
+  const [pastelGSelections, setPastelGSelections] = useState({
+    sabores: [],
+    complementos: []
+  });
 
   const PIX_CODE = "00020126330014BR.GOV.BCB.PIX0111130436084965204000053039865802BR5925LEANDRO VIEIRA NASCIMENTO6012Lagoa grande62070503***63049093";
   const PIX_INFO = {
@@ -206,6 +211,56 @@ function App() {
     }
   };
 
+  const handlePastelGSelection = () => {
+    if (pastelGSelections.sabores.length === 0) {
+      alert('Selecione pelo menos 1 sabor');
+      return;
+    }
+    if (pastelGSelections.sabores.length > 2) {
+      alert('Selecione no máximo 2 sabores');
+      return;
+    }
+    if (pastelGSelections.complementos.length > 3) {
+      alert('Selecione no máximo 3 complementos');
+      return;
+    }
+
+    const saboresText = pastelGSelections.sabores.join(', ');
+    const complementosText = pastelGSelections.complementos.length > 0 ? ` + ${pastelGSelections.complementos.join(', ')}` : '';
+    
+    const pastelGItem = {
+      name: `Pastel G - ${saboresText}${complementosText}`,
+      price: 15.00,
+      description: `Sabores: ${saboresText}${complementosText ? ` | Complementos: ${complementosText}` : ''}`
+    };
+
+    addToCart(pastelGItem);
+    setIsPastelGModalOpen(false);
+    setPastelGSelections({ sabores: [], complementos: [] });
+  };
+
+  const handleSaboresChange = (sabor: string) => {
+    setPastelGSelections(prev => ({
+      ...prev,
+      sabores: prev.sabores.includes(sabor) 
+        ? prev.sabores.filter(s => s !== sabor)
+        : prev.sabores.length < 2 
+          ? [...prev.sabores, sabor]
+          : prev.sabores
+    }));
+  };
+
+  const handleComplementosChange = (complemento: string) => {
+    setPastelGSelections(prev => ({
+      ...prev,
+      complementos: prev.complementos.includes(complemento)
+        ? prev.complementos.filter(c => c !== complemento)
+        : prev.complementos.length < 3
+          ? [...prev.complementos, complemento]
+          : prev.complementos
+    }));
+  };
+
   const categories = [
     { id: 'bebidas', label: 'Bebidas', icon: ShoppingCart },
     { id: 'lanches', label: 'Lanches', icon: ShoppingCart },
@@ -273,6 +328,9 @@ function App() {
   const comboSalgados: Item[] = [
     { name: 'Combo de Salgados', price: 38.00, description: 'Inclui: Coxinha, Pastel, Enroladinho, Batata' },
   ];
+
+  const saboresPastelG = ['Bacon', 'Carne moída', 'Carne seca', 'Frango', 'Presunto', 'Queijo'];
+  const complementosPastelG = ['Azeitona', 'Catupiry', 'Cheddar', 'Cebola', 'Tomate', 'Milho'];
 
   return (
     <div className="min-h-screen bg-zinc-900">
@@ -531,6 +589,75 @@ function App() {
         </div>
       )}
 
+      {/* Modal do Pastel G */}
+      {isPastelGModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold">Personalizar Pastel G</h2>
+              <button 
+                onClick={() => {
+                  setIsPastelGModalOpen(false);
+                  setPastelGSelections({ sabores: [], complementos: [] });
+                }} 
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <XIcon size={24} />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <h3 className="font-semibold mb-2">Escolha até 2 sabores:</h3>
+                <div className="grid grid-cols-2 gap-2">
+                  {saboresPastelG.map(sabor => (
+                    <label key={sabor} className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        checked={pastelGSelections.sabores.includes(sabor)}
+                        onChange={() => handleSaboresChange(sabor)}
+                        className="rounded"
+                      />
+                      <span className="text-sm">{sabor}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <h3 className="font-semibold mb-2">Escolha até 3 complementos:</h3>
+                <div className="grid grid-cols-2 gap-2">
+                  {complementosPastelG.map(complemento => (
+                    <label key={complemento} className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        checked={pastelGSelections.complementos.includes(complemento)}
+                        onChange={() => handleComplementosChange(complemento)}
+                        className="rounded"
+                      />
+                      <span className="text-sm">{complemento}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div className="border-t pt-4">
+                <div className="flex justify-between items-center mb-4">
+                  <span className="font-bold">Total:</span>
+                  <span className="text-xl font-bold text-green-600">R$ 15,00</span>
+                </div>
+                <button
+                  onClick={handlePastelGSelection}
+                  className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition-colors"
+                >
+                  Adicionar ao Carrinho
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="max-w-5xl mx-auto">
         <section className="relative h-[300px] flex items-center justify-center">
           <div className="absolute inset-0">
@@ -605,10 +732,10 @@ function App() {
                     )}
                     <p className="text-xl text-green-600 font-bold mb-2 text-center">R$ {item.price.toFixed(2)}</p>
                     <button
-                      onClick={() => addToCart(item)}
+                      onClick={() => item.name === 'Pastel G' ? setIsPastelGModalOpen(true) : addToCart(item)}
                       className="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition-colors text-sm"
                     >
-                      Adicionar ao Carrinho
+                      {item.name === 'Pastel G' ? 'Personalizar' : 'Adicionar ao Carrinho'}
                     </button>
                   </div>
                 ))}
