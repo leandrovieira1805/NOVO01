@@ -16,8 +16,9 @@ import SUCO_CAJU from './assets/BEBIDAS/SUCO_CAJU-removebg-preview.png';
 import SUCO_MARACUJA from './assets/BEBIDAS/SUCO_MARACUJA-removebg-preview.png';
 import COCA_LT from './assets/BEBIDAS/COCA_LT-removebg-preview.png';
 import CAJUINA1L from './assets/BEBIDAS/CAJUINA-removebg-preview.png';
-import CUSCUZ1 from './assets/CUSCUZ/WhatsApp Image 2025-07-08 at 00.27.41.jpeg';
-import CUSCUZ2 from './assets/CUSCUZ/WhatsApp Image 2025-07-08 at 00.27.40 (5).jpeg';
+import CUSCUZ_FRANGO from './assets/CUSCUZ/CUSCUZ DE FRANGO.jpeg';
+import CUSCUZ_COSTELA from './assets/CUSCUZ/CUSCUZ DE COSTELS.jpeg';
+import CUSCUZ_CALABRESA from './assets/CUSCUZ/CUSCUZ CALABRESA.jpg';
 import TARTALETE from './assets/IMAGEN/TARTALETE.jpeg';
 import COXINHA_FRANGO from './assets/IMAGEN/COXINHA DE FRANGO.jpeg';
 import CACHORRO_QUENTE from './assets/IMAGEN/CACHORRO QUENTE.jpeg';
@@ -28,6 +29,13 @@ import BOLO_SENHORA from './assets/IMAGEN/BOLO DE SENOURA.jpeg';
 import COMBO from './assets/IMAGEN/COMBO.jpeg';
 import PASTEL_P from './assets/IMAGEN/PASTEL P.jpeg';
 import PASTEL_G from './assets/IMAGEN/PASTEL G.jpeg';
+import ITAIPAVA_LATAO from './assets/BEBIDAS/Itaipava_latão-removebg-preview.png';
+import SKOL_LATAO from './assets/BEBIDAS/Skol_latão-removebg-preview.png';
+import BRAHMA_CHOPP from './assets/BEBIDAS/Brahma_chopp-removebg-preview.png';
+import BUDWEISER_LONGNECK from './assets/BEBIDAS/Budweiser_long_neck-removebg-preview.png';
+import HEINEKEN_LONGNECK from './assets/BEBIDAS/Heineken_long_neck-removebg-preview.png';
+import AGUA_COCO from './assets/BEBIDAS/AGUA DE COCO.jpeg';
+import H2OH_LIMONETO from './assets/BEBIDAS/H2oh_limoneto-removebg-preview.png';
 
 interface Item {
   name: string;
@@ -315,6 +323,13 @@ function App() {
     { name: 'Suco de Graviola 500ml', price: 7.00, image: SUCO_GRAVIOLA },
     { name: 'Suco de Caju 500ml', price: 7.00, image: SUCO_CAJU },
     { name: 'Suco de Maracujá 500ml', price: 7.00, image: SUCO_MARACUJA },
+    { name: 'Itaipava latão', price: 6.00, image: ITAIPAVA_LATAO },
+    { name: 'Skol latão', price: 6.00, image: SKOL_LATAO },
+    { name: 'Brahma chopp', price: 7.00, image: BRAHMA_CHOPP },
+    { name: 'Budweiser long neck', price: 7.00, image: BUDWEISER_LONGNECK },
+    { name: 'Heineken long neck', price: 9.00, image: HEINEKEN_LONGNECK },
+    { name: 'Água de coco', price: 4.50, image: AGUA_COCO },
+    { name: 'H2oh limoneto', price: 6.00, image: H2OH_LIMONETO },
   ];
 
   const doces: Item[] = [
@@ -325,9 +340,9 @@ function App() {
   ];
 
   const cuscuz: Item[] = [
-    { name: 'Cuscuz com frango e catupiry', price: 14.00, image: CUSCUZ1 },
-    { name: 'Cuscuz com costela', price: 15.00, image: CUSCUZ2 },
-    { name: 'Cuscuz com calabresa e bacon', price: 16.00, image: CUSCUZ1 },
+    { name: 'Cuscuz com frango e catupiry', price: 14.00, image: CUSCUZ_FRANGO },
+    { name: 'Cuscuz com costela', price: 15.00, image: CUSCUZ_COSTELA },
+    { name: 'Cuscuz com calabresa e bacon', price: 16.00, image: CUSCUZ_CALABRESA },
   ];
 
   const petiscos: Item[] = [
