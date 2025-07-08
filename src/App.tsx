@@ -513,6 +513,28 @@ function App() {
                     </div>
                       </>
                     )}
+                    <div className="mt-4">
+                      <label className="block text-sm font-medium text-gray-700">Tipo de Entrega</label>
+                      <select
+                        value={orderForm.deliveryType}
+                        onChange={(e) => {
+                          const type = e.target.value;
+                          setOrderForm(prev => {
+                            let taxa = 0;
+                          if (type === 'delivery') {
+                              if (prev.neighborhood.trim().toLowerCase() === 'lagoa grande') taxa = 4;
+                              else if (prev.neighborhood.trim().toLowerCase() === 'izacolandia' || prev.neighborhood.trim().toLowerCase() === 'izacolândia') taxa = 5;
+                          }
+                            return { ...prev, deliveryType: type, deliveryFee: taxa };
+                          });
+                        }}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                      >
+                        <option value="">Selecione um tipo de entrega</option>
+                        <option value="delivery">Entrega</option>
+                        <option value="retirada">Retirada</option>
+                      </select>
+                    </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700">Forma de Pagamento</label>
                       <select
@@ -562,28 +584,6 @@ function App() {
                         </div>
                       </div>
                     )}
-                    <div className="mt-4">
-                      <label className="block text-sm font-medium text-gray-700">Tipo de Entrega</label>
-                      <select
-                        value={orderForm.deliveryType}
-                        onChange={(e) => {
-                          const type = e.target.value;
-                          setOrderForm(prev => {
-                            let taxa = 0;
-                          if (type === 'delivery') {
-                              if (prev.neighborhood.trim().toLowerCase() === 'lagoa grande') taxa = 4;
-                              else if (prev.neighborhood.trim().toLowerCase() === 'izacolandia' || prev.neighborhood.trim().toLowerCase() === 'izacolândia') taxa = 5;
-                          }
-                            return { ...prev, deliveryType: type, deliveryFee: taxa };
-                          });
-                        }}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                      >
-                        <option value="">Selecione um tipo de entrega</option>
-                        <option value="delivery">Entrega</option>
-                        <option value="retirada">Retirada</option>
-                      </select>
-                    </div>
                     <div className="border-t pt-4">
                       <div className="flex justify-between items-center mb-4">
                         <span className="font-bold">Subtotal:</span>
