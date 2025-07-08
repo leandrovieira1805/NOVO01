@@ -38,6 +38,7 @@ import AGUA_COCO from './assets/BEBIDAS/AGUA DE COCO.jpeg';
 import H2OH_LIMONETO from './assets/BEBIDAS/H2oh_limoneto-removebg-preview.png';
 import ENROLADINHO from './assets/IMAGEN/ENROLADINHO-removebg-preview.png';
 import BARCA_COXINHA from './assets/IMAGEN/BARCA DE COXINHA.jpeg';
+import BARCA_PASTEL from './assets/IMAGEN/BARCA DE PASTEL.jpeg';
 import BATATA_SIMPLES from './assets/IMAGEN/BATATA SIMPLES.jpeg';
 import BATATA_COMPLETA from './assets/IMAGEN/BATATA COMPLETA.jpeg';
 
@@ -302,7 +303,7 @@ function App() {
     { name: 'Enroladinho (Misto, Salsicha)', price: 4.00, image: ENROLADINHO },
     { name: 'Hot Dog', price: 8.00, image: CACHORRO_QUENTE },
     { name: 'Barca de Coxinha', price: 18.00, image: BARCA_COXINHA },
-    { name: 'Barca de Pastel', price: 18.00, image: PASTEL_P },
+    { name: 'Barca de Pastel', price: 18.00, image: BARCA_PASTEL },
     { name: 'Batata Frita Simples', price: 11.00, image: BATATA_SIMPLES },
     { name: 'Batata Frita Completa', price: 18.00, image: BATATA_COMPLETA },
     // Pastel P
@@ -456,24 +457,24 @@ function App() {
                     </div>
                     {orderForm.deliveryType === 'delivery' && (
                       <>
-                        <div>
+                    <div>
                           <label className="block text-sm font-medium text-gray-700">Endereço</label>
-                          <input
-                            type="text"
-                            value={orderForm.address}
-                            onChange={(e) => setOrderForm(prev => ({ ...prev, address: e.target.value }))}
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700">Bairro</label>
-                          <input
-                            type="text"
-                            value={orderForm.neighborhood}
-                            onChange={(e) => setOrderForm(prev => ({ ...prev, neighborhood: e.target.value }))}
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                          />
-                        </div>
+                      <input
+                        type="text"
+                        value={orderForm.address}
+                        onChange={(e) => setOrderForm(prev => ({ ...prev, address: e.target.value }))}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Bairro</label>
+                      <input
+                        type="text"
+                        value={orderForm.neighborhood}
+                        onChange={(e) => setOrderForm(prev => ({ ...prev, neighborhood: e.target.value }))}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                      />
+                    </div>
                         <div>
                           <label className="block text-sm font-medium text-gray-700">Localidade</label>
                           <select
@@ -492,24 +493,24 @@ function App() {
                             <option value="Izacolândia">Izacolândia</option>
                           </select>
                         </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700">Número</label>
-                          <input
-                            type="text"
-                            value={orderForm.number}
-                            onChange={(e) => setOrderForm(prev => ({ ...prev, number: e.target.value }))}
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700">Ponto de Referência</label>
-                          <input
-                            type="text"
-                            value={orderForm.referencePoint}
-                            onChange={(e) => setOrderForm(prev => ({ ...prev, referencePoint: e.target.value }))}
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                          />
-                        </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Número</label>
+                      <input
+                        type="text"
+                        value={orderForm.number}
+                        onChange={(e) => setOrderForm(prev => ({ ...prev, number: e.target.value }))}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Ponto de Referência</label>
+                      <input
+                        type="text"
+                        value={orderForm.referencePoint}
+                        onChange={(e) => setOrderForm(prev => ({ ...prev, referencePoint: e.target.value }))}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                      />
+                    </div>
                       </>
                     )}
                     <div>
@@ -569,10 +570,10 @@ function App() {
                           const type = e.target.value;
                           setOrderForm(prev => {
                             let taxa = 0;
-                            if (type === 'delivery') {
+                          if (type === 'delivery') {
                               if (prev.neighborhood.trim().toLowerCase() === 'lagoa grande') taxa = 4;
                               else if (prev.neighborhood.trim().toLowerCase() === 'izacolandia' || prev.neighborhood.trim().toLowerCase() === 'izacolândia') taxa = 5;
-                            }
+                          }
                             return { ...prev, deliveryType: type, deliveryFee: taxa };
                           });
                         }}
@@ -774,15 +775,15 @@ function App() {
               <div className="grid grid-cols-3 gap-4 text-sm mt-6">
                 <div className="flex items-center justify-center">
                   <MapPin className="w-5 h-5 text-yellow-400 mr-2" />
-                  <span>Rua Principal, 123</span>
+                  <span>Terezinha Nunes</span>
                 </div>
                 <div className="flex items-center justify-center">
                   <Phone className="w-5 h-5 text-yellow-400 mr-2" />
-                  <span>(87) 99617-5314</span>
+                  <span>55999211477</span>
                 </div>
                 <div className="flex items-center justify-center">
                   <Clock className="w-5 h-5 text-yellow-400 mr-2" />
-                  <span>18:00 - 23:00</span>
+                  <span>15:00 - 23:00</span>
                 </div>
               </div>
             </div>
@@ -977,7 +978,7 @@ function App() {
               <img src={LOGOIMAGE} alt="Logo" className="w-16 h-16" />
               <div>
                 <h2 className="text-xl font-bold text-yellow-400">HOTDOG DA PRAÇA</h2>
-                <p className="mt-1 text-sm">Os melhores hambúrgueres artesanais da região</p>
+                <p className="mt-1 text-sm">AQUI CADA LANCHE É UMA EXPERIÊNCIA NOVA</p>
               </div>
               <div className="flex items-center gap-4 mt-2">
                 <a
