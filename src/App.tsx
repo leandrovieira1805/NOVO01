@@ -44,6 +44,8 @@ function App() {
     sabores: [],
     complementos: []
   });
+  const [isEnroladinhoModalOpen, setIsEnroladinhoModalOpen] = useState(false);
+  const [enroladinhoSabor, setEnroladinhoSabor] = useState('');
 
   const PIX_CODE = "00020126330014BR.GOV.BCB.PIX0111130436084965204000053039865802BR5925LEANDRO VIEIRA NASCIMENTO6012Lagoa grande62070503***63049093";
   const PIX_INFO = {
@@ -232,6 +234,21 @@ function App() {
           ? [...prev.complementos, complemento]
           : prev.complementos
     }));
+  };
+
+  const handleEnroladinhoSelection = () => {
+    if (!enroladinhoSabor) {
+      alert('Selecione o sabor do Enroladinho');
+      return;
+    }
+    const enroladinhoItem = {
+      name: `Enroladinho (${enroladinhoSabor})`,
+      price: 4.00,
+      description: `Sabor: ${enroladinhoSabor}`
+    };
+    addToCart(enroladinhoItem);
+    setIsEnroladinhoModalOpen(false);
+    setEnroladinhoSabor('');
   };
 
   const categories = [
@@ -631,6 +648,67 @@ function App() {
         </div>
       )}
 
+      {/* Modal do Enroladinho */}
+      {isEnroladinhoModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold">Escolher Sabor do Enroladinho</h2>
+              <button 
+                onClick={() => {
+                  setIsEnroladinhoModalOpen(false);
+                  setEnroladinhoSabor('');
+                }} 
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <XIcon size={24} />
+              </button>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <h3 className="font-semibold mb-2">Selecione o sabor:</h3>
+                <div className="flex flex-col gap-2">
+                  <label className="flex items-center space-x-2">
+                    <input
+                      type="radio"
+                      name="enroladinho-sabor"
+                      value="Misto"
+                      checked={enroladinhoSabor === 'Misto'}
+                      onChange={() => setEnroladinhoSabor('Misto')}
+                      className="rounded"
+                    />
+                    <span className="text-sm">Misto</span>
+                  </label>
+                  <label className="flex items-center space-x-2">
+                    <input
+                      type="radio"
+                      name="enroladinho-sabor"
+                      value="Salsicha"
+                      checked={enroladinhoSabor === 'Salsicha'}
+                      onChange={() => setEnroladinhoSabor('Salsicha')}
+                      className="rounded"
+                    />
+                    <span className="text-sm">Salsicha</span>
+                  </label>
+                </div>
+              </div>
+              <div className="border-t pt-4">
+                <div className="flex justify-between items-center mb-4">
+                  <span className="font-bold">Total:</span>
+                  <span className="text-xl font-bold text-green-600">R$ 4,00</span>
+                </div>
+                <button
+                  onClick={handleEnroladinhoSelection}
+                  className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition-colors"
+                >
+                  Adicionar ao Carrinho
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="max-w-5xl mx-auto">
         <section className="relative h-[300px] flex items-center justify-center">
           <div className="absolute inset-0">
@@ -705,10 +783,10 @@ function App() {
                     )}
                     <p className="text-xl text-green-600 font-bold mb-2 text-center">R$ {item.price.toFixed(2)}</p>
                     <button
-                      onClick={() => item.name === 'Pastel G' ? setIsPastelGModalOpen(true) : addToCart(item)}
+                      onClick={() => item.name.startsWith('Enroladinho') ? setIsEnroladinhoModalOpen(true) : item.name === 'Pastel G' ? setIsPastelGModalOpen(true) : addToCart(item)}
                       className="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition-colors text-sm"
                     >
-                      {item.name === 'Pastel G' ? 'Personalizar' : 'Adicionar ao Carrinho'}
+                      {item.name.startsWith('Enroladinho') ? 'Escolher Sabor' : item.name === 'Pastel G' ? 'Personalizar' : 'Adicionar ao Carrinho'}
                     </button>
                   </div>
                 ))}
