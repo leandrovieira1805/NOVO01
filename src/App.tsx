@@ -15,6 +15,7 @@ import SUCO_GRAVIOLA from './assets/BEBIDAS/SUCO_GRAVIOLA-removebg-preview.png';
 import SUCO_CAJU from './assets/BEBIDAS/SUCO_CAJU-removebg-preview.png';
 import SUCO_MARACUJA from './assets/BEBIDAS/SUCO_MARACUJA-removebg-preview.png';
 import COCA_LT from './assets/BEBIDAS/COCA LT.jpg';
+import CAJUINA1L from './assets/BEBIDAS/CAJUINA-removebg-preview.png';
 
 interface Item {
   name: string;
@@ -291,7 +292,7 @@ function App() {
   const bebidas: Item[] = [
     { name: 'Fanta 1L', price: 10.00, image: FANTA1L },
     { name: 'Coca-Cola 1L', price: 10.00, image: COCA1L },
-    { name: 'Cajuína 1L', price: 10.00, image: FANTA1L }, // Substitua se tiver imagem correta
+    { name: 'Cajuína 1L', price: 10.00, image: CAJUINA1L },
     { name: 'Guaraná 1L', price: 10.00, image: GUARANA1L },
     { name: 'Fanta 350ml', price: 5.00, image: FANTALT },
     { name: 'Coca-Cola 350ml', price: 5.00, image: COCA_LT },
