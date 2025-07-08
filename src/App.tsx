@@ -67,7 +67,10 @@ function App() {
   });
   const [showOrderForm, setShowOrderForm] = useState(false);
   const [isPastelGModalOpen, setIsPastelGModalOpen] = useState(false);
-  const [pastelGSelections, setPastelGSelections] = useState({
+  const [pastelGSelections, setPastelGSelections] = useState<{
+    sabores: string[];
+    complementos: string[];
+  }>({
     sabores: [],
     complementos: []
   });
