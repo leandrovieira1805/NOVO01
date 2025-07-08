@@ -14,7 +14,7 @@ import SUCO_GOIABA from './assets/BEBIDAS/SUCO_GOIABA-removebg-preview.png';
 import SUCO_GRAVIOLA from './assets/BEBIDAS/SUCO_GRAVIOLA-removebg-preview.png';
 import SUCO_CAJU from './assets/BEBIDAS/SUCO_CAJU-removebg-preview.png';
 import SUCO_MARACUJA from './assets/BEBIDAS/SUCO_MARACUJA-removebg-preview.png';
-import COCA_LT from './assets/BEBIDAS/COCA LT.jpg';
+import COCA_LT from './assets/BEBIDAS/COCA_LT-removebg-preview.png';
 import CAJUINA1L from './assets/BEBIDAS/CAJUINA-removebg-preview.png';
 import CUSCUZ1 from './assets/CUSCUZ/WhatsApp Image 2025-07-08 at 00.27.41.jpeg';
 import CUSCUZ2 from './assets/CUSCUZ/WhatsApp Image 2025-07-08 at 00.27.40 (5).jpeg';
