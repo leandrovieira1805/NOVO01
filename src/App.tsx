@@ -195,7 +195,7 @@ function App() {
         '*📍 Acompanhe seu pedido pelo WhatsApp*';
 
       window.open(
-        `https://wa.me/5587996175314?text=${encodeURIComponent(message)}`,
+        `https://wa.me/55999211477?text=${encodeURIComponent(message)}`,
         '_blank'
       );
 
@@ -981,17 +981,17 @@ function App() {
               </div>
               <div className="flex items-center gap-4 mt-2">
                 <a
-                  href="https://wa.me/5587996175314"
+                  href="https://wa.me/55999211477"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 hover:text-yellow-400"
                 >
                   <Phone className="w-5 h-5 text-yellow-400 mr-2" />
-                  <span>(87) 99617-5314</span>
+                  <span>(55) 99921-1477</span>
                 </a>
                 <div className="flex items-center gap-2">
                   <MapPin className="w-5 h-5 text-yellow-400 mr-2" />
-                  <span>Lagoa Grande-PE</span>
+                  <span>Terezinha Nunes</span>
                 </div>
               </div>
               <p className="text-xs text-gray-400"> 2024 Todos os direitos reservados</p>
