@@ -542,10 +542,22 @@ function App() {
                             <p className="mt-1 text-sm text-red-600">Localidade é obrigatória para entrega</p>
                           )}
                           {orderForm.deliveryType === 'delivery' && orderForm.localidade && (
-                            <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded-lg">
-                              <p className="text-sm text-green-700">
-                                <span className="font-medium">Taxa de entrega:</span> R$ {orderForm.deliveryFee.toFixed(2)}
-                              </p>
+                            <div className="mt-2 p-3 bg-green-100 border-2 border-green-300 rounded-lg animate-pulse">
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <p className="text-sm font-medium text-green-800">
+                                    ✅ Localidade selecionada: <span className="font-bold">{orderForm.localidade}</span>
+                                  </p>
+                                  <p className="text-sm text-green-700 mt-1">
+                                    Taxa de entrega: <span className="font-bold text-lg">R$ {orderForm.deliveryFee.toFixed(2)}</span>
+                                  </p>
+                                </div>
+                                <div className="text-green-600">
+                                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                  </svg>
+                                </div>
+                              </div>
                             </div>
                           )}
                         </div>
@@ -688,11 +700,19 @@ function App() {
                           R$ {getTotalPrice().toFixed(2)}
                         </span>
                       </div>
-                      {orderForm.deliveryType === 'delivery' && (
-                        <div className="flex justify-between items-center mb-4">
-                          <span className="font-bold">Taxa de Entrega:</span>
+                      {orderForm.deliveryType === 'delivery' && orderForm.localidade && (
+                        <div className="flex justify-between items-center mb-4 p-2 bg-green-50 border border-green-200 rounded">
+                          <span className="font-bold text-green-800">Taxa de Entrega ({orderForm.localidade}):</span>
                           <span className="text-xl font-bold text-green-600">
                             R$ {orderForm.deliveryFee.toFixed(2)}
+                          </span>
+                        </div>
+                      )}
+                      {orderForm.deliveryType === 'delivery' && !orderForm.localidade && (
+                        <div className="flex justify-between items-center mb-4 p-2 bg-red-50 border border-red-200 rounded">
+                          <span className="font-bold text-red-800">Taxa de Entrega:</span>
+                          <span className="text-xl font-bold text-red-600">
+                            Selecione a localidade
                           </span>
                         </div>
                       )}
@@ -705,15 +725,33 @@ function App() {
                     </div>
                     <button
                       onClick={handleSubmitOrder}
-                      disabled={orderForm.deliveryType === 'delivery' && !orderForm.localidade}
+                      disabled={
+                        orderForm.deliveryType === 'delivery' && !orderForm.localidade ||
+                        !orderForm.name || 
+                        !orderForm.phone || 
+                        !orderForm.paymentMethod ||
+                        (orderForm.deliveryType === 'delivery' && !orderForm.address)
+                      }
                       className={`w-full py-3 rounded-lg transition-colors ${
-                        orderForm.deliveryType === 'delivery' && !orderForm.localidade
+                        orderForm.deliveryType === 'delivery' && !orderForm.localidade ||
+                        !orderForm.name || 
+                        !orderForm.phone || 
+                        !orderForm.paymentMethod ||
+                        (orderForm.deliveryType === 'delivery' && !orderForm.address)
                           ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
                           : 'bg-green-600 text-white hover:bg-green-700'
                       }`}
                     >
                       {orderForm.deliveryType === 'delivery' && !orderForm.localidade 
                         ? 'Selecione a localidade para continuar' 
+                        : !orderForm.name 
+                        ? 'Preencha o nome'
+                        : !orderForm.phone 
+                        ? 'Preencha o telefone'
+                        : !orderForm.paymentMethod 
+                        ? 'Selecione a forma de pagamento'
+                        : orderForm.deliveryType === 'delivery' && !orderForm.address
+                        ? 'Preencha o endereço'
                         : 'Finalizar Pedido'
                       }
                     </button>
