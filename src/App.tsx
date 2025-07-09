@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { ShoppingCart, X as XIcon, Trash2 as TrashIcon, MapPin, Phone, Clock } from 'lucide-react';
+import { AdminPanel } from './components/AdminPanel';
+import { PromotionBanner } from './components/PromotionBanner';
 import HEROIMAGE from './assets/HERO.jpeg';
 import LOGOIMAGE from './assets/LOGO.png';
 import { QRCodeSVG } from 'qrcode.react';
@@ -41,6 +43,7 @@ import BARCA_COXINHA from './assets/IMAGEN/BARCA DE COXINHA.jpeg';
 import BARCA_PASTEL from './assets/IMAGEN/BARCA DE PASTEL.jpeg';
 import BATATA_SIMPLES from './assets/IMAGEN/BATATA SIMPLES.jpeg';
 import BATATA_COMPLETA from './assets/IMAGEN/BATATA COMPLETA.jpeg';
+import { generatePixPayload, getPixInfo } from './utils/pixUtils';
 
 interface Item {
   name: string;
@@ -53,6 +56,16 @@ interface CartItem {
   name: string;
   price: number;
   quantity: number;
+}
+
+interface Product extends Item {
+  id: string;
+  available: boolean;
+  promotion?: {
+    active: boolean;
+    discountPercent: number;
+    originalPrice: number;
+  };
 }
 
 function App() {
@@ -84,13 +97,14 @@ function App() {
   });
   const [isEnroladinhoModalOpen, setIsEnroladinhoModalOpen] = useState(false);
   const [enroladinhoSabor, setEnroladinhoSabor] = useState('');
+  const [isAdminOpen, setIsAdminOpen] = useState(false);
+  const [adminPassword, setAdminPassword] = useState('');
+  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
 
-  const PIX_CODE = "00020126330014BR.GOV.BCB.PIX0111130436084965204000053039865802BR5925LEANDRO VIEIRA NASCIMENTO6012Lagoa grande62070503***63049093";
-  const PIX_INFO = {
-    nome: "BRUNO OLIVEIRA SILVIA",
-    chave: "87996005036",
-    cidade: "Lagoa Grande"
-  };
+  const ADMIN_PASSWORD = "admin123"; // Altere para uma senha segura
+  const pixInfo = getPixInfo();
 
   const addToCart = (item: Item) => {
     try {
@@ -142,6 +156,29 @@ function App() {
     }
   };
 
+  const handleAdminAccess = () => {
+    if (adminPassword === ADMIN_PASSWORD) {
+      setIsAdminAuthenticated(true);
+      setIsAdminOpen(true);
+      setShowPasswordModal(false);
+      setAdminPassword('');
+    } else {
+      alert('Senha incorreta!');
+    }
+  };
+
+  // Inicializar produtos com IDs únicos
+  useState(() => {
+    const productsWithIds: Product[] = [
+      ...lanches.map((item, index) => ({ ...item, id: `lanche-${index}`, available: true, category: 'lanches' })),
+      ...bebidas.map((item, index) => ({ ...item, id: `bebida-${index}`, available: true, category: 'bebidas' })),
+      ...doces.map((item, index) => ({ ...item, id: `doce-${index}`, available: true, category: 'doces' })),
+      ...cuscuz.map((item, index) => ({ ...item, id: `cuscuz-${index}`, available: true, category: 'cuscuz' })),
+      ...comboSalgados.map((item, index) => ({ ...item, id: `combo-${index}`, available: true, category: 'combo-salgados' }))
+    ];
+    setAllProducts(productsWithIds);
+  });
+
   const handleFinishOrder = () => {
     if (cartItems.length === 0) {
       alert('Adicione itens ao carrinho antes de finalizar o pedido');
@@ -170,6 +207,9 @@ function App() {
       const deliveryFee = orderForm.deliveryType === 'delivery' ? orderForm.deliveryFee : 0;
       const total = getTotalPrice() + deliveryFee;
 
+      // Gerar payload PIX
+      const pixPayload = generatePixPayload(total, `Pedido Hotdog da Praça - ${orderForm.name}`);
+
       const message = `*🌭 NOVO PEDIDO - HOTDOG DA PRAÇA 🌭*\n\n` +
         `*DADOS DO CLIENTE*\n` +
         `*Nome:* ${orderForm.name}\n` +
@@ -194,7 +234,7 @@ function App() {
           '💵 Dinheiro'
         }` +
         (orderForm.paymentMethod === 'pix' ? 
-          `\n*Chave PIX (CPF):* ${PIX_INFO.chave}\n*Nome:* ${PIX_INFO.nome}\n*Cidade:* ${PIX_INFO.cidade}` : '') +
+          `\n*Chave PIX (CPF):* ${pixInfo.key}\n*Nome:* ${pixInfo.name}\n*Cidade:* ${pixInfo.city}\n*ID Transação:* ${pixPayload.transactionId}` : '') +
         (orderForm.paymentMethod === 'dinheiro' && orderForm.needChange ? 
           `\n*Troco para:* R$ ${orderForm.changeFor}` : '') +
         '\n\n*⏰ Tempo estimado de entrega: 30-45 minutos*\n' +
@@ -574,17 +614,46 @@ function App() {
                     )}
                     {orderForm.paymentMethod === 'pix' && (
                       <div className="mt-4 p-4 bg-gray-100 rounded-lg">
-                        <h3 className="text-lg font-bold text-center mb-4">Pagamento PIX</h3>
-                        <div className="flex justify-center mb-4">
-                          <QRCodeSVG value={PIX_CODE} size={200} />
+                        <h3 className="text-lg font-bold text-center mb-4">💠 Pagamento PIX</h3>
+                        
+                        {/* Valor em destaque */}
+                        <div className="bg-green-100 p-3 rounded-lg mb-4 text-center">
+                          <p className="text-sm text-gray-600">Valor a pagar:</p>
+                          <p className="text-2xl font-bold text-green-600">
+                            R$ {(getTotalPrice() + orderForm.deliveryFee).toFixed(2)}
+                          </p>
                         </div>
-                        <div className="space-y-2 text-sm">
-                          <p className="font-semibold text-center">Informações PIX</p>
-                          <p><span className="font-medium">Nome:</span> {PIX_INFO.nome}</p>
-                          <p><span className="font-medium">Chave PIX (CPF):</span> {PIX_INFO.chave}</p>
-                          <p><span className="font-medium">Cidade:</span> {PIX_INFO.cidade}</p>
-                          <p className="text-xs text-gray-500 mt-2 text-center">
-                            Após realizar o pagamento, clique em "Finalizar Pedido"
+                        
+                        {/* Código PIX para cópia */}
+                        <div className="mb-4">
+                          <p className="font-semibold mb-2 text-center">Código PIX (Cópia e Cola):</p>
+                          <div className="bg-white p-3 rounded border">
+                            <code className="text-xs break-all select-all">
+                              {generatePixPayload(getTotalPrice() + orderForm.deliveryFee, `Pedido Hotdog da Praça - ${orderForm.name}`).qrCode}
+                            </code>
+                          </div>
+                          <p className="text-xs text-blue-600 mt-1 text-center">
+                            👆 Toque para selecionar e copiar o código PIX
+                          </p>
+                        </div>
+                        
+                        {/* Informações PIX */}
+                        <div className="space-y-2 text-sm border-t pt-3">
+                          <p className="font-semibold text-center">Dados do Recebedor</p>
+                          <p><span className="font-medium">Nome:</span> {pixInfo.name}</p>
+                          <p><span className="font-medium">Chave PIX (CPF):</span> {pixInfo.key}</p>
+                          <p><span className="font-medium">Cidade:</span> {pixInfo.city}</p>
+                        </div>
+                        
+                        {/* Instruções */}
+                        <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+                          <p className="text-xs text-blue-800 text-center">
+                            📱 <strong>Como pagar:</strong><br/>
+                            1. Copie o código PIX acima<br/>
+                            2. Abra seu app do banco<br/>
+                            3. Escolha "PIX Copia e Cola"<br/>
+                            4. Cole o código e confirme<br/>
+                            5. Clique em "Finalizar Pedido"
                           </p>
                         </div>
                       </div>
@@ -763,8 +832,56 @@ function App() {
         </div>
       )}
 
+      {/* Banner de Promoções */}
+      <PromotionBanner />
+
+      {/* Modal de Senha Admin */}
+      {showPasswordModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg p-6 max-w-sm w-full">
+            <h3 className="text-lg font-semibold mb-4">Acesso Administrativo</h3>
+            <input
+              type="password"
+              placeholder="Digite a senha"
+              value={adminPassword}
+              onChange={(e) => setAdminPassword(e.target.value)}
+              className="w-full border rounded px-3 py-2 mb-4"
+              onKeyPress={(e) => e.key === 'Enter' && handleAdminAccess()}
+            />
+            <div className="flex justify-end space-x-2">
+              <button
+                onClick={() => {
+                  setShowPasswordModal(false);
+                  setAdminPassword('');
+                }}
+                className="px-4 py-2 text-gray-600 border rounded hover:bg-gray-50"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleAdminAccess}
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              >
+                Entrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Painel Admin */}
+      <AdminPanel
+        isOpen={isAdminOpen}
+        onClose={() => {
+          setIsAdminOpen(false);
+          setIsAdminAuthenticated(false);
+        }}
+        products={allProducts}
+        onUpdateProducts={setAllProducts}
+      />
+
       <div className="max-w-5xl mx-auto">
-        <section className="relative h-[300px] flex items-center justify-center">
+        <section className="relative h-[300px] flex items-center justify-center mt-16">
           <div className="absolute inset-0">
             <img src={HEROIMAGE} alt="Hero Background" className="w-full h-full object-cover" />
             <div className="absolute inset-0 bg-black/50"></div>
@@ -790,6 +907,15 @@ function App() {
                   <Clock className="w-5 h-5 text-yellow-400 mr-2" />
                   <span>15:00 - 23:00</span>
                 </div>
+              </div>
+              {/* Botão Admin (discreto) */}
+              <div className="mt-4">
+                <button
+                  onClick={() => setShowPasswordModal(true)}
+                  className="text-xs text-gray-400 hover:text-white opacity-50 hover:opacity-100"
+                >
+                  Admin
+                </button>
               </div>
             </div>
           </div>
@@ -824,26 +950,47 @@ function App() {
             <div>
               <h3 className="text-lg font-semibold mb-3 text-white text-center">Lanches</h3>
               <div className="space-y-4">
-                {lanches.map((item) => (
-                  <div key={item.name} className="bg-white p-3 rounded-lg shadow-md">
+                {lanches.map((item) => {
+                  const product = allProducts.find(p => p.name === item.name);
+                  const isAvailable = product?.available !== false;
+                  
+                  return (
+                  <div key={item.name} className={`bg-white p-3 rounded-lg shadow-md ${!isAvailable ? 'opacity-50' : ''}`}>
                     <div className="flex justify-center">
                       {item.image && (
                         <img src={item.image} alt={item.name} className="h-auto object-cover mb-2 rounded-lg" style={{ width: '80%' }} />
                       )}
                     </div>
-                    <h4 className="text-base font-semibold text-center">{item.name}</h4>
+                    <h4 className="text-base font-semibold text-center">
+                      {item.name}
+                      {!isAvailable && <span className="text-red-500 text-sm ml-2">(Indisponível)</span>}
+                    </h4>
                     {item.description && (
                       <p className="text-gray-600 mb-2 text-sm text-center">{item.description}</p>
                     )}
                     <p className="text-xl text-green-600 font-bold mb-2 text-center">R$ {item.price.toFixed(2)}</p>
                     <button
-                      onClick={() => item.name.startsWith('Enroladinho') ? setIsEnroladinhoModalOpen(true) : item.name === 'Pastel G' ? setIsPastelGModalOpen(true) : addToCart(item)}
-                      className="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition-colors text-sm"
+                      onClick={() => {
+                        if (!isAvailable) {
+                          alert('Este produto está temporariamente indisponível');
+                          return;
+                        }
+                        item.name.startsWith('Enroladinho') ? setIsEnroladinhoModalOpen(true) : item.name === 'Pastel G' ? setIsPastelGModalOpen(true) : addToCart(item);
+                      }}
+                      className={`w-full py-2 rounded-lg transition-colors text-sm ${
+                        isAvailable 
+                          ? 'bg-green-600 text-white hover:bg-green-700' 
+                          : 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                      }`}
+                      disabled={!isAvailable}
                     >
-                      {item.name.startsWith('Enroladinho') ? 'Escolher Sabor' : item.name === 'Pastel G' ? 'Personalizar' : 'Adicionar ao Carrinho'}
+                      {!isAvailable ? 'Indisponível' : 
+                       item.name.startsWith('Enroladinho') ? 'Escolher Sabor' : 
+                       item.name === 'Pastel G' ? 'Personalizar' : 'Adicionar ao Carrinho'}
                     </button>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}
@@ -852,23 +999,42 @@ function App() {
             <div>
               <h3 className="text-lg font-semibold mb-3 text-white text-center">Bebidas</h3>
               <div className="space-y-4">
-                {bebidas.map((item) => (
-                  <div key={item.name} className="bg-white p-3 rounded-lg shadow-md">
+                {bebidas.map((item) => {
+                  const product = allProducts.find(p => p.name === item.name);
+                  const isAvailable = product?.available !== false;
+                  
+                  return (
+                  <div key={item.name} className={`bg-white p-3 rounded-lg shadow-md ${!isAvailable ? 'opacity-50' : ''}`}>
                     <div className="flex justify-center">
                       {item.image && (
                         <img src={item.image} alt={item.name} className="h-auto object-cover mb-2 rounded-lg" style={{ width: '80%' }} />
                       )}
                     </div>
-                    <h4 className="text-base font-semibold text-center">{item.name}</h4>
+                    <h4 className="text-base font-semibold text-center">
+                      {item.name}
+                      {!isAvailable && <span className="text-red-500 text-sm ml-2">(Indisponível)</span>}
+                    </h4>
                     <p className="text-xl text-green-600 font-bold mb-2 text-center">R$ {item.price.toFixed(2)}</p>
                     <button
-                      onClick={() => addToCart(item)}
-                      className="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition-colors text-sm"
+                      onClick={() => {
+                        if (!isAvailable) {
+                          alert('Este produto está temporariamente indisponível');
+                          return;
+                        }
+                        addToCart(item);
+                      }}
+                      className={`w-full py-2 rounded-lg transition-colors text-sm ${
+                        isAvailable 
+                          ? 'bg-green-600 text-white hover:bg-green-700' 
+                          : 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                      }`}
+                      disabled={!isAvailable}
                     >
-                      Adicionar ao Carrinho
+                      {!isAvailable ? 'Indisponível' : 'Adicionar ao Carrinho'}
                     </button>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}
@@ -877,23 +1043,42 @@ function App() {
             <div>
               <h3 className="text-lg font-semibold mb-3 text-white text-center">Doces</h3>
               <div className="space-y-4">
-                {doces.map((item) => (
-                  <div key={item.name} className="bg-white p-3 rounded-lg shadow-md">
+                {doces.map((item) => {
+                  const product = allProducts.find(p => p.name === item.name);
+                  const isAvailable = product?.available !== false;
+                  
+                  return (
+                  <div key={item.name} className={`bg-white p-3 rounded-lg shadow-md ${!isAvailable ? 'opacity-50' : ''}`}>
                     <div className="flex justify-center">
                       {item.image && (
                         <img src={item.image} alt={item.name} className="h-auto object-cover mb-2 rounded-lg" style={{ width: '80%' }} />
                       )}
                     </div>
-                    <h4 className="text-base font-semibold text-center">{item.name}</h4>
+                    <h4 className="text-base font-semibold text-center">
+                      {item.name}
+                      {!isAvailable && <span className="text-red-500 text-sm ml-2">(Indisponível)</span>}
+                    </h4>
                     <p className="text-xl text-green-600 font-bold mb-2 text-center">R$ {item.price.toFixed(2)}</p>
                     <button
-                      onClick={() => addToCart(item)}
-                      className="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition-colors text-sm"
+                      onClick={() => {
+                        if (!isAvailable) {
+                          alert('Este produto está temporariamente indisponível');
+                          return;
+                        }
+                        addToCart(item);
+                      }}
+                      className={`w-full py-2 rounded-lg transition-colors text-sm ${
+                        isAvailable 
+                          ? 'bg-green-600 text-white hover:bg-green-700' 
+                          : 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                      }`}
+                      disabled={!isAvailable}
                     >
-                      Adicionar ao Carrinho
+                      {!isAvailable ? 'Indisponível' : 'Adicionar ao Carrinho'}
                     </button>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}
@@ -902,23 +1087,42 @@ function App() {
             <div>
               <h3 className="text-lg font-semibold mb-3 text-white text-center">Cuscuz</h3>
               <div className="space-y-4">
-                {cuscuz.map((item) => (
-                  <div key={item.name} className="bg-white p-3 rounded-lg shadow-md">
+                {cuscuz.map((item) => {
+                  const product = allProducts.find(p => p.name === item.name);
+                  const isAvailable = product?.available !== false;
+                  
+                  return (
+                  <div key={item.name} className={`bg-white p-3 rounded-lg shadow-md ${!isAvailable ? 'opacity-50' : ''}`}>
                     <div className="flex justify-center">
                       {item.image && (
                         <img src={item.image} alt={item.name} className="h-auto object-cover mb-2 rounded-lg" style={{ width: '80%' }} />
                       )}
                     </div>
-                    <h4 className="text-base font-semibold text-center">{item.name}</h4>
+                    <h4 className="text-base font-semibold text-center">
+                      {item.name}
+                      {!isAvailable && <span className="text-red-500 text-sm ml-2">(Indisponível)</span>}
+                    </h4>
                     <p className="text-xl text-green-600 font-bold mb-2 text-center">R$ {item.price.toFixed(2)}</p>
                     <button
-                      onClick={() => addToCart(item)}
-                      className="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition-colors text-sm"
+                      onClick={() => {
+                        if (!isAvailable) {
+                          alert('Este produto está temporariamente indisponível');
+                          return;
+                        }
+                        addToCart(item);
+                      }}
+                      className={`w-full py-2 rounded-lg transition-colors text-sm ${
+                        isAvailable 
+                          ? 'bg-green-600 text-white hover:bg-green-700' 
+                          : 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                      }`}
+                      disabled={!isAvailable}
                     >
-                      Adicionar ao Carrinho
+                      {!isAvailable ? 'Indisponível' : 'Adicionar ao Carrinho'}
                     </button>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}
@@ -952,26 +1156,45 @@ function App() {
             <div>
               <h3 className="text-lg font-semibold mb-3 text-white text-center">Combo de Salgados</h3>
               <div className="space-y-4">
-                {comboSalgados.map((item) => (
-                  <div key={item.name} className="bg-white p-3 rounded-lg shadow-md">
+                {comboSalgados.map((item) => {
+                  const product = allProducts.find(p => p.name === item.name);
+                  const isAvailable = product?.available !== false;
+                  
+                  return (
+                  <div key={item.name} className={`bg-white p-3 rounded-lg shadow-md ${!isAvailable ? 'opacity-50' : ''}`}>
                     <div className="flex justify-center">
                       {item.image && (
                         <img src={item.image} alt={item.name} className="h-auto object-cover mb-2 rounded-lg" style={{ width: '80%' }} />
                       )}
                     </div>
-                    <h4 className="text-base font-semibold text-center">{item.name}</h4>
+                    <h4 className="text-base font-semibold text-center">
+                      {item.name}
+                      {!isAvailable && <span className="text-red-500 text-sm ml-2">(Indisponível)</span>}
+                    </h4>
                     {item.description && (
                       <p className="text-gray-600 mb-2 text-sm text-center">{item.description}</p>
                     )}
                     <p className="text-xl text-green-600 font-bold mb-2 text-center">R$ {item.price.toFixed(2)}</p>
                     <button
-                      onClick={() => addToCart(item)}
-                      className="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition-colors text-sm"
+                      onClick={() => {
+                        if (!isAvailable) {
+                          alert('Este produto está temporariamente indisponível');
+                          return;
+                        }
+                        addToCart(item);
+                      }}
+                      className={`w-full py-2 rounded-lg transition-colors text-sm ${
+                        isAvailable 
+                          ? 'bg-green-600 text-white hover:bg-green-700' 
+                          : 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                      }`}
+                      disabled={!isAvailable}
                     >
-                      Adicionar ao Carrinho
+                      {!isAvailable ? 'Indisponível' : 'Adicionar ao Carrinho'}
                     </button>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}
