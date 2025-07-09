@@ -61,6 +61,7 @@ interface Product extends Item {
   id: string;
   available: boolean;
   category: string;
+  image: string; // Tornar obrigatório para compatibilidade com AdminPanel
   promotion?: {
     active: boolean;
     discountPercent: number;
@@ -169,11 +170,11 @@ function App() {
   // Inicializar produtos com IDs únicos
   useState(() => {
     const productsWithIds: Product[] = [
-      ...lanches.map((item, index) => ({ ...item, id: `lanche-${index}`, available: true, category: 'lanches' })),
-      ...bebidas.map((item, index) => ({ ...item, id: `bebida-${index}`, available: true, category: 'bebidas' })),
-      ...doces.map((item, index) => ({ ...item, id: `doce-${index}`, available: true, category: 'doces' })),
-      ...cuscuz.map((item, index) => ({ ...item, id: `cuscuz-${index}`, available: true, category: 'cuscuz' })),
-      ...comboSalgados.map((item, index) => ({ ...item, id: `combo-${index}`, available: true, category: 'combo-salgados' }))
+      ...lanches.map((item, index) => ({ ...item, id: `lanche-${index}`, available: true, category: 'lanches', image: item.image || '' })),
+      ...bebidas.map((item, index) => ({ ...item, id: `bebida-${index}`, available: true, category: 'bebidas', image: item.image || '' })),
+      ...doces.map((item, index) => ({ ...item, id: `doce-${index}`, available: true, category: 'doces', image: item.image || '' })),
+      ...cuscuz.map((item, index) => ({ ...item, id: `cuscuz-${index}`, available: true, category: 'cuscuz', image: item.image || '' })),
+      ...comboSalgados.map((item, index) => ({ ...item, id: `combo-${index}`, available: true, category: 'combo-salgados', image: item.image || '' }))
     ];
     setAllProducts(productsWithIds);
   });
@@ -206,12 +207,7 @@ function App() {
       const deliveryFee = orderForm.deliveryType === 'delivery' ? orderForm.deliveryFee : 0;
       const total = getTotalPrice() + deliveryFee;
 
-      // Gerar payload PIX
-      const pixPayload = generatePixPayload({
-        ...pixInfo,
-        amount: total,
-        description: `Pedido Hotdog da Praça - ${orderForm.name}`
-      });
+      // Gerar payload PIX para uso futuro se necessário
 
       const message = `*🌭 NOVO PEDIDO - HOTDOG DA PRAÇA 🌭*\n\n` +
         `*DADOS DO CLIENTE*\n` +
@@ -400,16 +396,6 @@ function App() {
     { name: 'Cuscuz com frango e catupiry', price: 14.00, image: CUSCUZ_FRANGO },
     { name: 'Cuscuz com costela', price: 15.00, image: CUSCUZ_COSTELA },
     { name: 'Cuscuz com calabresa e bacon', price: 16.00, image: CUSCUZ_CALABRESA },
-  ];
-
-  const petiscos: Item[] = [
-    { name: 'Carne de Sol', price: 27.00 },
-    { name: 'Bisteca', price: 27.00 },
-    { name: 'Coxinha da Asa de Frango', price: 27.00 },
-    { name: 'Caldo de Costela', price: 7.00 },
-    { name: 'Batata Frita Simples', price: 11.00 },
-    { name: 'Batata Frita Especial', price: 13.00 },
-    { name: 'Cuscuz Pequeno', price: 9.00 },
   ];
 
   const comboSalgados: Item[] = [
