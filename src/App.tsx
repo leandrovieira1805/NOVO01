@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ShoppingCart, X as XIcon, Trash2 as TrashIcon, MapPin, Phone, Clock } from 'lucide-react';
 import { AdminPanel } from './components/AdminPanel';
 import { PromotionBanner } from './components/PromotionBanner';
@@ -167,17 +167,7 @@ function App() {
     }
   };
 
-  // Inicializar produtos com IDs únicos
-  useState(() => {
-    const productsWithIds: Product[] = [
-      ...lanches.map((item, index) => ({ ...item, id: `lanche-${index}`, available: true, category: 'lanches', image: item.image || '' })),
-      ...bebidas.map((item, index) => ({ ...item, id: `bebida-${index}`, available: true, category: 'bebidas', image: item.image || '' })),
-      ...doces.map((item, index) => ({ ...item, id: `doce-${index}`, available: true, category: 'doces', image: item.image || '' })),
-      ...cuscuz.map((item, index) => ({ ...item, id: `cuscuz-${index}`, available: true, category: 'cuscuz', image: item.image || '' })),
-      ...comboSalgados.map((item, index) => ({ ...item, id: `combo-${index}`, available: true, category: 'combo-salgados', image: item.image || '' }))
-    ];
-    setAllProducts(productsWithIds);
-  });
+
 
   const handleFinishOrder = () => {
     if (cartItems.length === 0) {
@@ -410,6 +400,18 @@ function App() {
 
   const saboresPastelG = ['Bacon', 'Carne moída', 'Carne seca', 'Frango', 'Presunto', 'Queijo'];
   const complementosPastelG = ['Azeitona', 'Catupiry', 'Cheddar', 'Cebola', 'Tomate', 'Milho'];
+
+  // useEffect para inicializar produtos
+  useEffect(() => {
+    const productsWithIds: Product[] = [
+      ...lanches.map((item, index) => ({ ...item, id: `lanche-${index}`, available: true, category: 'lanches', image: item.image || '' })),
+      ...bebidas.map((item, index) => ({ ...item, id: `bebida-${index}`, available: true, category: 'bebidas', image: item.image || '' })),
+      ...doces.map((item, index) => ({ ...item, id: `doce-${index}`, available: true, category: 'doces', image: item.image || '' })),
+      ...cuscuz.map((item, index) => ({ ...item, id: `cuscuz-${index}`, available: true, category: 'cuscuz', image: item.image || '' })),
+      ...comboSalgados.map((item, index) => ({ ...item, id: `combo-${index}`, available: true, category: 'combo-salgados', image: item.image || '' }))
+    ];
+    setAllProducts(productsWithIds);
+  }, []);
 
   return (
     <div className="min-h-screen bg-zinc-900">
