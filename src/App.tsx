@@ -198,9 +198,15 @@ function App() {
         alert('Por favor, preencha o endereço para entrega');
         return;
       }
-      // NOVO: Validação da localidade
+      // Validação da localidade para entregas
       if (orderForm.deliveryType === 'delivery' && !orderForm.localidade) {
         alert('Por favor, selecione a localidade para entrega.');
+        return;
+      }
+
+      // Validação adicional para garantir que a taxa foi calculada corretamente
+      if (orderForm.deliveryType === 'delivery' && orderForm.deliveryFee === 0) {
+        alert('Erro no cálculo da taxa de entrega. Por favor, selecione a localidade novamente.');
         return;
       }
 
@@ -510,7 +516,9 @@ function App() {
                       />
                     </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700">Localidade</label>
+                          <label className="block text-sm font-medium text-gray-700">
+                            Localidade <span className="text-red-500">*</span>
+                          </label>
                           <select
                             value={orderForm.localidade}
                             onChange={(e) => {
@@ -520,12 +528,26 @@ function App() {
                               else if (localidade === 'Izacolândia') taxa = 5;
                               setOrderForm(prev => ({ ...prev, localidade, deliveryFee: taxa }));
                             }}
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                            className={`mt-1 block w-full rounded-md shadow-sm focus:ring-green-500 ${
+                              orderForm.deliveryType === 'delivery' && !orderForm.localidade 
+                                ? 'border-red-300 focus:border-red-500' 
+                                : 'border-gray-300 focus:border-green-500'
+                            }`}
                           >
                             <option value="">Selecione a localidade</option>
-                            <option value="Lagoa Grande">Lagoa Grande</option>
-                            <option value="Izacolândia">Izacolândia</option>
+                            <option value="Lagoa Grande">Lagoa Grande - R$ 4,00</option>
+                            <option value="Izacolândia">Izacolândia - R$ 5,00</option>
                           </select>
+                          {orderForm.deliveryType === 'delivery' && !orderForm.localidade && (
+                            <p className="mt-1 text-sm text-red-600">Localidade é obrigatória para entrega</p>
+                          )}
+                          {orderForm.deliveryType === 'delivery' && orderForm.localidade && (
+                            <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded-lg">
+                              <p className="text-sm text-green-700">
+                                <span className="font-medium">Taxa de entrega:</span> R$ {orderForm.deliveryFee.toFixed(2)}
+                              </p>
+                            </div>
+                          )}
                         </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700">Número</label>
@@ -555,11 +577,19 @@ function App() {
                           const type = e.target.value;
                           setOrderForm(prev => {
                             let taxa = 0;
-                          if (type === 'delivery') {
-                              if (prev.neighborhood.trim().toLowerCase() === 'lagoa grande') taxa = 4;
-                              else if (prev.neighborhood.trim().toLowerCase() === 'izacolandia' || prev.neighborhood.trim().toLowerCase() === 'izacolândia') taxa = 5;
-                          }
-                            return { ...prev, deliveryType: type, deliveryFee: taxa };
+                            let localidade = prev.localidade;
+                            
+                            if (type === 'delivery') {
+                              // Manter a localidade se já estiver selecionada
+                              if (prev.localidade === 'Lagoa Grande') taxa = 4;
+                              else if (prev.localidade === 'Izacolândia') taxa = 5;
+                            } else if (type === 'retirada') {
+                              // Resetar localidade e taxa para retirada
+                              localidade = '';
+                              taxa = 0;
+                            }
+                            
+                            return { ...prev, deliveryType: type, deliveryFee: taxa, localidade };
                           });
                         }}
                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
@@ -675,9 +705,17 @@ function App() {
                     </div>
                     <button
                       onClick={handleSubmitOrder}
-                      className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition-colors"
+                      disabled={orderForm.deliveryType === 'delivery' && !orderForm.localidade}
+                      className={`w-full py-3 rounded-lg transition-colors ${
+                        orderForm.deliveryType === 'delivery' && !orderForm.localidade
+                          ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
+                          : 'bg-green-600 text-white hover:bg-green-700'
+                      }`}
                     >
-                      Finalizar Pedido
+                      {orderForm.deliveryType === 'delivery' && !orderForm.localidade 
+                        ? 'Selecione a localidade para continuar' 
+                        : 'Finalizar Pedido'
+                      }
                     </button>
                   </div>
                 ) : (
