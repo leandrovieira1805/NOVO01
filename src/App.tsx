@@ -4,7 +4,6 @@ import { AdminPanel } from './components/AdminPanel';
 import { PromotionBanner } from './components/PromotionBanner';
 import HEROIMAGE from './assets/HERO.jpeg';
 import LOGOIMAGE from './assets/LOGO.png';
-import { QRCodeSVG } from 'qrcode.react';
 import FANTA1L from './assets/BEBIDAS/FANTA-removebg-preview.png';
 import COCA1L from './assets/BEBIDAS/COCA-COLA-1L.png';
 import GUARANA1L from './assets/BEBIDAS/GUARANA-1L.png';
@@ -61,6 +60,7 @@ interface CartItem {
 interface Product extends Item {
   id: string;
   available: boolean;
+  category: string;
   promotion?: {
     active: boolean;
     discountPercent: number;
@@ -99,9 +99,9 @@ function App() {
   const [enroladinhoSabor, setEnroladinhoSabor] = useState('');
   const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [adminPassword, setAdminPassword] = useState('');
-  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [showPromotionBanner, setShowPromotionBanner] = useState(true);
 
   const ADMIN_PASSWORD = "admin123"; // Altere para uma senha segura
   const pixInfo = getPixInfo();
@@ -158,7 +158,6 @@ function App() {
 
   const handleAdminAccess = () => {
     if (adminPassword === ADMIN_PASSWORD) {
-      setIsAdminAuthenticated(true);
       setIsAdminOpen(true);
       setShowPasswordModal(false);
       setAdminPassword('');
@@ -208,7 +207,11 @@ function App() {
       const total = getTotalPrice() + deliveryFee;
 
       // Gerar payload PIX
-      const pixPayload = generatePixPayload(total, `Pedido Hotdog da Praça - ${orderForm.name}`);
+      const pixPayload = generatePixPayload({
+        ...pixInfo,
+        amount: total,
+        description: `Pedido Hotdog da Praça - ${orderForm.name}`
+      });
 
       const message = `*🌭 NOVO PEDIDO - HOTDOG DA PRAÇA 🌭*\n\n` +
         `*DADOS DO CLIENTE*\n` +
@@ -234,7 +237,7 @@ function App() {
           '💵 Dinheiro'
         }` +
         (orderForm.paymentMethod === 'pix' ? 
-          `\n*Chave PIX (CPF):* ${pixInfo.key}\n*Nome:* ${pixInfo.name}\n*Cidade:* ${pixInfo.city}\n*ID Transação:* ${pixPayload.transactionId}` : '') +
+          `\n*Chave PIX (CPF):* ${pixInfo.key}\n*Nome:* ${pixInfo.name}\n*Cidade:* ${pixInfo.city}` : '') +
         (orderForm.paymentMethod === 'dinheiro' && orderForm.needChange ? 
           `\n*Troco para:* R$ ${orderForm.changeFor}` : '') +
         '\n\n*⏰ Tempo estimado de entrega: 30-45 minutos*\n' +
@@ -629,7 +632,11 @@ function App() {
                           <p className="font-semibold mb-2 text-center">Código PIX (Cópia e Cola):</p>
                           <div className="bg-white p-3 rounded border">
                             <code className="text-xs break-all select-all">
-                              {generatePixPayload(getTotalPrice() + orderForm.deliveryFee, `Pedido Hotdog da Praça - ${orderForm.name}`).qrCode}
+                              {generatePixPayload({
+                                ...pixInfo,
+                                amount: getTotalPrice() + orderForm.deliveryFee,
+                                description: `Pedido Hotdog da Praça - ${orderForm.name}`
+                              })}
                             </code>
                           </div>
                           <p className="text-xs text-blue-600 mt-1 text-center">
@@ -833,7 +840,7 @@ function App() {
       )}
 
       {/* Banner de Promoções */}
-      <PromotionBanner />
+      <PromotionBanner isVisible={showPromotionBanner} onClose={() => setShowPromotionBanner(false)} />
 
       {/* Modal de Senha Admin */}
       {showPasswordModal && (
@@ -874,7 +881,7 @@ function App() {
         isOpen={isAdminOpen}
         onClose={() => {
           setIsAdminOpen(false);
-          setIsAdminAuthenticated(false);
+          // setIsAdminAuthenticated(false); // This line was removed from the new_code, so it's removed here.
         }}
         products={allProducts}
         onUpdateProducts={setAllProducts}
@@ -1123,31 +1130,6 @@ function App() {
                   </div>
                   );
                 })}
-              </div>
-            </div>
-          )}
-
-          {selectedCategory === 'petiscos' && (
-            <div>
-              <h3 className="text-lg font-semibold mb-3 text-white text-center">Petiscos</h3>
-              <div className="space-y-4">
-                {petiscos.map((item) => (
-                  <div key={item.name} className="bg-white p-3 rounded-lg shadow-md">
-                    <div className="flex justify-center">
-                      {item.image && (
-                        <img src={item.image} alt={item.name} className="h-auto object-cover mb-2 rounded-lg" style={{ width: '80%' }} />
-                      )}
-                    </div>
-                    <h4 className="text-base font-semibold text-center">{item.name}</h4>
-                    <p className="text-xl text-green-600 font-bold mb-2 text-center">R$ {item.price.toFixed(2)}</p>
-                    <button
-                      onClick={() => addToCart(item)}
-                      className="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition-colors text-sm"
-                    >
-                      Adicionar ao Carrinho
-                    </button>
-                  </div>
-                ))}
               </div>
             </div>
           )}
