@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { ShoppingCart, X as XIcon, Trash2 as TrashIcon, MapPin, Phone, Clock } from 'lucide-react';
 import { AdminPanel } from './components/AdminPanel';
-import { PromotionBanner } from './components/PromotionBanner';
+
 import HEROIMAGE from './assets/HERO.jpeg';
 import LOGOIMAGE from './assets/LOGO.png';
 import FANTA1L from './assets/BEBIDAS/FANTA-removebg-preview.png';
@@ -62,11 +62,6 @@ interface Product extends Item {
   available: boolean;
   category: string;
   image: string; // Tornar obrigatório para compatibilidade com AdminPanel
-  promotion?: {
-    active: boolean;
-    discountPercent: number;
-    originalPrice: number;
-  };
 }
 
 function App() {
@@ -102,7 +97,6 @@ function App() {
   const [adminPassword, setAdminPassword] = useState('');
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [allProducts, setAllProducts] = useState<Product[]>([]);
-  const [showPromotionBanner, setShowPromotionBanner] = useState(true);
 
   const ADMIN_PASSWORD = "admin123"; // Altere para uma senha segura
   const pixInfo = getPixInfo();
@@ -903,8 +897,7 @@ function App() {
         </div>
       )}
 
-      {/* Banner de Promoções */}
-      <PromotionBanner isVisible={showPromotionBanner} onClose={() => setShowPromotionBanner(false)} />
+
 
       {/* Modal de Senha Admin */}
       {showPasswordModal && (
