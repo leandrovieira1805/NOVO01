@@ -863,15 +863,15 @@ function App() {
       )}
 
       {/* Painel Admin */}
-      <AdminPanel
-        isOpen={isAdminOpen}
-        onClose={() => {
-          setIsAdminOpen(false);
-          // setIsAdminAuthenticated(false); // This line was removed from the new_code, so it's removed here.
-        }}
-        products={allProducts}
-        onUpdateProducts={setAllProducts}
-      />
+      {isAdminOpen && (
+        <AdminPanel
+          onClose={() => {
+            setIsAdminOpen(false);
+          }}
+          products={allProducts}
+          onUpdateProducts={setAllProducts}
+        />
+      )}
 
       <div className="max-w-5xl mx-auto">
         <section className="relative h-[300px] flex items-center justify-center mt-16">
