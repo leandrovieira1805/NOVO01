@@ -1248,19 +1248,19 @@ function App() {
                           : 'text-white hover:text-yellow-500'
                       }`}
                     >
-                      <Icon className="w-4 h-4 mb-0.5" />
+            <div className="px-1 py-4">
                       <span className="text-xs">{category.label}</span>
                     </button>
                   );
-                })}
+              <div className="flex justify-center px-2">
                 </div>
                 <button
                   onClick={() => setIsCartOpen(true)}
                   className="relative bg-green-600 p-2 rounded-lg hover:bg-green-700 transition-colors"
-                >
+                    className="w-full max-w-xs h-auto rounded-xl shadow-lg mb-3 mx-auto"
                   <ShoppingCart size={20} />
-                  {cartItems.length > 0 && (
-                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                  <div className="text-center px-2">
+                    <span className="text-xl font-bold text-white bg-red-600 px-3 py-2 rounded-full shadow-lg animate-pulse block">
                       {cartItems.length}
                     </span>
                   )}
