@@ -807,7 +807,7 @@ function App() {
                           {/* Instruções */}
                           <div className="mt-4 p-3 bg-blue-50 rounded-lg">
                             <p className="text-xs text-blue-800 text-center">
-                              �� <strong>Como pagar:</strong><br/>
+                              📱 <strong>Como pagar:</strong><br/>
                               1. Copie o código PIX acima<br/>
                               2. Abra seu app do banco<br/>
                               3. Escolha "PIX Copia e Cola"<br/>
