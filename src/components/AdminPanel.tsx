@@ -207,11 +207,11 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     }
   };
 
-  const toggleProductAvailability = (productId: string) => {
-    const updatedProducts = products.map(p => 
-      p.id === productId ? { ...p, available: !p.available } : p
-    );
-    onUpdateProducts(updatedProducts);
+  const toggleProductAvailability = async (productId: string) => {
+    const product = products.find(p => p.id === productId);
+    if (product) {
+      await productService.updateProduct(productId, { available: !product.available });
+    }
   };
 
   const togglePromotionActive = (promotionId: string) => {
@@ -334,7 +334,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       <img src={oferta.image} alt="Oferta" className="w-32 h-32 object-cover rounded mb-2" />
                       <span className="text-lg font-bold text-green-700 mb-2">R$ {oferta.price.toFixed(2)}</span>
                         <button
-                        onClick={() => onUpdateOfertas(ofertas.filter(o => o.id !== oferta.id))}
+                        onClick={async () => await ofertaService.deleteOferta(oferta.id)}
                         className="bg-red-500 text-white px-3 py-1 rounded text-xs mt-2"
                         >
                         Remover
@@ -353,7 +353,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                           image: ofertaForm.image,
                           price: ofertaForm.price
                         };
-                        onUpdateOfertas([...ofertas, novaOferta]);
+                        await ofertaService.addOferta({ image: novaOferta.image, price: novaOferta.price });
                         setShowOfertaForm(false);
                         setOfertaForm({ image: '', price: 0 });
                       }} className="space-y-4">
