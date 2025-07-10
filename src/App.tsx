@@ -1097,7 +1097,7 @@ function App() {
                       type="text"
                       value={pixCode}
                       readOnly
-                      className="flex-1 border rounded px-3 py-2 text-sm bg-gray-50"
+                      className="max-w-full h-auto rounded-xl mx-auto mb-4"
                     />
                     <button
                       onClick={() => {
