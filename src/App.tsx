@@ -43,7 +43,7 @@ import BARCA_COXINHA from './assets/IMAGEN/BARCA DE COXINHA.jpeg';
 import BARCA_PASTEL from './assets/IMAGEN/BARCA DE PASTEL.jpeg';
 import BATATA_SIMPLES from './assets/IMAGEN/BATATA SIMPLES.jpeg';
 import BATATA_COMPLETA from './assets/IMAGEN/BATATA COMPLETA.jpeg';
-import { generatePixPayload, getPixInfo, MERCADO_PAGO_TOKEN } from './utils/pixUtils';
+import { generatePixPayload, getPixInfo } from './utils/pixUtils';
 
 interface Item {
   name: string;
@@ -256,87 +256,12 @@ function App() {
     try {
       const total = getTotalPrice();
       
-      console.log('Gerando pagamento PIX para valor:', total);
-      console.log('Token Mercado Pago:', MERCADO_PAGO_TOKEN);
+      console.log('Gerando PIX estático...');
+      console.log('Total:', total);
       
-      // Verificar se o token está disponível
-      if (!MERCADO_PAGO_TOKEN) {
-        alert('Token do Mercado Pago não configurado');
-        return;
-      }
+      // Usar diretamente o PIX estático que já funciona
+      generateStaticPix();
       
-      // Criar pagamento no Mercado Pago
-      const response = await fetch('https://api.mercadopago.com/v1/payments', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${MERCADO_PAGO_TOKEN}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          transaction_amount: total,
-          description: `Pedido - ${cartItems.map(item => item.name).join(', ')}`,
-          payment_method_id: 'pix',
-          payer: {
-            email: orderForm.name + '@example.com', // Email temporário
-            first_name: orderForm.name.split(' ')[0] || 'Cliente',
-            last_name: orderForm.name.split(' ').slice(1).join(' ') || 'Anônimo'
-          }
-        })
-      });
-
-      console.log('Status da resposta:', response.status);
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Erro na resposta:', errorText);
-        
-        // Se falhar, usar PIX estático como fallback
-        console.log('Usando PIX estático como fallback');
-        generateStaticPix();
-        return;
-      }
-
-      const paymentData = await response.json();
-      console.log('Resposta do Mercado Pago:', paymentData);
-      
-      if (paymentData.id) {
-        setPaymentId(paymentData.id.toString());
-        
-        // Acessar corretamente os dados do PIX
-        if (paymentData.point_of_interaction && 
-            paymentData.point_of_interaction.transaction_data) {
-          
-          const transactionData = paymentData.point_of_interaction.transaction_data;
-          
-          // QR Code em base64
-          if (transactionData.qr_code_base64) {
-            setPixQrCode(transactionData.qr_code_base64);
-          }
-          
-          // Código PIX copia e cola
-          if (transactionData.qr_code) {
-            setPixCode(transactionData.qr_code);
-          }
-          
-          console.log('QR Code base64:', transactionData.qr_code_base64);
-          console.log('Código PIX:', transactionData.qr_code);
-        } else {
-          console.error('Dados do PIX não encontrados na resposta:', paymentData);
-          // Usar PIX estático como fallback
-          generateStaticPix();
-          return;
-        }
-        
-        setShowPixModal(true);
-        setShowOrderForm(false);
-        
-        // Iniciar verificação de pagamento
-        checkPaymentStatus(paymentData.id);
-      } else {
-        console.error('Erro na resposta do Mercado Pago:', paymentData);
-        // Usar PIX estático como fallback
-        generateStaticPix();
-      }
     } catch (error) {
       console.error('Erro ao gerar PIX:', error);
       // Usar PIX estático como fallback
@@ -345,32 +270,9 @@ function App() {
   };
 
   const checkPaymentStatus = async (paymentId: number) => {
-    try {
-      const response = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
-        headers: {
-          'Authorization': `Bearer ${MERCADO_PAGO_TOKEN}`
-        }
-      });
-      
-      const paymentData = await response.json();
-      
-      if (paymentData.status === 'approved') {
-        setPaymentStatus('paid');
-        setTimeout(() => {
-          alert('Pagamento aprovado! Seu pedido foi confirmado.');
-          setShowPixModal(false);
-          setCartItems([]);
-          setShowOrderForm(false);
-        }, 2000);
-      } else if (paymentData.status === 'rejected' || paymentData.status === 'cancelled') {
-        setPaymentStatus('expired');
-      } else {
-        // Continuar verificando a cada 5 segundos
-        setTimeout(() => checkPaymentStatus(paymentId), 5000);
-      }
-    } catch (error) {
-      console.error('Erro ao verificar pagamento:', error);
-    }
+    // Função simplificada - não verifica status automaticamente
+    // O cliente deve confirmar o pagamento manualmente
+    console.log('Verificação de pagamento desabilitada - use confirmação manual');
   };
 
   const handleSubmitOrder = () => {
@@ -1156,7 +1058,7 @@ function App() {
                     onClick={generatePixPayment}
                     className="bg-blue-600 text-white px-4 py-2 rounded mt-2"
                   >
-                    Tentar Mercado Pago
+                    Gerar PIX
                   </button>
                 </div>
               )}
