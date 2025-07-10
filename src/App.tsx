@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { ShoppingCart, X as XIcon, Trash2 as TrashIcon, MapPin, Phone, Clock } from 'lucide-react';
 import { AdminPanel } from './components/AdminPanel';
+import { PromotionBanner } from './components/PromotionBanner';
 
 import HEROIMAGE from './assets/HERO.jpeg';
 import LOGOIMAGE from './assets/LOGO.png';
@@ -42,7 +43,7 @@ import BARCA_COXINHA from './assets/IMAGEN/BARCA DE COXINHA.jpeg';
 import BARCA_PASTEL from './assets/IMAGEN/BARCA DE PASTEL.jpeg';
 import BATATA_SIMPLES from './assets/IMAGEN/BATATA SIMPLES.jpeg';
 import BATATA_COMPLETA from './assets/IMAGEN/BATATA COMPLETA.jpeg';
-import { generatePixPayload, getPixInfo } from './utils/pixUtils';
+import { generatePixPayload, getPixInfo, MERCADO_PAGO_TOKEN } from './utils/pixUtils';
 
 interface Item {
   name: string;
@@ -62,6 +63,23 @@ interface Product extends Item {
   available: boolean;
   category: string;
   image: string; // Tornar obrigatório para compatibilidade com AdminPanel
+}
+
+interface Promotion {
+  id: string;
+  title: string;
+  description: string;
+  image: string;
+  discountPercent: number;
+  active: boolean;
+  startDate: string;
+  endDate: string;
+}
+
+interface Oferta {
+  id: string;
+  image: string;
+  price: number;
 }
 
 function App() {
@@ -96,7 +114,33 @@ function App() {
   const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [adminPassword, setAdminPassword] = useState('');
   const [showPasswordModal, setShowPasswordModal] = useState(false);
-  const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [allProducts, setAllProducts] = useState<Product[]>(() => {
+    const saved = localStorage.getItem('produtos');
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [promotions, setPromotions] = useState<Promotion[]>([]);
+  const [showPromotionBanner, setShowPromotionBanner] = useState(true);
+  const [showOfertaModal, setShowOfertaModal] = useState(true);
+  // Supondo que você vai passar as ofertas do AdminPanel para o App via props ou contexto, por enquanto simule:
+  const [ofertas, setOfertas] = useState<Oferta[]>(() => {
+    const saved = localStorage.getItem('ofertas');
+    return saved ? JSON.parse(saved) : [];
+  }); // Substitua pelo seu estado real de ofertas
+  const [showPixModal, setShowPixModal] = useState(false);
+  const [pixQrCode, setPixQrCode] = useState('');
+  const [pixCode, setPixCode] = useState('');
+  const [paymentStatus, setPaymentStatus] = useState<'pending' | 'paid' | 'expired'>('pending');
+  const [paymentId, setPaymentId] = useState('');
+
+  // useEffect para salvar produtos sempre que mudar
+  useEffect(() => {
+    localStorage.setItem('produtos', JSON.stringify(allProducts));
+  }, [allProducts]);
+
+  // Salvar ofertas no localStorage sempre que mudar
+  useEffect(() => {
+    localStorage.setItem('ofertas', JSON.stringify(ofertas));
+  }, [ofertas]);
 
   const ADMIN_PASSWORD = "admin123"; // Altere para uma senha segura
   const pixInfo = getPixInfo();
@@ -169,6 +213,164 @@ function App() {
       return;
     }
     setShowOrderForm(true);
+  };
+
+  const generateStaticPix = () => {
+    try {
+      const total = getTotalPrice();
+      const pixInfo = getPixInfo();
+      
+      console.log('Gerando PIX estático...');
+      console.log('Total:', total);
+      console.log('PIX Info:', pixInfo);
+      
+      // Gerar payload PIX estático
+      const pixPayload = generatePixPayload({
+        ...pixInfo,
+        amount: total,
+        description: `Pedido - ${cartItems.map(item => item.name).join(', ')}`
+      });
+      
+      console.log('Payload PIX gerado:', pixPayload);
+      
+      if (!pixPayload) {
+        console.error('Erro: Payload PIX não foi gerado');
+        alert('Erro ao gerar código PIX');
+        return;
+      }
+      
+      setPixCode(pixPayload);
+      setPixQrCode(''); // Não temos QR Code para PIX estático
+      setShowPixModal(true);
+      setShowOrderForm(false);
+      
+      console.log('PIX estático configurado com sucesso');
+      console.log('Código PIX:', pixPayload);
+    } catch (error) {
+      console.error('Erro ao gerar PIX estático:', error);
+      alert('Erro ao gerar PIX estático: ' + error.message);
+    }
+  };
+
+  const generatePixPayment = async () => {
+    try {
+      const total = getTotalPrice();
+      
+      console.log('Gerando pagamento PIX para valor:', total);
+      console.log('Token Mercado Pago:', MERCADO_PAGO_TOKEN);
+      
+      // Verificar se o token está disponível
+      if (!MERCADO_PAGO_TOKEN) {
+        alert('Token do Mercado Pago não configurado');
+        return;
+      }
+      
+      // Criar pagamento no Mercado Pago
+      const response = await fetch('https://api.mercadopago.com/v1/payments', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${MERCADO_PAGO_TOKEN}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          transaction_amount: total,
+          description: `Pedido - ${cartItems.map(item => item.name).join(', ')}`,
+          payment_method_id: 'pix',
+          payer: {
+            email: orderForm.name + '@example.com', // Email temporário
+            first_name: orderForm.name.split(' ')[0] || 'Cliente',
+            last_name: orderForm.name.split(' ').slice(1).join(' ') || 'Anônimo'
+          }
+        })
+      });
+
+      console.log('Status da resposta:', response.status);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Erro na resposta:', errorText);
+        
+        // Se falhar, usar PIX estático como fallback
+        console.log('Usando PIX estático como fallback');
+        generateStaticPix();
+        return;
+      }
+
+      const paymentData = await response.json();
+      console.log('Resposta do Mercado Pago:', paymentData);
+      
+      if (paymentData.id) {
+        setPaymentId(paymentData.id.toString());
+        
+        // Acessar corretamente os dados do PIX
+        if (paymentData.point_of_interaction && 
+            paymentData.point_of_interaction.transaction_data) {
+          
+          const transactionData = paymentData.point_of_interaction.transaction_data;
+          
+          // QR Code em base64
+          if (transactionData.qr_code_base64) {
+            setPixQrCode(transactionData.qr_code_base64);
+          }
+          
+          // Código PIX copia e cola
+          if (transactionData.qr_code) {
+            setPixCode(transactionData.qr_code);
+          }
+          
+          console.log('QR Code base64:', transactionData.qr_code_base64);
+          console.log('Código PIX:', transactionData.qr_code);
+        } else {
+          console.error('Dados do PIX não encontrados na resposta:', paymentData);
+          // Usar PIX estático como fallback
+          generateStaticPix();
+          return;
+        }
+        
+        setShowPixModal(true);
+        setShowOrderForm(false);
+        
+        // Iniciar verificação de pagamento
+        checkPaymentStatus(paymentData.id);
+      } else {
+        console.error('Erro na resposta do Mercado Pago:', paymentData);
+        // Usar PIX estático como fallback
+        generateStaticPix();
+      }
+    } catch (error) {
+      console.error('Erro ao gerar PIX:', error);
+      // Usar PIX estático como fallback
+      generateStaticPix();
+    }
+  };
+
+  const checkPaymentStatus = async (paymentId: number) => {
+    try {
+      const response = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
+        headers: {
+          'Authorization': `Bearer ${MERCADO_PAGO_TOKEN}`
+        }
+      });
+      
+      const paymentData = await response.json();
+      
+      if (paymentData.status === 'approved') {
+        setPaymentStatus('paid');
+        setTimeout(() => {
+          alert('Pagamento aprovado! Seu pedido foi confirmado.');
+          setShowPixModal(false);
+          setCartItems([]);
+          setShowOrderForm(false);
+        }, 2000);
+      } else if (paymentData.status === 'rejected' || paymentData.status === 'cancelled') {
+        setPaymentStatus('expired');
+      } else {
+        // Continuar verificando a cada 5 segundos
+        setTimeout(() => checkPaymentStatus(paymentId), 5000);
+      }
+    } catch (error) {
+      console.error('Erro ao verificar pagamento:', error);
+    }
   };
 
   const handleSubmitOrder = () => {
@@ -408,840 +610,969 @@ function App() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-zinc-900">
-      <button
-        onClick={() => setIsCartOpen(!isCartOpen)}
-        className="fixed top-4 right-4 bg-green-600 text-white p-2 rounded-full shadow-lg z-50 hover:bg-green-700"
-      >
-        <div className="relative">
-          <ShoppingCart className="w-6 h-6" />
-          {cartItems.length > 0 && (
-            <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
-              {cartItems.length}
-            </span>
-          )}
-        </div>
-      </button>
-
-      {isCartOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold">Carrinho</h2>
-              <button onClick={() => setIsCartOpen(false)} className="text-gray-500 hover:text-gray-700">
-                <XIcon size={24} />
-              </button>
-            </div>
-
-            {cartItems.length === 0 ? (
-              <p className="text-center text-gray-500">Seu carrinho está vazio</p>
-            ) : (
-              <>
-                {/* Lista de itens */}
-                <div className="space-y-4 mb-4">
-                  {cartItems.map(item => (
-                    <div key={item.name} className="flex items-center justify-between bg-gray-50 p-2 rounded-lg">
-                      <div className="flex-1">
-                        <p className="font-semibold">{item.name}</p>
-                        <p className="text-green-600">R$ {(item.price * item.quantity).toFixed(2)}</p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => updateQuantity(item.name, item.quantity - 1)}
-                          className="text-gray-500 hover:text-gray-700"
-                        >
-                          -
-                        </button>
-                        <span className="w-8 text-center">{item.quantity}</span>
-                        <button
-                          onClick={() => updateQuantity(item.name, item.quantity + 1)}
-                          className="text-gray-500 hover:text-gray-700"
-                        >
-                          +
-                        </button>
-                        <button
-                          onClick={() => removeFromCart(item.name)}
-                          className="text-red-500 hover:text-red-700 ml-2"
-                        >
-                          <TrashIcon className="w-5 h-5" />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Formulário de pedido */}
-                {showOrderForm ? (
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Nome</label>
-                      <input
-                        type="text"
-                        value={orderForm.name}
-                        onChange={(e) => setOrderForm(prev => ({ ...prev, name: e.target.value }))}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Telefone</label>
-                      <input
-                        type="text"
-                        value={orderForm.phone}
-                        onChange={(e) => setOrderForm(prev => ({ ...prev, phone: e.target.value }))}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                      />
-                    </div>
-                    {orderForm.deliveryType === 'delivery' && (
-                      <>
-                    <div>
-                          <label className="block text-sm font-medium text-gray-700">Endereço</label>
-                      <input
-                        type="text"
-                        value={orderForm.address}
-                        onChange={(e) => setOrderForm(prev => ({ ...prev, address: e.target.value }))}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Bairro</label>
-                      <input
-                        type="text"
-                        value={orderForm.neighborhood}
-                        onChange={(e) => setOrderForm(prev => ({ ...prev, neighborhood: e.target.value }))}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                      />
-                    </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700">
-                            Localidade <span className="text-red-500">*</span>
-                          </label>
-                          <select
-                            value={orderForm.localidade}
-                            onChange={(e) => {
-                              const localidade = e.target.value;
-                              let taxa = 0;
-                              if (localidade === 'Lagoa Grande') taxa = 4;
-                              else if (localidade === 'Izacolândia') taxa = 5;
-                              setOrderForm(prev => ({ ...prev, localidade, deliveryFee: taxa }));
-                            }}
-                            className={`mt-1 block w-full rounded-md shadow-sm focus:ring-green-500 ${
-                              orderForm.deliveryType === 'delivery' && !orderForm.localidade 
-                                ? 'border-red-300 focus:border-red-500' 
-                                : 'border-gray-300 focus:border-green-500'
-                            }`}
-                          >
-                            <option value="">Selecione a localidade</option>
-                            <option value="Lagoa Grande">Lagoa Grande - R$ 4,00</option>
-                            <option value="Izacolândia">Izacolândia - R$ 5,00</option>
-                          </select>
-                          {orderForm.deliveryType === 'delivery' && !orderForm.localidade && (
-                            <p className="mt-1 text-sm text-red-600">Localidade é obrigatória para entrega</p>
-                          )}
-                          {orderForm.deliveryType === 'delivery' && orderForm.localidade && (
-                            <div className="mt-2 p-3 bg-green-100 border-2 border-green-300 rounded-lg animate-pulse">
-                              <div className="flex items-center justify-between">
-                                <div>
-                                  <p className="text-sm font-medium text-green-800">
-                                    ✅ Localidade selecionada: <span className="font-bold">{orderForm.localidade}</span>
-                                  </p>
-                                  <p className="text-sm text-green-700 mt-1">
-                                    Taxa de entrega: <span className="font-bold text-lg">R$ {orderForm.deliveryFee.toFixed(2)}</span>
-                                  </p>
-                                </div>
-                                <div className="text-green-600">
-                                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                                  </svg>
-                                </div>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Número</label>
-                      <input
-                        type="text"
-                        value={orderForm.number}
-                        onChange={(e) => setOrderForm(prev => ({ ...prev, number: e.target.value }))}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Ponto de Referência</label>
-                      <input
-                        type="text"
-                        value={orderForm.referencePoint}
-                        onChange={(e) => setOrderForm(prev => ({ ...prev, referencePoint: e.target.value }))}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                      />
-                    </div>
-                      </>
-                    )}
-                    <div className="mt-4">
-                      <label className="block text-sm font-medium text-gray-700">Tipo de Entrega</label>
-                      <select
-                        value={orderForm.deliveryType}
-                        onChange={(e) => {
-                          const type = e.target.value;
-                          setOrderForm(prev => {
-                            let taxa = 0;
-                            let localidade = prev.localidade;
-                            
-                            if (type === 'delivery') {
-                              // Manter a localidade se já estiver selecionada
-                              if (prev.localidade === 'Lagoa Grande') taxa = 4;
-                              else if (prev.localidade === 'Izacolândia') taxa = 5;
-                            } else if (type === 'retirada') {
-                              // Resetar localidade e taxa para retirada
-                              localidade = '';
-                              taxa = 0;
-                            }
-                            
-                            return { ...prev, deliveryType: type, deliveryFee: taxa, localidade };
-                          });
-                        }}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                      >
-                        <option value="">Selecione um tipo de entrega</option>
-                        <option value="delivery">Entrega</option>
-                        <option value="retirada">Retirada</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Forma de Pagamento</label>
-                      <select
-                        value={orderForm.paymentMethod}
-                        onChange={(e) => {
-                          const method = e.target.value;
-                          setOrderForm(prev => ({ ...prev, paymentMethod: method }));
-                          if (method === 'dinheiro') {
-                            const needsChange = window.confirm('Você precisa de troco?');
-                            setOrderForm(prev => ({ ...prev, needChange: needsChange }));
-                          }
-                        }}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                      >
-                        <option value="">Selecione uma forma de pagamento</option>
-                        <option value="dinheiro">Dinheiro</option>
-                        <option value="cartao">Cartão</option>
-                        <option value="pix">PIX</option>
-                      </select>
-                    </div>
-                    {orderForm.needChange && (
-                      <div className="mt-2">
-                        <label className="block text-sm font-medium text-gray-700">Valor para troco</label>
-                        <input
-                          type="text"
-                          value={orderForm.changeFor}
-                          onChange={(e) => setOrderForm(prev => ({ ...prev, changeFor: e.target.value }))}
-                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                          placeholder="R$ 0,00"
-                        />
-                      </div>
-                    )}
-                    {orderForm.paymentMethod === 'pix' && (
-                      <div className="mt-4 p-4 bg-gray-100 rounded-lg">
-                        <h3 className="text-lg font-bold text-center mb-4">💠 Pagamento PIX</h3>
-                        
-                        {/* Valor em destaque */}
-                        <div className="bg-green-100 p-3 rounded-lg mb-4 text-center">
-                          <p className="text-sm text-gray-600">Valor a pagar:</p>
-                          <p className="text-2xl font-bold text-green-600">
-                            R$ {(getTotalPrice() + orderForm.deliveryFee).toFixed(2)}
-                          </p>
-                        </div>
-                        
-                        {/* Código PIX para cópia */}
-                        <div className="mb-4">
-                          <p className="font-semibold mb-2 text-center">Código PIX (Cópia e Cola):</p>
-                          <div className="bg-white p-3 rounded border">
-                            <code className="text-xs break-all select-all">
-                              {generatePixPayload({
-                                ...pixInfo,
-                                amount: getTotalPrice() + orderForm.deliveryFee,
-                                description: `Pedido Hotdog da Praça - ${orderForm.name}`
-                              })}
-                            </code>
-                          </div>
-                          <p className="text-xs text-blue-600 mt-1 text-center">
-                            👆 Toque para selecionar e copiar o código PIX
-                          </p>
-                        </div>
-                        
-                        {/* Informações PIX */}
-                        <div className="space-y-2 text-sm border-t pt-3">
-                          <p className="font-semibold text-center">Dados do Recebedor</p>
-                          <p><span className="font-medium">Nome:</span> {pixInfo.name}</p>
-                          <p><span className="font-medium">Chave PIX (CPF):</span> {pixInfo.key}</p>
-                          <p><span className="font-medium">Cidade:</span> {pixInfo.city}</p>
-                        </div>
-                        
-                        {/* Instruções */}
-                        <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-                          <p className="text-xs text-blue-800 text-center">
-                            📱 <strong>Como pagar:</strong><br/>
-                            1. Copie o código PIX acima<br/>
-                            2. Abra seu app do banco<br/>
-                            3. Escolha "PIX Copia e Cola"<br/>
-                            4. Cole o código e confirme<br/>
-                            5. Clique em "Finalizar Pedido"
-                          </p>
-                        </div>
-                      </div>
-                    )}
-                    <div className="border-t pt-4">
-                      <div className="flex justify-between items-center mb-4">
-                        <span className="font-bold">Subtotal:</span>
-                        <span className="text-xl font-bold text-green-600">
-                          R$ {getTotalPrice().toFixed(2)}
-                        </span>
-                      </div>
-                      {orderForm.deliveryType === 'delivery' && orderForm.localidade && (
-                        <div className="flex justify-between items-center mb-4 p-2 bg-green-50 border border-green-200 rounded">
-                          <span className="font-bold text-green-800">Taxa de Entrega ({orderForm.localidade}):</span>
-                          <span className="text-xl font-bold text-green-600">
-                            R$ {orderForm.deliveryFee.toFixed(2)}
-                          </span>
-                        </div>
-                      )}
-                      {orderForm.deliveryType === 'delivery' && !orderForm.localidade && (
-                        <div className="flex justify-between items-center mb-4 p-2 bg-red-50 border border-red-200 rounded">
-                          <span className="font-bold text-red-800">Taxa de Entrega:</span>
-                          <span className="text-xl font-bold text-red-600">
-                            Selecione a localidade
-                          </span>
-                        </div>
-                      )}
-                      <div className="flex justify-between items-center mb-4">
-                        <span className="font-bold">Total:</span>
-                        <span className="text-xl font-bold text-green-600">
-                          R$ {(getTotalPrice() + orderForm.deliveryFee).toFixed(2)}
-                        </span>
-                      </div>
-                    </div>
-                    <button
-                      onClick={handleSubmitOrder}
-                      disabled={
-                        orderForm.deliveryType === 'delivery' && !orderForm.localidade ||
-                        !orderForm.name || 
-                        !orderForm.phone || 
-                        !orderForm.paymentMethod ||
-                        (orderForm.deliveryType === 'delivery' && !orderForm.address)
-                      }
-                      className={`w-full py-3 rounded-lg transition-colors ${
-                        orderForm.deliveryType === 'delivery' && !orderForm.localidade ||
-                        !orderForm.name || 
-                        !orderForm.phone || 
-                        !orderForm.paymentMethod ||
-                        (orderForm.deliveryType === 'delivery' && !orderForm.address)
-                          ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
-                          : 'bg-green-600 text-white hover:bg-green-700'
-                      }`}
-                    >
-                      {orderForm.deliveryType === 'delivery' && !orderForm.localidade 
-                        ? 'Selecione a localidade para continuar' 
-                        : !orderForm.name 
-                        ? 'Preencha o nome'
-                        : !orderForm.phone 
-                        ? 'Preencha o telefone'
-                        : !orderForm.paymentMethod 
-                        ? 'Selecione a forma de pagamento'
-                        : orderForm.deliveryType === 'delivery' && !orderForm.address
-                        ? 'Preencha o endereço'
-                        : 'Finalizar Pedido'
-                      }
-                    </button>
-                  </div>
-                ) : (
-                  // ... botão existente para ir para o formulário
-                  <button
-                    onClick={handleFinishOrder}
-                    className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition-colors"
-                  >
-                    Finalizar Pedido
-                  </button>
-                )}
-              </>
+    <div className="min-h-screen bg-zinc-900 flex flex-col items-center justify-center">
+      <div className="w-full max-w-5xl mx-auto flex-1 flex flex-col">
+        <button
+          onClick={() => setIsCartOpen(!isCartOpen)}
+          className="fixed top-4 right-4 bg-green-600 text-white p-2 rounded-full shadow-lg z-50 hover:bg-green-700"
+        >
+          <div className="relative">
+            <ShoppingCart className="w-6 h-6" />
+            {cartItems.length > 0 && (
+              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
+                {cartItems.length}
+              </span>
             )}
           </div>
-        </div>
-      )}
+        </button>
 
-      {/* Modal do Pastel G */}
-      {isPastelGModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold">Personalizar Pastel G</h2>
-              <button 
-                onClick={() => {
-                  setIsPastelGModalOpen(false);
-                  setPastelGSelections({ sabores: [], complementos: [] });
-                }} 
-                className="text-gray-500 hover:text-gray-700"
-              >
-                <XIcon size={24} />
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <h3 className="font-semibold mb-2">Escolha até 2 sabores:</h3>
-                <div className="grid grid-cols-2 gap-2">
-                  {saboresPastelG.map(sabor => (
-                    <label key={sabor} className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        checked={pastelGSelections.sabores.includes(sabor)}
-                        onChange={() => handleSaboresChange(sabor)}
-                        className="rounded"
-                      />
-                      <span className="text-sm">{sabor}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <h3 className="font-semibold mb-2">Escolha até 3 complementos:</h3>
-                <div className="grid grid-cols-2 gap-2">
-                  {complementosPastelG.map(complemento => (
-                    <label key={complemento} className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        checked={pastelGSelections.complementos.includes(complemento)}
-                        onChange={() => handleComplementosChange(complemento)}
-                        className="rounded"
-                      />
-                      <span className="text-sm">{complemento}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              <div className="border-t pt-4">
-                <div className="flex justify-between items-center mb-4">
-                  <span className="font-bold">Total:</span>
-                  <span className="text-xl font-bold text-green-600">R$ 15,00</span>
-                </div>
-                <button
-                  onClick={handlePastelGSelection}
-                  className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition-colors"
-                >
-                  Adicionar ao Carrinho
+        {isCartOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-lg p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-bold">Carrinho</h2>
+                <button onClick={() => setIsCartOpen(false)} className="text-gray-500 hover:text-gray-700">
+                  <XIcon size={24} />
                 </button>
               </div>
+
+              {cartItems.length === 0 ? (
+                <p className="text-center text-gray-500">Seu carrinho está vazio</p>
+              ) : (
+                <>
+                  {/* Lista de itens */}
+                  <div className="space-y-4 mb-4">
+                    {cartItems.map(item => (
+                      <div key={item.name} className="flex items-center justify-between bg-gray-50 p-2 rounded-lg">
+                        <div className="flex-1">
+                          <p className="font-semibold">{item.name}</p>
+                          <p className="text-green-600">R$ {(item.price * item.quantity).toFixed(2)}</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => updateQuantity(item.name, item.quantity - 1)}
+                            className="text-gray-500 hover:text-gray-700"
+                          >
+                            -
+                          </button>
+                          <span className="w-8 text-center">{item.quantity}</span>
+                          <button
+                            onClick={() => updateQuantity(item.name, item.quantity + 1)}
+                            className="text-gray-500 hover:text-gray-700"
+                          >
+                            +
+                          </button>
+                          <button
+                            onClick={() => removeFromCart(item.name)}
+                            className="text-red-500 hover:text-red-700 ml-2"
+                          >
+                            <TrashIcon className="w-5 h-5" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Formulário de pedido */}
+                  {showOrderForm ? (
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">Nome</label>
+                        <input
+                          type="text"
+                          value={orderForm.name}
+                          onChange={(e) => setOrderForm(prev => ({ ...prev, name: e.target.value }))}
+                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">Telefone</label>
+                        <input
+                          type="text"
+                          value={orderForm.phone}
+                          onChange={(e) => setOrderForm(prev => ({ ...prev, phone: e.target.value }))}
+                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                        />
+                      </div>
+                      {orderForm.deliveryType === 'delivery' && (
+                        <>
+                      <div>
+                            <label className="block text-sm font-medium text-gray-700">Endereço</label>
+                        <input
+                          type="text"
+                          value={orderForm.address}
+                          onChange={(e) => setOrderForm(prev => ({ ...prev, address: e.target.value }))}
+                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">Bairro</label>
+                        <input
+                          type="text"
+                          value={orderForm.neighborhood}
+                          onChange={(e) => setOrderForm(prev => ({ ...prev, neighborhood: e.target.value }))}
+                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                        />
+                      </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700">
+                              Localidade <span className="text-red-500">*</span>
+                            </label>
+                            <select
+                              value={orderForm.localidade}
+                              onChange={(e) => {
+                                const localidade = e.target.value;
+                                let taxa = 0;
+                                if (localidade === 'Lagoa Grande') taxa = 4;
+                                else if (localidade === 'Izacolândia') taxa = 5;
+                                setOrderForm(prev => ({ ...prev, localidade, deliveryFee: taxa }));
+                              }}
+                              className={`mt-1 block w-full rounded-md shadow-sm focus:ring-green-500 ${
+                                orderForm.deliveryType === 'delivery' && !orderForm.localidade 
+                                  ? 'border-red-300 focus:border-red-500' 
+                                  : 'border-gray-300 focus:border-green-500'
+                              }`}
+                            >
+                              <option value="">Selecione a localidade</option>
+                              <option value="Lagoa Grande">Lagoa Grande - R$ 4,00</option>
+                              <option value="Izacolândia">Izacolândia - R$ 5,00</option>
+                            </select>
+                            {orderForm.deliveryType === 'delivery' && !orderForm.localidade && (
+                              <p className="mt-1 text-sm text-red-600">Localidade é obrigatória para entrega</p>
+                            )}
+                            {orderForm.deliveryType === 'delivery' && orderForm.localidade && (
+                              <div className="mt-2 p-3 bg-green-100 border-2 border-green-300 rounded-lg animate-pulse">
+                                <div className="flex items-center justify-between">
+                                  <div>
+                                    <p className="text-sm font-medium text-green-800">
+                                      ✅ Localidade selecionada: <span className="font-bold">{orderForm.localidade}</span>
+                                    </p>
+                                    <p className="text-sm text-green-700 mt-1">
+                                      Taxa de entrega: <span className="font-bold text-lg">R$ {orderForm.deliveryFee.toFixed(2)}</span>
+                                    </p>
+                                  </div>
+                                  <div className="text-green-600">
+                                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                    </svg>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">Número</label>
+                        <input
+                          type="text"
+                          value={orderForm.number}
+                          onChange={(e) => setOrderForm(prev => ({ ...prev, number: e.target.value }))}
+                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">Ponto de Referência</label>
+                        <input
+                          type="text"
+                          value={orderForm.referencePoint}
+                          onChange={(e) => setOrderForm(prev => ({ ...prev, referencePoint: e.target.value }))}
+                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                        />
+                      </div>
+                        </>
+                      )}
+                      <div className="mt-4">
+                        <label className="block text-sm font-medium text-gray-700">Tipo de Entrega</label>
+                        <select
+                          value={orderForm.deliveryType}
+                          onChange={(e) => {
+                            const type = e.target.value;
+                            setOrderForm(prev => {
+                              let taxa = 0;
+                              let localidade = prev.localidade;
+                              
+                              if (type === 'delivery') {
+                                // Manter a localidade se já estiver selecionada
+                                if (prev.localidade === 'Lagoa Grande') taxa = 4;
+                                else if (prev.localidade === 'Izacolândia') taxa = 5;
+                              } else if (type === 'retirada') {
+                                // Resetar localidade e taxa para retirada
+                                localidade = '';
+                                taxa = 0;
+                              }
+                              
+                              return { ...prev, deliveryType: type, deliveryFee: taxa, localidade };
+                            });
+                          }}
+                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                        >
+                          <option value="">Selecione um tipo de entrega</option>
+                          <option value="delivery">Entrega</option>
+                          <option value="retirada">Retirada</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">Forma de Pagamento</label>
+                        <select
+                          value={orderForm.paymentMethod}
+                          onChange={(e) => {
+                            const method = e.target.value;
+                            setOrderForm(prev => ({ ...prev, paymentMethod: method }));
+                            if (method === 'dinheiro') {
+                              const needsChange = window.confirm('Você precisa de troco?');
+                              setOrderForm(prev => ({ ...prev, needChange: needsChange }));
+                            }
+                          }}
+                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                        >
+                          <option value="">Selecione uma forma de pagamento</option>
+                          <option value="dinheiro">Dinheiro</option>
+                          <option value="cartao">Cartão</option>
+                          <option value="pix">PIX</option>
+                        </select>
+                      </div>
+                      {orderForm.needChange && (
+                        <div className="mt-2">
+                          <label className="block text-sm font-medium text-gray-700">Valor para troco</label>
+                          <input
+                            type="text"
+                            value={orderForm.changeFor}
+                            onChange={(e) => setOrderForm(prev => ({ ...prev, changeFor: e.target.value }))}
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+                            placeholder="R$ 0,00"
+                          />
+                        </div>
+                      )}
+                      {orderForm.paymentMethod === 'pix' && (
+                        <div className="mt-4 p-4 bg-gray-100 rounded-lg">
+                          <h3 className="text-lg font-bold text-center mb-4">💠 Pagamento PIX</h3>
+                          
+                          {/* Valor em destaque */}
+                          <div className="bg-green-100 p-3 rounded-lg mb-4 text-center">
+                            <p className="text-sm text-gray-600">Valor a pagar:</p>
+                            <p className="text-2xl font-bold text-green-600">
+                              R$ {(getTotalPrice() + orderForm.deliveryFee).toFixed(2)}
+                            </p>
+                          </div>
+                          
+                          {/* Código PIX para cópia */}
+                          <div className="mb-4">
+                            <p className="font-semibold mb-2 text-center">Código PIX (Cópia e Cola):</p>
+                            <div className="bg-white p-3 rounded border">
+                              <code className="text-xs break-all select-all">
+                                {generatePixPayload({
+                                  ...pixInfo,
+                                  amount: getTotalPrice() + orderForm.deliveryFee,
+                                  description: `Pedido Hotdog da Praça - ${orderForm.name}`
+                                })}
+                              </code>
+                            </div>
+                            <p className="text-xs text-blue-600 mt-1 text-center">
+                              👆 Toque para selecionar e copiar o código PIX
+                            </p>
+                          </div>
+                          
+                          {/* Informações PIX */}
+                          <div className="space-y-2 text-sm border-t pt-3">
+                            <p className="font-semibold text-center">Dados do Recebedor</p>
+                            <p><span className="font-medium">Nome:</span> {pixInfo.name}</p>
+                            <p><span className="font-medium">Chave PIX (CPF):</span> {pixInfo.key}</p>
+                            <p><span className="font-medium">Cidade:</span> {pixInfo.city}</p>
+                          </div>
+                          
+                          {/* Instruções */}
+                          <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+                            <p className="text-xs text-blue-800 text-center">
+                              �� <strong>Como pagar:</strong><br/>
+                              1. Copie o código PIX acima<br/>
+                              2. Abra seu app do banco<br/>
+                              3. Escolha "PIX Copia e Cola"<br/>
+                              4. Cole o código e confirme<br/>
+                              5. Clique em "Finalizar Pedido"
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                      <div className="border-t pt-4">
+                        <div className="flex justify-between items-center mb-4">
+                          <span className="font-bold">Subtotal:</span>
+                          <span className="text-xl font-bold text-green-600">
+                            R$ {getTotalPrice().toFixed(2)}
+                          </span>
+                        </div>
+                        {orderForm.deliveryType === 'delivery' && orderForm.localidade && (
+                          <div className="flex justify-between items-center mb-4 p-2 bg-green-50 border border-green-200 rounded">
+                            <span className="font-bold text-green-800">Taxa de Entrega ({orderForm.localidade}):</span>
+                            <span className="text-xl font-bold text-green-600">
+                              R$ {orderForm.deliveryFee.toFixed(2)}
+                            </span>
+                          </div>
+                        )}
+                        {orderForm.deliveryType === 'delivery' && !orderForm.localidade && (
+                          <div className="flex justify-between items-center mb-4 p-2 bg-red-50 border border-red-200 rounded">
+                            <span className="font-bold text-red-800">Taxa de Entrega:</span>
+                            <span className="text-xl font-bold text-red-600">
+                              Selecione a localidade
+                            </span>
+                          </div>
+                        )}
+                        <div className="flex justify-between items-center mb-4">
+                          <span className="font-bold">Total:</span>
+                          <span className="text-xl font-bold text-green-600">
+                            R$ {(getTotalPrice() + orderForm.deliveryFee).toFixed(2)}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={handleSubmitOrder}
+                          className="bg-green-600 text-white px-4 py-2 rounded flex-1"
+                        >
+                          Finalizar Pedido
+                        </button>
+                        <button
+                          type="button"
+                          onClick={generatePixPayment}
+                          className="bg-blue-600 text-white px-4 py-2 rounded flex-1"
+                        >
+                          Pagar com PIX
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setShowOrderForm(false)}
+                          className="bg-gray-500 text-white px-4 py-2 rounded"
+                        >
+                          Cancelar
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    // ... botão existente para ir para o formulário
+                    <button
+                      onClick={handleFinishOrder}
+                      className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition-colors"
+                    >
+                      Finalizar Pedido
+                    </button>
+                  )}
+                </>
+              )}
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Modal do Enroladinho */}
-      {isEnroladinhoModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold">Escolher Sabor do Enroladinho</h2>
-              <button 
-                onClick={() => {
-                  setIsEnroladinhoModalOpen(false);
-                  setEnroladinhoSabor('');
-                }} 
-                className="text-gray-500 hover:text-gray-700"
-              >
-                <XIcon size={24} />
-              </button>
-            </div>
-            <div className="space-y-4">
-              <div>
-                <h3 className="font-semibold mb-2">Selecione o sabor:</h3>
-                <div className="flex flex-col gap-2">
-                  <label className="flex items-center space-x-2">
-                    <input
-                      type="radio"
-                      name="enroladinho-sabor"
-                      value="Misto"
-                      checked={enroladinhoSabor === 'Misto'}
-                      onChange={() => setEnroladinhoSabor('Misto')}
-                      className="rounded"
-                    />
-                    <span className="text-sm">Misto</span>
-                  </label>
-                  <label className="flex items-center space-x-2">
-                    <input
-                      type="radio"
-                      name="enroladinho-sabor"
-                      value="Salsicha"
-                      checked={enroladinhoSabor === 'Salsicha'}
-                      onChange={() => setEnroladinhoSabor('Salsicha')}
-                      className="rounded"
-                    />
-                    <span className="text-sm">Salsicha</span>
-                  </label>
-                </div>
-              </div>
-              <div className="border-t pt-4">
-                <div className="flex justify-between items-center mb-4">
-                  <span className="font-bold">Total:</span>
-                  <span className="text-xl font-bold text-green-600">R$ 4,00</span>
-                </div>
-                <button
-                  onClick={handleEnroladinhoSelection}
-                  className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition-colors"
+        {/* Modal do Pastel G */}
+        {isPastelGModalOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-lg p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-bold">Personalizar Pastel G</h2>
+                <button 
+                  onClick={() => {
+                    setIsPastelGModalOpen(false);
+                    setPastelGSelections({ sabores: [], complementos: [] });
+                  }} 
+                  className="text-gray-500 hover:text-gray-700"
                 >
-                  Adicionar ao Carrinho
+                  <XIcon size={24} />
                 </button>
               </div>
-            </div>
-          </div>
-        </div>
-      )}
 
-
-
-      {/* Modal de Senha Admin */}
-      {showPasswordModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg p-6 max-w-sm w-full">
-            <h3 className="text-lg font-semibold mb-4">Acesso Administrativo</h3>
-            <input
-              type="password"
-              placeholder="Digite a senha"
-              value={adminPassword}
-              onChange={(e) => setAdminPassword(e.target.value)}
-              className="w-full border rounded px-3 py-2 mb-4"
-              onKeyPress={(e) => e.key === 'Enter' && handleAdminAccess()}
-            />
-            <div className="flex justify-end space-x-2">
-              <button
-                onClick={() => {
-                  setShowPasswordModal(false);
-                  setAdminPassword('');
-                }}
-                className="px-4 py-2 text-gray-600 border rounded hover:bg-gray-50"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleAdminAccess}
-                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-              >
-                Entrar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Painel Admin */}
-      {isAdminOpen && (
-        <AdminPanel
-          onClose={() => {
-            setIsAdminOpen(false);
-          }}
-          products={allProducts}
-          onUpdateProducts={setAllProducts}
-        />
-      )}
-
-      <div className="max-w-5xl mx-auto">
-        <section className="relative h-[300px] flex items-center justify-center mt-16">
-          <div className="absolute inset-0">
-            <img src={HEROIMAGE} alt="Hero Background" className="w-full h-full object-cover" />
-            <div className="absolute inset-0 bg-black/50"></div>
-          </div>
-          <div className="relative z-10 text-center">
-            <img
-              src={LOGOIMAGE}
-              alt="Logo"
-              className="w-28 h-28 mx-auto mb-4"
-            />
-            <h1 className="text-4xl font-bold text-yellow-400 mb-4">HOTDOG DA PRAÇA</h1>
-            <div className="text-white space-y-2 max-w-xl mx-auto px-4">
-              <div className="grid grid-cols-3 gap-4 text-sm mt-6">
-                <div className="flex items-center justify-center">
-                  <MapPin className="w-5 h-5 text-yellow-400 mr-2" />
-                  <span>Terezinha Nunes</span>
+              <div className="space-y-4">
+                <div>
+                  <h3 className="font-semibold mb-2">Escolha até 2 sabores:</h3>
+                  <div className="grid grid-cols-2 gap-2">
+                    {saboresPastelG.map(sabor => (
+                      <label key={sabor} className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          checked={pastelGSelections.sabores.includes(sabor)}
+                          onChange={() => handleSaboresChange(sabor)}
+                          className="rounded"
+                        />
+                        <span className="text-sm">{sabor}</span>
+                      </label>
+                    ))}
+                  </div>
                 </div>
-                <div className="flex items-center justify-center">
-                  <Phone className="w-5 h-5 text-yellow-400 mr-2" />
-                  <span>55999211477</span>
-                </div>
-                <div className="flex items-center justify-center">
-                  <Clock className="w-5 h-5 text-yellow-400 mr-2" />
-                  <span>15:00 - 23:00</span>
-                </div>
-              </div>
-              {/* Botão Admin (discreto) */}
-              <div className="mt-4">
-                <button
-                  onClick={() => setShowPasswordModal(true)}
-                  className="text-xs text-gray-400 hover:text-white opacity-50 hover:opacity-100"
-                >
-                  Admin
-                </button>
-              </div>
-            </div>
-          </div>
-        </section>
 
-        <div className="bg-zinc-800 sticky top-0 z-10">
-          <nav className="max-w-3xl mx-auto px-4 py-2">
-            <div className="flex justify-center items-center space-x-8">
-              {categories.map((category) => {
-                const Icon = category.icon;
-                return (
+                <div>
+                  <h3 className="font-semibold mb-2">Escolha até 3 complementos:</h3>
+                  <div className="grid grid-cols-2 gap-2">
+                    {complementosPastelG.map(complemento => (
+                      <label key={complemento} className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          checked={pastelGSelections.complementos.includes(complemento)}
+                          onChange={() => handleComplementosChange(complemento)}
+                          className="rounded"
+                        />
+                        <span className="text-sm">{complemento}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="border-t pt-4">
+                  <div className="flex justify-between items-center mb-4">
+                    <span className="font-bold">Total:</span>
+                    <span className="text-xl font-bold text-green-600">R$ 15,00</span>
+                  </div>
                   <button
-                    key={category.id}
-                    onClick={() => setSelectedCategory(category.id)}
-                    className={`flex flex-col items-center p-1 rounded-lg transition-colors ${
-                      selectedCategory === category.id
-                        ? 'text-yellow-500'
-                        : 'text-white hover:text-yellow-500'
-                    }`}
+                    onClick={handlePastelGSelection}
+                    className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition-colors"
                   >
-                    <Icon className="w-4 h-4 mb-0.5" />
-                    <span className="text-xs">{category.label}</span>
+                    Adicionar ao Carrinho
                   </button>
-                );
-              })}
-            </div>
-          </nav>
-        </div>
-
-        <main className="max-w-xl mx-auto px-4 py-6">
-          {selectedCategory === 'lanches' && (
-            <div>
-              <h3 className="text-lg font-semibold mb-3 text-white text-center">Lanches</h3>
-              <div className="space-y-4">
-                {lanches.map((item) => {
-                  const product = allProducts.find(p => p.name === item.name);
-                  const isAvailable = product?.available !== false;
-                  
-                  return (
-                  <div key={item.name} className={`bg-white p-3 rounded-lg shadow-md ${!isAvailable ? 'opacity-50' : ''}`}>
-                    <div className="flex justify-center">
-                      {item.image && (
-                        <img src={item.image} alt={item.name} className="h-auto object-cover mb-2 rounded-lg" style={{ width: '80%' }} />
-                      )}
-                    </div>
-                    <h4 className="text-base font-semibold text-center">
-                      {item.name}
-                      {!isAvailable && <span className="text-red-500 text-sm ml-2">(Indisponível)</span>}
-                    </h4>
-                    {item.description && (
-                      <p className="text-gray-600 mb-2 text-sm text-center">{item.description}</p>
-                    )}
-                    <p className="text-xl text-green-600 font-bold mb-2 text-center">R$ {item.price.toFixed(2)}</p>
-                    <button
-                      onClick={() => {
-                        if (!isAvailable) {
-                          alert('Este produto está temporariamente indisponível');
-                          return;
-                        }
-                        item.name.startsWith('Enroladinho') ? setIsEnroladinhoModalOpen(true) : item.name === 'Pastel G' ? setIsPastelGModalOpen(true) : addToCart(item);
-                      }}
-                      className={`w-full py-2 rounded-lg transition-colors text-sm ${
-                        isAvailable 
-                          ? 'bg-green-600 text-white hover:bg-green-700' 
-                          : 'bg-gray-400 text-gray-200 cursor-not-allowed'
-                      }`}
-                      disabled={!isAvailable}
-                    >
-                      {!isAvailable ? 'Indisponível' : 
-                       item.name.startsWith('Enroladinho') ? 'Escolher Sabor' : 
-                       item.name === 'Pastel G' ? 'Personalizar' : 'Adicionar ao Carrinho'}
-                    </button>
-                  </div>
-                  );
-                })}
+                </div>
               </div>
             </div>
-          )}
+          </div>
+        )}
 
-          {selectedCategory === 'bebidas' && (
-            <div>
-              <h3 className="text-lg font-semibold mb-3 text-white text-center">Bebidas</h3>
+        {/* Modal do Enroladinho */}
+        {isEnroladinhoModalOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-lg p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-bold">Escolher Sabor do Enroladinho</h2>
+                <button 
+                  onClick={() => {
+                    setIsEnroladinhoModalOpen(false);
+                    setEnroladinhoSabor('');
+                  }} 
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <XIcon size={24} />
+                </button>
+              </div>
               <div className="space-y-4">
-                {bebidas.map((item) => {
-                  const product = allProducts.find(p => p.name === item.name);
-                  const isAvailable = product?.available !== false;
-                  
-                  return (
-                  <div key={item.name} className={`bg-white p-3 rounded-lg shadow-md ${!isAvailable ? 'opacity-50' : ''}`}>
-                    <div className="flex justify-center">
-                      {item.image && (
-                        <img src={item.image} alt={item.name} className="h-auto object-cover mb-2 rounded-lg" style={{ width: '80%' }} />
-                      )}
-                    </div>
-                    <h4 className="text-base font-semibold text-center">
-                      {item.name}
-                      {!isAvailable && <span className="text-red-500 text-sm ml-2">(Indisponível)</span>}
-                    </h4>
-                    <p className="text-xl text-green-600 font-bold mb-2 text-center">R$ {item.price.toFixed(2)}</p>
-                    <button
-                      onClick={() => {
-                        if (!isAvailable) {
-                          alert('Este produto está temporariamente indisponível');
-                          return;
-                        }
-                        addToCart(item);
-                      }}
-                      className={`w-full py-2 rounded-lg transition-colors text-sm ${
-                        isAvailable 
-                          ? 'bg-green-600 text-white hover:bg-green-700' 
-                          : 'bg-gray-400 text-gray-200 cursor-not-allowed'
-                      }`}
-                      disabled={!isAvailable}
-                    >
-                      {!isAvailable ? 'Indisponível' : 'Adicionar ao Carrinho'}
-                    </button>
+                <div>
+                  <h3 className="font-semibold mb-2">Selecione o sabor:</h3>
+                  <div className="flex flex-col gap-2">
+                    <label className="flex items-center space-x-2">
+                      <input
+                        type="radio"
+                        name="enroladinho-sabor"
+                        value="Misto"
+                        checked={enroladinhoSabor === 'Misto'}
+                        onChange={() => setEnroladinhoSabor('Misto')}
+                        className="rounded"
+                      />
+                      <span className="text-sm">Misto</span>
+                    </label>
+                    <label className="flex items-center space-x-2">
+                      <input
+                        type="radio"
+                        name="enroladinho-sabor"
+                        value="Salsicha"
+                        checked={enroladinhoSabor === 'Salsicha'}
+                        onChange={() => setEnroladinhoSabor('Salsicha')}
+                        className="rounded"
+                      />
+                      <span className="text-sm">Salsicha</span>
+                    </label>
                   </div>
-                  );
-                })}
+                </div>
+                <div className="border-t pt-4">
+                  <div className="flex justify-between items-center mb-4">
+                    <span className="font-bold">Total:</span>
+                    <span className="text-xl font-bold text-green-600">R$ 4,00</span>
+                  </div>
+                  <button
+                    onClick={handleEnroladinhoSelection}
+                    className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition-colors"
+                  >
+                    Adicionar ao Carrinho
+                  </button>
+                </div>
               </div>
             </div>
-          )}
+          </div>
+        )}
 
-          {selectedCategory === 'doces' && (
-            <div>
-              <h3 className="text-lg font-semibold mb-3 text-white text-center">Doces</h3>
-              <div className="space-y-4">
-                {doces.map((item) => {
-                  const product = allProducts.find(p => p.name === item.name);
-                  const isAvailable = product?.available !== false;
-                  
-                  return (
-                  <div key={item.name} className={`bg-white p-3 rounded-lg shadow-md ${!isAvailable ? 'opacity-50' : ''}`}>
-                    <div className="flex justify-center">
-                      {item.image && (
-                        <img src={item.image} alt={item.name} className="h-auto object-cover mb-2 rounded-lg" style={{ width: '80%' }} />
-                      )}
-                    </div>
-                    <h4 className="text-base font-semibold text-center">
-                      {item.name}
-                      {!isAvailable && <span className="text-red-500 text-sm ml-2">(Indisponível)</span>}
-                    </h4>
-                    <p className="text-xl text-green-600 font-bold mb-2 text-center">R$ {item.price.toFixed(2)}</p>
+
+
+        {/* Modal de Oferta */}
+        {ofertas.length > 0 && showOfertaModal && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-70 z-50 animate-fade-in">
+            <div className="bg-white rounded-2xl p-8 flex flex-col items-center relative max-w-lg w-full border-4 border-yellow-400 shadow-2xl scale-105 animate-bounce-in">
+              <button onClick={() => setShowOfertaModal(false)} className="absolute top-4 right-4 text-gray-500 hover:text-red-500 text-2xl"><XIcon size={32} /></button>
+              <img src={ofertas[0].image} alt="Oferta" className="w-60 h-60 object-cover rounded-xl mb-6 shadow-lg border-2 border-yellow-300" />
+              <span className="text-4xl font-extrabold text-yellow-500 mb-6 drop-shadow-lg animate-pulse">R$ {ofertas[0].price.toFixed(2)}</span>
+              <button
+                onClick={() => {
+                  addToCart({ name: 'Oferta', price: ofertas[0].price, image: ofertas[0].image });
+                  setShowOfertaModal(false);
+                }}
+                className="bg-green-600 hover:bg-green-700 text-white px-10 py-4 rounded-xl text-2xl font-bold shadow-lg transition-all duration-200 animate-bounce"
+              >
+                <ShoppingCart size={28} className="inline-block mr-2" /> Adicionar ao Carrinho
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Modal de Pagamento PIX */}
+        {showPixModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-lg p-6 max-w-md w-full">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-bold">Pagamento PIX</h2>
+                <button onClick={() => setShowPixModal(false)} className="text-gray-500 hover:text-red-500">
+                  <XIcon size={24} />
+                </button>
+              </div>
+              
+              <div className="text-center mb-4">
+                <p className="text-lg font-semibold mb-2">Total: R$ {getTotalPrice().toFixed(2)}</p>
+                {paymentStatus === 'pending' && (
+                  <p className="text-blue-600">Aguardando pagamento...</p>
+                )}
+                {paymentStatus === 'paid' && (
+                  <p className="text-green-600 font-bold">Pagamento aprovado!</p>
+                )}
+                {paymentStatus === 'expired' && (
+                  <p className="text-red-600">Pagamento expirado</p>
+                )}
+              </div>
+
+              {pixQrCode ? (
+                <div className="text-center mb-4">
+                  <h3 className="font-semibold mb-2">Escaneie o QR Code</h3>
+                  <div className="bg-gray-100 p-4 rounded-lg inline-block">
+                    <img src={`data:image/png;base64,${pixQrCode}`} alt="QR Code PIX" className="w-48 h-48" />
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center mb-4">
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                    <h3 className="font-semibold text-blue-800 mb-2">Pagamento PIX</h3>
+                    <p className="text-blue-700 text-sm">
+                      Use o código PIX abaixo para pagar através do seu app bancário
+                    </p>
+                  </div>
+                  <button
+                    onClick={generatePixPayment}
+                    className="bg-blue-600 text-white px-4 py-2 rounded mt-2"
+                  >
+                    Tentar Mercado Pago
+                  </button>
+                </div>
+              )}
+
+              {pixCode ? (
+                <div className="mb-4">
+                  <h3 className="font-semibold mb-2">Código PIX (Copia e Cola)</h3>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={pixCode}
+                      readOnly
+                      className="flex-1 border rounded px-3 py-2 text-sm bg-gray-50"
+                    />
                     <button
                       onClick={() => {
-                        if (!isAvailable) {
-                          alert('Este produto está temporariamente indisponível');
-                          return;
-                        }
-                        addToCart(item);
+                        navigator.clipboard.writeText(pixCode);
+                        alert('Código PIX copiado!');
                       }}
-                      className={`w-full py-2 rounded-lg transition-colors text-sm ${
-                        isAvailable 
-                          ? 'bg-green-600 text-white hover:bg-green-700' 
-                          : 'bg-gray-400 text-gray-200 cursor-not-allowed'
-                      }`}
-                      disabled={!isAvailable}
+                      className="bg-blue-600 text-white px-3 py-2 rounded text-sm"
                     >
-                      {!isAvailable ? 'Indisponível' : 'Adicionar ao Carrinho'}
+                      Copiar
                     </button>
                   </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {selectedCategory === 'cuscuz' && (
-            <div>
-              <h3 className="text-lg font-semibold mb-3 text-white text-center">Cuscuz</h3>
-              <div className="space-y-4">
-                {cuscuz.map((item) => {
-                  const product = allProducts.find(p => p.name === item.name);
-                  const isAvailable = product?.available !== false;
-                  
-                  return (
-                  <div key={item.name} className={`bg-white p-3 rounded-lg shadow-md ${!isAvailable ? 'opacity-50' : ''}`}>
-                    <div className="flex justify-center">
-                      {item.image && (
-                        <img src={item.image} alt={item.name} className="h-auto object-cover mb-2 rounded-lg" style={{ width: '80%' }} />
-                      )}
+                  {!pixQrCode && (
+                    <div className="mt-2 text-sm text-gray-600">
+                      <p>💡 <strong>Como pagar:</strong></p>
+                      <p>1. Abra seu app bancário</p>
+                      <p>2. Vá em "PIX" → "Pagar"</p>
+                      <p>3. Cole o código acima</p>
+                      <p>4. Confirme o pagamento</p>
                     </div>
-                    <h4 className="text-base font-semibold text-center">
-                      {item.name}
-                      {!isAvailable && <span className="text-red-500 text-sm ml-2">(Indisponível)</span>}
-                    </h4>
-                    <p className="text-xl text-green-600 font-bold mb-2 text-center">R$ {item.price.toFixed(2)}</p>
+                  )}
+                </div>
+              ) : (
+                <div className="mb-4">
+                  <p className="text-red-600 text-center">Código PIX não disponível</p>
+                  <div className="flex gap-2 mt-2">
+                    <button
+                      onClick={generateStaticPix}
+                      className="bg-green-600 text-white px-4 py-2 rounded flex-1"
+                    >
+                      Gerar PIX Estático
+                    </button>
                     <button
                       onClick={() => {
-                        if (!isAvailable) {
-                          alert('Este produto está temporariamente indisponível');
-                          return;
-                        }
-                        addToCart(item);
+                        console.log('Testando geração de PIX...');
+                        const testPix = generatePixPayload({
+                          key: '87996005036',
+                          name: 'BRUNO OLIVEIRA ILVIA',
+                          city: 'LAGOA GRANDE',
+                          amount: 10.00,
+                          description: 'Teste PIX'
+                        });
+                        console.log('PIX de teste:', testPix);
+                        setPixCode(testPix);
                       }}
-                      className={`w-full py-2 rounded-lg transition-colors text-sm ${
-                        isAvailable 
-                          ? 'bg-green-600 text-white hover:bg-green-700' 
-                          : 'bg-gray-400 text-gray-200 cursor-not-allowed'
-                      }`}
-                      disabled={!isAvailable}
+                      className="bg-yellow-600 text-white px-4 py-2 rounded flex-1"
                     >
-                      {!isAvailable ? 'Indisponível' : 'Adicionar ao Carrinho'}
+                      Teste PIX
                     </button>
                   </div>
-                  );
-                })}
+                </div>
+              )}
+
+              <div className="text-center text-sm text-gray-600">
+                <p>Após o pagamento, o pedido será confirmado automaticamente.</p>
+                <p>Você receberá uma confirmação por WhatsApp.</p>
               </div>
             </div>
-          )}
+          </div>
+        )}
 
-          {selectedCategory === 'combo-salgados' && (
-            <div>
-              <h3 className="text-lg font-semibold mb-3 text-white text-center">Combo de Salgados</h3>
-              <div className="space-y-4">
-                {comboSalgados.map((item) => {
-                  const product = allProducts.find(p => p.name === item.name);
-                  const isAvailable = product?.available !== false;
-                  
+        {/* Modal de senha para admin */}
+        {showPasswordModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 max-w-xs w-full flex flex-col items-center">
+              <h2 className="text-lg font-bold mb-4">Acesso Administrativo</h2>
+              <input
+                type="password"
+                placeholder="Digite a senha"
+                value={adminPassword}
+                onChange={e => setAdminPassword(e.target.value)}
+                className="border rounded px-3 py-2 w-full mb-4"
+                onKeyDown={e => { if (e.key === 'Enter') handleAdminAccess(); }}
+                autoFocus
+              />
+              <div className="flex gap-2 w-full">
+                <button
+                  onClick={handleAdminAccess}
+                  className="bg-blue-600 text-white px-4 py-2 rounded flex-1"
+                >
+                  Entrar
+                </button>
+                <button
+                  onClick={() => { setShowPasswordModal(false); setAdminPassword(''); }}
+                  className="bg-gray-400 text-white px-4 py-2 rounded flex-1"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+
+        <div className="max-w-5xl mx-auto">
+          <section className="relative h-[300px] flex items-center justify-center mt-16">
+            <div className="absolute inset-0">
+              <img src={HEROIMAGE} alt="Hero Background" className="w-full h-full object-cover" />
+              <div className="absolute inset-0 bg-black/50"></div>
+            </div>
+            <div className="relative z-10 text-center">
+              <img
+                src={LOGOIMAGE}
+                alt="Logo"
+                className="w-28 h-28 mx-auto mb-4"
+              />
+              <h1 className="text-4xl font-bold text-yellow-400 mb-4">HOTDOG DA PRAÇA</h1>
+              <div className="text-white space-y-2 max-w-xl mx-auto px-4">
+                <div className="grid grid-cols-3 gap-4 text-sm mt-6">
+                  <div className="flex items-center justify-center">
+                    <MapPin className="w-5 h-5 text-yellow-400 mr-2" />
+                    <span>Terezinha Nunes</span>
+                  </div>
+                  <div className="flex items-center justify-center">
+                    <Phone className="w-5 h-5 text-yellow-400 mr-2" />
+                    <span>55999211477</span>
+                  </div>
+                  <div className="flex items-center justify-center">
+                    <Clock className="w-5 h-5 text-yellow-400 mr-2" />
+                    <span>15:00 - 23:00</span>
+                  </div>
+                </div>
+                {/* Botão Admin (discreto) */}
+                <div className="mt-4">
+                  <button
+                    onClick={() => setShowPasswordModal(true)}
+                    className="text-xs text-gray-400 hover:text-white opacity-50 hover:opacity-100"
+                  >
+                    Admin
+                  </button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <div className="bg-zinc-800 sticky top-0 z-10">
+            <nav className="max-w-3xl mx-auto px-4 py-2">
+              <div className="flex justify-between items-center">
+                <div className="flex items-center space-x-8">
+                {categories.map((category) => {
+                  const Icon = category.icon;
                   return (
-                  <div key={item.name} className={`bg-white p-3 rounded-lg shadow-md ${!isAvailable ? 'opacity-50' : ''}`}>
-                    <div className="flex justify-center">
-                      {item.image && (
-                        <img src={item.image} alt={item.name} className="h-auto object-cover mb-2 rounded-lg" style={{ width: '80%' }} />
-                      )}
-                    </div>
-                    <h4 className="text-base font-semibold text-center">
-                      {item.name}
-                      {!isAvailable && <span className="text-red-500 text-sm ml-2">(Indisponível)</span>}
-                    </h4>
-                    {item.description && (
-                      <p className="text-gray-600 mb-2 text-sm text-center">{item.description}</p>
-                    )}
-                    <p className="text-xl text-green-600 font-bold mb-2 text-center">R$ {item.price.toFixed(2)}</p>
                     <button
-                      onClick={() => {
-                        if (!isAvailable) {
-                          alert('Este produto está temporariamente indisponível');
-                          return;
-                        }
-                        addToCart(item);
-                      }}
-                      className={`w-full py-2 rounded-lg transition-colors text-sm ${
-                        isAvailable 
-                          ? 'bg-green-600 text-white hover:bg-green-700' 
-                          : 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                      key={category.id}
+                      onClick={() => setSelectedCategory(category.id)}
+                      className={`flex flex-col items-center p-1 rounded-lg transition-colors ${
+                        selectedCategory === category.id
+                          ? 'text-yellow-500'
+                          : 'text-white hover:text-yellow-500'
                       }`}
-                      disabled={!isAvailable}
                     >
-                      {!isAvailable ? 'Indisponível' : 'Adicionar ao Carrinho'}
+                      <Icon className="w-4 h-4 mb-0.5" />
+                      <span className="text-xs">{category.label}</span>
                     </button>
-                  </div>
                   );
                 })}
+                </div>
+                <button
+                  onClick={() => setIsCartOpen(true)}
+                  className="relative bg-green-600 p-2 rounded-lg hover:bg-green-700 transition-colors"
+                >
+                  <ShoppingCart size={20} />
+                  {cartItems.length > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                      {cartItems.length}
+                    </span>
+                  )}
+                </button>
               </div>
-            </div>
-          )}
-        </main>
+            </nav>
+          </div>
 
-        <footer className="bg-gray-900 text-white py-6">
-          <div className="max-w-xl mx-auto px-4 text-center">
-            <div className="flex flex-col items-center space-y-3">
+          <main className="w-full max-w-xl mx-auto px-2 sm:px-4 py-6 flex-1">
+            {selectedCategory === 'lanches' && (
+              <div>
+                <h3 className="text-lg font-semibold mb-3 text-white text-center">Lanches</h3>
+                <div className="space-y-4">
+                  {lanches.map((item) => {
+                    const product = allProducts.find(p => p.name === item.name);
+                    const isAvailable = product?.available !== false;
+                    
+                    return (
+                    <div key={item.name} className={`bg-white p-3 rounded-lg shadow-md ${!isAvailable ? 'opacity-50' : ''}`}>
+                      <div className="flex justify-center">
+                        {item.image && (
+                          <img src={item.image} alt={item.name} className="h-auto object-cover mb-2 rounded-lg" style={{ width: '80%' }} />
+                        )}
+                      </div>
+                      <h4 className="text-base font-semibold text-center">
+                        {item.name}
+                        {!isAvailable && <span className="text-red-500 text-sm ml-2">(Indisponível)</span>}
+                      </h4>
+                      {item.description && (
+                        <p className="text-gray-600 mb-2 text-sm text-center">{item.description}</p>
+                      )}
+                      <p className="text-xl text-green-600 font-bold mb-2 text-center">R$ {item.price.toFixed(2)}</p>
+                      <button
+                        onClick={() => {
+                          if (!isAvailable) {
+                            alert('Este produto está temporariamente indisponível');
+                            return;
+                          }
+                          item.name.startsWith('Enroladinho') ? setIsEnroladinhoModalOpen(true) : item.name === 'Pastel G' ? setIsPastelGModalOpen(true) : addToCart(item);
+                        }}
+                        className={`w-full py-2 rounded-lg transition-colors text-sm ${
+                          isAvailable 
+                            ? 'bg-green-600 text-white hover:bg-green-700' 
+                            : 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                        }`}
+                        disabled={!isAvailable}
+                      >
+                        {!isAvailable ? 'Indisponível' : 
+                         item.name.startsWith('Enroladinho') ? 'Escolher Sabor' : 
+                         item.name === 'Pastel G' ? 'Personalizar' : 'Adicionar ao Carrinho'}
+                      </button>
+                    </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {selectedCategory === 'bebidas' && (
+              <div>
+                <h3 className="text-lg font-semibold mb-3 text-white text-center">Bebidas</h3>
+                <div className="space-y-4">
+                  {bebidas.map((item) => {
+                    const product = allProducts.find(p => p.name === item.name);
+                    const isAvailable = product?.available !== false;
+                    
+                    return (
+                    <div key={item.name} className={`bg-white p-3 rounded-lg shadow-md ${!isAvailable ? 'opacity-50' : ''}`}>
+                      <div className="flex justify-center">
+                        {item.image && (
+                          <img src={item.image} alt={item.name} className="h-auto object-cover mb-2 rounded-lg" style={{ width: '80%' }} />
+                        )}
+                      </div>
+                      <h4 className="text-base font-semibold text-center">
+                        {item.name}
+                        {!isAvailable && <span className="text-red-500 text-sm ml-2">(Indisponível)</span>}
+                      </h4>
+                      <p className="text-xl text-green-600 font-bold mb-2 text-center">R$ {item.price.toFixed(2)}</p>
+                      <button
+                        onClick={() => {
+                          if (!isAvailable) {
+                            alert('Este produto está temporariamente indisponível');
+                            return;
+                          }
+                          addToCart(item);
+                        }}
+                        className={`w-full py-2 rounded-lg transition-colors text-sm ${
+                          isAvailable 
+                            ? 'bg-green-600 text-white hover:bg-green-700' 
+                            : 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                        }`}
+                        disabled={!isAvailable}
+                      >
+                        {!isAvailable ? 'Indisponível' : 'Adicionar ao Carrinho'}
+                      </button>
+                    </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {selectedCategory === 'doces' && (
+              <div>
+                <h3 className="text-lg font-semibold mb-3 text-white text-center">Doces</h3>
+                <div className="space-y-4">
+                  {doces.map((item) => {
+                    const product = allProducts.find(p => p.name === item.name);
+                    const isAvailable = product?.available !== false;
+                    
+                    return (
+                    <div key={item.name} className={`bg-white p-3 rounded-lg shadow-md ${!isAvailable ? 'opacity-50' : ''}`}>
+                      <div className="flex justify-center">
+                        {item.image && (
+                          <img src={item.image} alt={item.name} className="h-auto object-cover mb-2 rounded-lg" style={{ width: '80%' }} />
+                        )}
+                      </div>
+                      <h4 className="text-base font-semibold text-center">
+                        {item.name}
+                        {!isAvailable && <span className="text-red-500 text-sm ml-2">(Indisponível)</span>}
+                      </h4>
+                      <p className="text-xl text-green-600 font-bold mb-2 text-center">R$ {item.price.toFixed(2)}</p>
+                      <button
+                        onClick={() => {
+                          if (!isAvailable) {
+                            alert('Este produto está temporariamente indisponível');
+                            return;
+                          }
+                          addToCart(item);
+                        }}
+                        className={`w-full py-2 rounded-lg transition-colors text-sm ${
+                          isAvailable 
+                            ? 'bg-green-600 text-white hover:bg-green-700' 
+                            : 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                        }`}
+                        disabled={!isAvailable}
+                      >
+                        {!isAvailable ? 'Indisponível' : 'Adicionar ao Carrinho'}
+                      </button>
+                    </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {selectedCategory === 'cuscuz' && (
+              <div>
+                <h3 className="text-lg font-semibold mb-3 text-white text-center">Cuscuz</h3>
+                <div className="space-y-4">
+                  {cuscuz.map((item) => {
+                    const product = allProducts.find(p => p.name === item.name);
+                    const isAvailable = product?.available !== false;
+                    
+                    return (
+                    <div key={item.name} className={`bg-white p-3 rounded-lg shadow-md ${!isAvailable ? 'opacity-50' : ''}`}>
+                      <div className="flex justify-center">
+                        {item.image && (
+                          <img src={item.image} alt={item.name} className="h-auto object-cover mb-2 rounded-lg" style={{ width: '80%' }} />
+                        )}
+                      </div>
+                      <h4 className="text-base font-semibold text-center">
+                        {item.name}
+                        {!isAvailable && <span className="text-red-500 text-sm ml-2">(Indisponível)</span>}
+                      </h4>
+                      <p className="text-xl text-green-600 font-bold mb-2 text-center">R$ {item.price.toFixed(2)}</p>
+                      <button
+                        onClick={() => {
+                          if (!isAvailable) {
+                            alert('Este produto está temporariamente indisponível');
+                            return;
+                          }
+                          addToCart(item);
+                        }}
+                        className={`w-full py-2 rounded-lg transition-colors text-sm ${
+                          isAvailable 
+                            ? 'bg-green-600 text-white hover:bg-green-700' 
+                            : 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                        }`}
+                        disabled={!isAvailable}
+                      >
+                        {!isAvailable ? 'Indisponível' : 'Adicionar ao Carrinho'}
+                      </button>
+                    </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {selectedCategory === 'combo-salgados' && (
+              <div>
+                <h3 className="text-lg font-semibold mb-3 text-white text-center">Combo de Salgados</h3>
+                <div className="space-y-4">
+                  {comboSalgados.map((item) => {
+                    const product = allProducts.find(p => p.name === item.name);
+                    const isAvailable = product?.available !== false;
+                    
+                    return (
+                    <div key={item.name} className={`bg-white p-3 rounded-lg shadow-md ${!isAvailable ? 'opacity-50' : ''}`}>
+                      <div className="flex justify-center">
+                        {item.image && (
+                          <img src={item.image} alt={item.name} className="h-auto object-cover mb-2 rounded-lg" style={{ width: '80%' }} />
+                        )}
+                      </div>
+                      <h4 className="text-base font-semibold text-center">
+                        {item.name}
+                        {!isAvailable && <span className="text-red-500 text-sm ml-2">(Indisponível)</span>}
+                      </h4>
+                      {item.description && (
+                        <p className="text-gray-600 mb-2 text-sm text-center">{item.description}</p>
+                      )}
+                      <p className="text-xl text-green-600 font-bold mb-2 text-center">R$ {item.price.toFixed(2)}</p>
+                      <button
+                        onClick={() => {
+                          if (!isAvailable) {
+                            alert('Este produto está temporariamente indisponível');
+                            return;
+                          }
+                          addToCart(item);
+                        }}
+                        className={`w-full py-2 rounded-lg transition-colors text-sm ${
+                          isAvailable 
+                            ? 'bg-green-600 text-white hover:bg-green-700' 
+                            : 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                        }`}
+                        disabled={!isAvailable}
+                      >
+                        {!isAvailable ? 'Indisponível' : 'Adicionar ao Carrinho'}
+                      </button>
+                    </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </main>
+
+          <footer className="bg-gray-900 text-white py-6 w-full">
+            <div className="max-w-xl mx-auto px-4 text-center flex flex-col items-center">
               <img src={LOGOIMAGE} alt="Logo" className="w-16 h-16" />
               <div>
                 <h2 className="text-xl font-bold text-yellow-400">HOTDOG DA PRAÇA</h2>
@@ -1264,8 +1595,26 @@ function App() {
               </div>
               <p className="text-xs text-gray-400"> 2024 Todos os direitos reservados</p>
             </div>
-          </div>
-        </footer>
+          </footer>
+        </div>
+
+        {/* Banner de Promoções */}
+        <PromotionBanner 
+          promotions={promotions} 
+          onClose={() => setShowPromotionBanner(false)} 
+        />
+
+        {/* Painel de Administração */}
+        <AdminPanel
+          isOpen={isAdminOpen}
+          onClose={() => setIsAdminOpen(false)}
+          products={allProducts}
+          onUpdateProducts={setAllProducts}
+          promotions={promotions}
+          onUpdatePromotions={setPromotions}
+          ofertas={ofertas}
+          onUpdateOfertas={setOfertas}
+        />
       </div>
     </div>
   );
