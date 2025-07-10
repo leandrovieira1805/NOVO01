@@ -67,9 +67,9 @@ export function generatePixPayload(pixInfo: PixInfo): string {
 
 export function getPixInfo(): PixInfo {
   return {
-    key: 'leandrovieira1805@gmail.com', // PIX key (email, phone, CPF, or random key)
-    name: 'LEANDRO VIEIRA',
-    city: 'SAO PAULO',
+    key: '87996005036', // PIX key (CPF)
+    name: 'BRUNO OLIVEIRA SILVA',
+    city: 'LAGOA GRANDE',
     description: 'Pagamento - Lanchonete'
   };
 }
