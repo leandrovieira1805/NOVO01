@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Plus, Edit, Trash, Eye, EyeOff, Upload } from 'lucide-react';
+import { productService, ofertaService, promotionService } from '../firebase/services';
 
 interface Product {
   id: string;
@@ -103,58 +104,58 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const handleProductSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const newProduct: Product = {
-      id: editingProduct?.id || Date.now().toString(),
-      ...productForm
-    };
-
-    let updatedProducts;
-    if (editingProduct) {
-      updatedProducts = products.map(p => p.id === editingProduct.id ? newProduct : p);
-    } else {
-      updatedProducts = [...products, newProduct];
+    try {
+      if (editingProduct) {
+        // Atualizar produto existente
+        await productService.updateProduct(editingProduct.id, productForm);
+      } else {
+        // Adicionar novo produto
+        await productService.addProduct(productForm);
+      }
+      
+      setShowProductForm(false);
+      setEditingProduct(null);
+      setProductForm({
+        name: '',
+        price: 0,
+        category: 'lanches',
+        description: '',
+        image: '',
+        available: true
+      });
+    } catch (error) {
+      console.error('Erro ao salvar produto:', error);
+      alert('Erro ao salvar produto. Verifique a conexão com o Firebase.');
     }
-
-    onUpdateProducts(updatedProducts);
-    setShowProductForm(false);
-    setEditingProduct(null);
-    setProductForm({
-      name: '',
-      price: 0,
-      category: 'lanches',
-      description: '',
-      image: '',
-      available: true
-    });
   };
 
   const handlePromotionSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const newPromotion: Promotion = {
-      id: editingPromotion?.id || Date.now().toString(),
-      ...promotionForm
-    };
-
-    let updatedPromotions;
-    if (editingPromotion) {
-      updatedPromotions = promotions.map(p => p.id === editingPromotion.id ? newPromotion : p);
-    } else {
-      updatedPromotions = [...promotions, newPromotion];
+    try {
+      if (editingPromotion) {
+        // Atualizar promoção existente
+        await promotionService.updatePromotion(editingPromotion.id, promotionForm);
+      } else {
+        // Adicionar nova promoção
+        await promotionService.addPromotion(promotionForm);
+      }
+      
+      setShowPromotionForm(false);
+      setEditingPromotion(null);
+      setPromotionForm({
+        title: '',
+        description: '',
+        image: '',
+        discountPercent: 0,
+        active: true,
+        startDate: '',
+        endDate: ''
+      });
+    } catch (error) {
+      console.error('Erro ao salvar promoção:', error);
+      alert('Erro ao salvar promoção. Verifique a conexão com o Firebase.');
     }
-
-    onUpdatePromotions(updatedPromotions);
-    setShowPromotionForm(false);
-    setEditingPromotion(null);
-    setPromotionForm({
-      title: '',
-      description: '',
-      image: '',
-      discountPercent: 0,
-      active: true,
-      startDate: '',
-      endDate: ''
-    });
   };
 
   const handleEditProduct = (product: Product) => {
@@ -184,17 +185,25 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     setShowPromotionForm(true);
   };
 
-  const handleDeleteProduct = (productId: string) => {
+  const handleDeleteProduct = async (productId: string) => {
     if (window.confirm('Tem certeza que deseja excluir este produto?')) {
-      const updatedProducts = products.filter(p => p.id !== productId);
-      onUpdateProducts(updatedProducts);
+      try {
+        await productService.deleteProduct(productId);
+      } catch (error) {
+        console.error('Erro ao excluir produto:', error);
+        alert('Erro ao excluir produto. Verifique a conexão com o Firebase.');
+      }
     }
   };
 
-  const handleDeletePromotion = (promotionId: string) => {
+  const handleDeletePromotion = async (promotionId: string) => {
     if (window.confirm('Tem certeza que deseja excluir esta promoção?')) {
-      const updatedPromotions = promotions.filter(p => p.id !== promotionId);
-      onUpdatePromotions(updatedPromotions);
+      try {
+        await promotionService.deletePromotion(promotionId);
+      } catch (error) {
+        console.error('Erro ao excluir promoção:', error);
+        alert('Erro ao excluir promoção. Verifique a conexão com o Firebase.');
+      }
     }
   };
 

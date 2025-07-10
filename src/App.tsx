@@ -44,6 +44,7 @@ import BARCA_PASTEL from './assets/IMAGEN/BARCA DE PASTEL.jpeg';
 import BATATA_SIMPLES from './assets/IMAGEN/BATATA SIMPLES.jpeg';
 import BATATA_COMPLETA from './assets/IMAGEN/BATATA COMPLETA.jpeg';
 import { generatePixPayload, getPixInfo } from './utils/pixUtils';
+import { productService, ofertaService, promotionService } from './firebase/services';
 
 interface Item {
   name: string;
@@ -114,33 +115,43 @@ function App() {
   const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [adminPassword, setAdminPassword] = useState('');
   const [showPasswordModal, setShowPasswordModal] = useState(false);
-  const [allProducts, setAllProducts] = useState<Product[]>(() => {
-    const saved = localStorage.getItem('produtos');
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [promotions, setPromotions] = useState<Promotion[]>([]);
   const [showPromotionBanner, setShowPromotionBanner] = useState(true);
   const [showOfertaModal, setShowOfertaModal] = useState(true);
-  // Supondo que você vai passar as ofertas do AdminPanel para o App via props ou contexto, por enquanto simule:
-  const [ofertas, setOfertas] = useState<Oferta[]>(() => {
-    const saved = localStorage.getItem('ofertas');
-    return saved ? JSON.parse(saved) : [];
-  }); // Substitua pelo seu estado real de ofertas
+  const [ofertas, setOfertas] = useState<Oferta[]>([]);
   const [showPixModal, setShowPixModal] = useState(false);
   const [pixQrCode, setPixQrCode] = useState('');
   const [pixCode, setPixCode] = useState('');
   const [paymentStatus, setPaymentStatus] = useState<'pending' | 'paid' | 'expired'>('pending');
   const [paymentId, setPaymentId] = useState('');
 
-  // useEffect para salvar produtos sempre que mudar
+  // useEffect para sincronizar produtos com Firebase
   useEffect(() => {
-    localStorage.setItem('produtos', JSON.stringify(allProducts));
-  }, [allProducts]);
+    const unsubscribe = productService.onProductsChange((products) => {
+      setAllProducts(products);
+    });
 
-  // Salvar ofertas no localStorage sempre que mudar
+    return () => unsubscribe();
+  }, []);
+
+  // useEffect para sincronizar ofertas com Firebase
   useEffect(() => {
-    localStorage.setItem('ofertas', JSON.stringify(ofertas));
-  }, [ofertas]);
+    const unsubscribe = ofertaService.onOfertasChange((ofertas) => {
+      setOfertas(ofertas);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  // useEffect para sincronizar promoções com Firebase
+  useEffect(() => {
+    const unsubscribe = promotionService.onPromotionsChange((promotions) => {
+      setPromotions(promotions);
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   const ADMIN_PASSWORD = "admin123"; // Altere para uma senha segura
   const pixInfo = getPixInfo();
