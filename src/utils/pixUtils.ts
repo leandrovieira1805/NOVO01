@@ -73,10 +73,9 @@ export function generatePixPayload(pixInfo: PixInfo): string {
 
 export function getPixInfo(): PixInfo {
   return {
-    key: '87996005036', // PIX key (telefone)
-    name: 'BRUNO OLIVEIRA SILVA',
-    city: 'LAGOA GRANDE',
-    description: 'Pagamento - Lanchonete'
+    key: '87996005036',
+    name: 'BRUNO OLIVEIRA DA SILVA',
+    city: 'LAGOA GRANDE'
   };
 }
 

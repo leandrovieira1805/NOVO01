@@ -164,7 +164,7 @@ function App() {
       if (error instanceof Error) {
         console.error('Erro ao adicionar item ao carrinho:', error.message);
       } else {
-        console.error('Erro ao adicionar item ao carrinho:', error);
+      console.error('Erro ao adicionar item ao carrinho:', error);
       }
     }
   };
@@ -178,7 +178,7 @@ function App() {
       if (error instanceof Error) {
         console.error('Erro ao remover item do carrinho:', error.message);
       } else {
-        console.error('Erro ao remover item do carrinho:', error);
+      console.error('Erro ao remover item do carrinho:', error);
       }
     }
   };
@@ -201,7 +201,7 @@ function App() {
       if (error instanceof Error) {
         console.error('Erro ao atualizar quantidade:', error.message);
       } else {
-        console.error('Erro ao atualizar quantidade:', error);
+      console.error('Erro ao atualizar quantidade:', error);
       }
     }
   };
@@ -269,7 +269,7 @@ function App() {
     } catch (error: unknown) {
       if (error instanceof Error) {
         console.error('Erro ao gerar PIX estático:', error.message);
-        alert('Erro ao gerar PIX estático: ' + error.message);
+      alert('Erro ao gerar PIX estático: ' + error.message);
       } else {
         console.error('Erro ao gerar PIX estático:', error);
         alert('Erro ao gerar PIX estático.');
@@ -291,7 +291,7 @@ function App() {
       if (error instanceof Error) {
         console.error('Erro ao gerar PIX:', error.message);
       } else {
-        console.error('Erro ao gerar PIX:', error);
+      console.error('Erro ao gerar PIX:', error);
       }
       // Usar PIX estático como fallback
       generateStaticPix();
@@ -1054,15 +1054,6 @@ function App() {
               
               <div className="text-center mb-4">
                 <p className="text-lg font-semibold mb-2">Total: R$ {getTotalPrice().toFixed(2)}</p>
-                {/* paymentStatus === 'pending' && (
-                  <p className="text-blue-600">Aguardando pagamento...</p>
-                ) */}
-                {/* paymentStatus === 'paid' && (
-                  <p className="text-green-600 font-bold">Pagamento aprovado!</p>
-                ) */}
-                {/* paymentStatus === 'expired' && (
-                  <p className="text-red-600">Pagamento expirado</p>
-                ) */}
               </div>
 
               {pixQrCode ? (
@@ -1134,7 +1125,7 @@ function App() {
                         console.log('Testando geração de PIX...');
                         const testPix = generatePixPayload({
                           key: '87996005036',
-                          name: 'BRUNO OLIVEIRA ILVIA',
+                          name: 'BRUNO OLIVEIRA DA SILVA',
                           city: 'LAGOA GRANDE',
                           amount: 10.00,
                           description: 'Teste PIX'
@@ -1546,10 +1537,6 @@ function App() {
         </div>
 
         {/* Banner de Promoções */}
-        <PromotionBanner 
-          promotions={promotions} 
-          onClose={() => {}} 
-        />
 
         {/* Painel de Administração */}
         <AdminPanel
