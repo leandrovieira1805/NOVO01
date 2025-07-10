@@ -809,7 +809,7 @@ function App() {
                             <p className="text-xs text-blue-800 text-center">
                               📱 <strong>Como pagar:</strong><br/>
                               1. Copie o código PIX acima<br/>
-                              2. Abra seu app do banco<br/>
+                         <img src={oferta.image} alt="Oferta especial" className="w-72 h-72 object-cover rounded-xl mb-4 border-2 border-white" />
                               3. Escolha "PIX Copia e Cola"<br/>
                               4. Cole o código e confirme<br/>
                               5. Clique em "Finalizar Pedido"
