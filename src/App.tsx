@@ -1522,11 +1522,11 @@ function App() {
           isOpen={isAdminOpen}
           onClose={() => setIsAdminOpen(false)}
           products={allProducts}
-          onUpdateProducts={setAllProducts}
+          onUpdateProducts={() => {}} // Não precisa mais atualizar manualmente, pois é em tempo real
           promotions={promotions}
-          onUpdatePromotions={setPromotions}
+          onUpdatePromotions={() => {}}
           ofertas={ofertas}
-          onUpdateOfertas={setOfertas}
+          onUpdateOfertas={() => {}}
         />
       </div>
     </div>
