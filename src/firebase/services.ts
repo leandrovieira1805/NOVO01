@@ -1,5 +1,5 @@
-// Mock services - Funciona sem Firebase configurado
-// Quando você configurar o Firebase, substitua este arquivo pela versão real
+import { ref, set, get, push, remove, update, onValue, off } from 'firebase/database';
+import { database } from './config';
 
 export interface Product {
   id: string;
