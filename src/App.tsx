@@ -117,14 +117,11 @@ function App() {
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [promotions, setPromotions] = useState<Promotion[]>([]);
-  const [showPromotionBanner, setShowPromotionBanner] = useState(true);
   const [showOfertaModal, setShowOfertaModal] = useState(true);
   const [ofertas, setOfertas] = useState<Oferta[]>([]);
   const [showPixModal, setShowPixModal] = useState(false);
   const [pixQrCode, setPixQrCode] = useState('');
   const [pixCode, setPixCode] = useState('');
-  const [paymentStatus, setPaymentStatus] = useState<'pending' | 'paid' | 'expired'>('pending');
-  const [paymentId, setPaymentId] = useState('');
 
   // useEffect para sincronizar produtos com Firebase
   useEffect(() => {
@@ -163,8 +160,12 @@ function App() {
         price: item.price,
         quantity: 1
       }]);
-    } catch (error) {
-      console.error('Erro ao adicionar item ao carrinho:', error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.error('Erro ao adicionar item ao carrinho:', error.message);
+      } else {
+        console.error('Erro ao adicionar item ao carrinho:', error);
+      }
     }
   };
 
@@ -173,8 +174,12 @@ function App() {
       setCartItems(prevItems => 
         prevItems.filter(item => item.name !== itemName)
       );
-    } catch (error) {
-      console.error('Erro ao remover item do carrinho:', error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.error('Erro ao remover item do carrinho:', error.message);
+      } else {
+        console.error('Erro ao remover item do carrinho:', error);
+      }
     }
   };
 
@@ -192,8 +197,12 @@ function App() {
             : item
         )
       );
-    } catch (error) {
-      console.error('Erro ao atualizar quantidade:', error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.error('Erro ao atualizar quantidade:', error.message);
+      } else {
+        console.error('Erro ao atualizar quantidade:', error);
+      }
     }
   };
 
@@ -257,9 +266,14 @@ function App() {
       
       console.log('PIX estático configurado com sucesso');
       console.log('Código PIX:', pixPayload);
-    } catch (error) {
-      console.error('Erro ao gerar PIX estático:', error);
-      alert('Erro ao gerar PIX estático: ' + error.message);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.error('Erro ao gerar PIX estático:', error.message);
+        alert('Erro ao gerar PIX estático: ' + error.message);
+      } else {
+        console.error('Erro ao gerar PIX estático:', error);
+        alert('Erro ao gerar PIX estático.');
+      }
     }
   };
 
@@ -273,17 +287,15 @@ function App() {
       // Usar diretamente o PIX estático que já funciona
       generateStaticPix();
       
-    } catch (error) {
-      console.error('Erro ao gerar PIX:', error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.error('Erro ao gerar PIX:', error.message);
+      } else {
+        console.error('Erro ao gerar PIX:', error);
+      }
       // Usar PIX estático como fallback
       generateStaticPix();
     }
-  };
-
-  const checkPaymentStatus = async (paymentId: number) => {
-    // Função simplificada - não verifica status automaticamente
-    // O cliente deve confirmar o pagamento manualmente
-    console.log('Verificação de pagamento desabilitada - use confirmação manual');
   };
 
   const handleSubmitOrder = () => {
@@ -1011,7 +1023,10 @@ function App() {
           <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-70 z-50 animate-fade-in">
             <div className="bg-white rounded-2xl p-8 flex flex-col items-center relative max-w-lg w-full border-4 border-yellow-400 shadow-2xl scale-105 animate-bounce-in">
               <button onClick={() => setShowOfertaModal(false)} className="absolute top-4 right-4 text-gray-500 hover:text-red-500 text-2xl"><XIcon size={32} /></button>
-              <img src={ofertas[0].image} alt="Oferta" className="w-60 h-60 object-cover rounded-xl mb-6 shadow-lg border-2 border-yellow-300" />
+              <img src={ofertas[0].image} alt="Oferta" 
+                className="w-60 h-60 object-cover rounded-xl mb-6 shadow-lg border-2 border-yellow-300 sm:w-80 sm:h-80 max-w-full sm:max-w-xs border-8 border-transparent" 
+                style={{ boxShadow: '0 0 0 8px rgba(255,255,255,0.3)' }}
+              />
               <span className="text-4xl font-extrabold text-yellow-500 mb-6 drop-shadow-lg animate-pulse">R$ {ofertas[0].price.toFixed(2)}</span>
               <button
                 onClick={() => {
@@ -1039,15 +1054,15 @@ function App() {
               
               <div className="text-center mb-4">
                 <p className="text-lg font-semibold mb-2">Total: R$ {getTotalPrice().toFixed(2)}</p>
-                {paymentStatus === 'pending' && (
+                {/* paymentStatus === 'pending' && (
                   <p className="text-blue-600">Aguardando pagamento...</p>
-                )}
-                {paymentStatus === 'paid' && (
+                ) */}
+                {/* paymentStatus === 'paid' && (
                   <p className="text-green-600 font-bold">Pagamento aprovado!</p>
-                )}
-                {paymentStatus === 'expired' && (
+                ) */}
+                {/* paymentStatus === 'expired' && (
                   <p className="text-red-600">Pagamento expirado</p>
-                )}
+                ) */}
               </div>
 
               {pixQrCode ? (
@@ -1514,7 +1529,7 @@ function App() {
         {/* Banner de Promoções */}
         <PromotionBanner 
           promotions={promotions} 
-          onClose={() => setShowPromotionBanner(false)} 
+          onClose={() => {}} 
         />
 
         {/* Painel de Administração */}

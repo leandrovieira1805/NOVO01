@@ -105,24 +105,24 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     e.preventDefault();
     
     try {
-      if (editingProduct) {
+    if (editingProduct) {
         // Atualizar produto existente
         await productService.updateProduct(editingProduct.id, productForm);
-      } else {
+    } else {
         // Adicionar novo produto
         await productService.addProduct(productForm);
-      }
-      
-      setShowProductForm(false);
-      setEditingProduct(null);
-      setProductForm({
-        name: '',
-        price: 0,
-        category: 'lanches',
-        description: '',
-        image: '',
-        available: true
-      });
+    }
+
+    setShowProductForm(false);
+    setEditingProduct(null);
+    setProductForm({
+      name: '',
+      price: 0,
+      category: 'lanches',
+      description: '',
+      image: '',
+      available: true
+    });
     } catch (error) {
       console.error('Erro ao salvar produto:', error);
       alert('Erro ao salvar produto. Verifique a conexão com o Firebase.');
@@ -133,25 +133,25 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     e.preventDefault();
     
     try {
-      if (editingPromotion) {
+    if (editingPromotion) {
         // Atualizar promoção existente
         await promotionService.updatePromotion(editingPromotion.id, promotionForm);
-      } else {
+    } else {
         // Adicionar nova promoção
         await promotionService.addPromotion(promotionForm);
-      }
-      
-      setShowPromotionForm(false);
-      setEditingPromotion(null);
-      setPromotionForm({
-        title: '',
-        description: '',
-        image: '',
-        discountPercent: 0,
-        active: true,
-        startDate: '',
-        endDate: ''
-      });
+    }
+
+    setShowPromotionForm(false);
+    setEditingPromotion(null);
+    setPromotionForm({
+      title: '',
+      description: '',
+      image: '',
+      discountPercent: 0,
+      active: true,
+      startDate: '',
+      endDate: ''
+    });
     } catch (error) {
       console.error('Erro ao salvar promoção:', error);
       alert('Erro ao salvar promoção. Verifique a conexão com o Firebase.');
