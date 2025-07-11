@@ -117,7 +117,7 @@ function App() {
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [promotions, setPromotions] = useState<Promotion[]>([]);
-  const [showOfertaModal, setShowOfertaModal] = useState(true);
+  const [showOfertaModal, setShowOfertaModal] = useState(false);
   const [ofertas, setOfertas] = useState<Oferta[]>([]);
   const [showPixModal, setShowPixModal] = useState(false);
   const [pixQrCode, setPixQrCode] = useState('');
@@ -1018,28 +1018,7 @@ function App() {
 
 
 
-        {/* Modal de Oferta */}
-        {ofertas.length > 0 && showOfertaModal && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-70 z-50 animate-fade-in">
-            <div className="bg-white rounded-2xl p-8 flex flex-col items-center relative max-w-lg w-full border-4 border-yellow-400 shadow-2xl scale-105 animate-bounce-in">
-              <button onClick={() => setShowOfertaModal(false)} className="absolute top-4 right-4 text-gray-500 hover:text-red-500 text-2xl"><XIcon size={32} /></button>
-              <img src={ofertas[0].image} alt="Oferta" 
-                className="w-60 h-60 object-cover rounded-xl mb-6 shadow-lg border-2 border-yellow-300 sm:w-80 sm:h-80 max-w-full sm:max-w-xs border-8 border-transparent" 
-                style={{ boxShadow: '0 0 0 8px rgba(255,255,255,0.3)' }}
-              />
-              <span className="text-4xl font-extrabold text-yellow-500 mb-6 drop-shadow-lg animate-pulse">R$ {ofertas[0].price.toFixed(2)}</span>
-              <button
-                onClick={() => {
-                  addToCart({ name: 'Oferta', price: ofertas[0].price, image: ofertas[0].image });
-                  setShowOfertaModal(false);
-                }}
-                className="bg-green-600 hover:bg-green-700 text-white px-10 py-4 rounded-xl text-2xl font-bold shadow-lg transition-all duration-200 animate-bounce"
-              >
-                <ShoppingCart size={28} className="inline-block mr-2" /> Adicionar ao Carrinho
-              </button>
-            </div>
-          </div>
-        )}
+
 
         {/* Modal de Pagamento PIX */}
         {showPixModal && (
@@ -1222,62 +1201,6 @@ function App() {
               </div>
             </div>
           </section>
-
-          {/* Seção de Ofertas */}
-          {ofertas.length > 0 && (
-            <div className="mb-8">
-              <h2 className="text-2xl font-bold text-center mb-6 text-yellow-400">🔥 OFERTAS ESPECIAIS 🔥</h2>
-              <div className="flex justify-center px-2">
-                <div className="relative">
-                  <img 
-                    src={ofertas[0].image} 
-                    alt="Oferta Especial" 
-                    className="w-full max-w-sm h-auto rounded-lg shadow-2xl border-4 border-yellow-400 transform hover:scale-105 transition-transform duration-300"
-                  />
-                  <div className="absolute bottom-4 right-4 bg-red-600 text-white px-8 py-4 rounded-full font-bold text-2xl shadow-lg animate-pulse">
-                    R$ {ofertas[0].price.toFixed(2)}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          <div className="bg-zinc-800 sticky top-0 z-10">
-            <nav className="max-w-3xl mx-auto px-4 py-2">
-              <div className="flex justify-between items-center">
-                <div className="flex items-center space-x-8">
-                {categories.map((category) => {
-                  const Icon = category.icon;
-                  return (
-                    <button
-                      key={category.id}
-                      onClick={() => setSelectedCategory(category.id)}
-                      className={`flex flex-col items-center p-1 rounded-lg transition-colors ${
-                        selectedCategory === category.id
-                          ? 'text-yellow-500'
-                          : 'text-white hover:text-yellow-500'
-                      }`}
-                    >
-                      <Icon className="w-4 h-4 mb-0.5" />
-                      <span className="text-xs">{category.label}</span>
-                    </button>
-                  );
-                })}
-                </div>
-                <button
-                  onClick={() => setIsCartOpen(true)}
-                  className="relative bg-green-600 p-2 rounded-lg hover:bg-green-700 transition-colors"
-                >
-                  <ShoppingCart size={20} />
-                  {cartItems.length > 0 && (
-                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                      {cartItems.length}
-                    </span>
-                  )}
-                </button>
-              </div>
-            </nav>
-          </div>
 
           <main className="w-full max-w-xl mx-auto px-2 sm:px-4 py-6 flex-1">
             {selectedCategory === 'lanches' && (
@@ -1508,6 +1431,25 @@ function App() {
               </div>
             )}
           </main>
+
+          {/* Seção de Ofertas */}
+          {ofertas.length > 0 && (
+            <div className="mb-8">
+              <h2 className="text-2xl font-bold text-center mb-6 text-yellow-400">🔥 OFERTAS ESPECIAIS 🔥</h2>
+              <div className="flex justify-center px-2">
+                <div className="relative">
+                  <img 
+                    src={ofertas[0].image} 
+                    alt="Oferta Especial" 
+                    className="w-full max-w-sm h-auto rounded-lg shadow-2xl border-4 border-yellow-400 transform hover:scale-105 transition-transform duration-300"
+                  />
+                  <div className="absolute bottom-4 right-4 bg-red-600 text-white px-8 py-4 rounded-full font-bold text-2xl shadow-lg animate-pulse">
+                    R$ {ofertas[0].price.toFixed(2)}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           <footer className="bg-gray-900 text-white py-6 w-full">
             <div className="max-w-xl mx-auto px-4 text-center flex flex-col items-center">
