@@ -284,7 +284,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                         )}
                       </div>
                       <h4 className="font-semibold">{product.name}</h4>
-                      <p className="text-green-600 font-bold">R$ {product.price.toFixed(2)}</p>
+                      <p className="text-green-600 font-bold">R$ {(typeof product.price === 'number' ? product.price : 0).toFixed(2)}</p>
                       <p className="text-sm text-gray-600">{product.category}</p>
                       <div className="flex gap-2 mt-2">
                         <button
