@@ -534,6 +534,21 @@ function App() {
     setAllProducts(productsWithIds);
   }, []);
 
+  // Produtos fixos do código
+  const fixedProducts: Product[] = [
+    ...lanches.map((item, index) => ({ ...item, id: `lanche-${index}`, available: true, category: 'lanches', image: item.image || '' })),
+    ...bebidas.map((item, index) => ({ ...item, id: `bebida-${index}`, available: true, category: 'bebidas', image: item.image || '' })),
+    ...doces.map((item, index) => ({ ...item, id: `doce-${index}`, available: true, category: 'doces', image: item.image || '' })),
+    ...cuscuz.map((item, index) => ({ ...item, id: `cuscuz-${index}`, available: true, category: 'cuscuz', image: item.image || '' })),
+    ...comboSalgados.map((item, index) => ({ ...item, id: `combo-${index}`, available: true, category: 'combo-salgados', image: item.image || '' }))
+  ];
+
+  // Unir produtos do Firebase e fixos, removendo duplicados pelo nome
+  const allProductsUnified: Product[] = [
+    ...allProducts,
+    ...fixedProducts.filter(fixed => !allProducts.some(prod => prod.name === fixed.name))
+  ];
+
   return (
     <div className="min-h-screen bg-zinc-900 flex flex-col items-center justify-center">
       <div className="w-full max-w-5xl mx-auto flex-1 flex flex-col">
@@ -1262,7 +1277,7 @@ function App() {
                 <h3 className="text-lg font-semibold mb-3 text-white text-center">Lanches</h3>
                 <div className="space-y-4">
                   {lanches.map((item) => {
-                    const product = allProducts.find(p => p.name === item.name);
+                    const product = allProductsUnified.find(p => p.name === item.name);
                     const isAvailable = product?.available !== false;
                     
                     return (
@@ -1311,7 +1326,7 @@ function App() {
                 <h3 className="text-lg font-semibold mb-3 text-white text-center">Bebidas</h3>
                 <div className="space-y-4">
                   {bebidas.map((item) => {
-                    const product = allProducts.find(p => p.name === item.name);
+                    const product = allProductsUnified.find(p => p.name === item.name);
                     const isAvailable = product?.available !== false;
                     
                     return (
@@ -1355,7 +1370,7 @@ function App() {
                 <h3 className="text-lg font-semibold mb-3 text-white text-center">Doces</h3>
                 <div className="space-y-4">
                   {doces.map((item) => {
-                    const product = allProducts.find(p => p.name === item.name);
+                    const product = allProductsUnified.find(p => p.name === item.name);
                     const isAvailable = product?.available !== false;
                     
                     return (
@@ -1399,7 +1414,7 @@ function App() {
                 <h3 className="text-lg font-semibold mb-3 text-white text-center">Cuscuz</h3>
                 <div className="space-y-4">
                   {cuscuz.map((item) => {
-                    const product = allProducts.find(p => p.name === item.name);
+                    const product = allProductsUnified.find(p => p.name === item.name);
                     const isAvailable = product?.available !== false;
                     
                     return (
@@ -1443,7 +1458,7 @@ function App() {
                 <h3 className="text-lg font-semibold mb-3 text-white text-center">Combo de Salgados</h3>
                 <div className="space-y-4">
                   {comboSalgados.map((item) => {
-                    const product = allProducts.find(p => p.name === item.name);
+                    const product = allProductsUnified.find(p => p.name === item.name);
                     const isAvailable = product?.available !== false;
                     
                     return (
@@ -1521,7 +1536,7 @@ function App() {
         <AdminPanel
           isOpen={isAdminOpen}
           onClose={() => setIsAdminOpen(false)}
-          products={allProducts}
+          products={allProductsUnified}
           onUpdateProducts={() => {}} // Não precisa mais atualizar manualmente, pois é em tempo real
           promotions={promotions}
           onUpdatePromotions={() => {}}
