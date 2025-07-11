@@ -84,7 +84,7 @@ interface Oferta {
 }
 
 function App() {
-  const [selectedCategory, setSelectedCategory] = useState('hamburgueres');
+  const [selectedCategory, setSelectedCategory] = useState('lanches');
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [orderForm, setOrderForm] = useState({
@@ -1201,6 +1201,28 @@ function App() {
               </div>
             </div>
           </section>
+
+          {/* Navegação de Categorias */}
+          <nav className="flex justify-center gap-2 my-4 flex-wrap">
+            {[
+              { key: 'lanches', label: 'Lanches' },
+              { key: 'bebidas', label: 'Bebidas' },
+              { key: 'doces', label: 'Doces' },
+              { key: 'cuscuz', label: 'Cuscuz' },
+              { key: 'combo-salgados', label: 'Combo de Salgados' },
+            ].map(cat => (
+              <button
+                key={cat.key}
+                onClick={() => setSelectedCategory(cat.key)}
+                className={`px-4 py-2 rounded font-semibold transition-colors text-sm mb-2
+                  ${selectedCategory === cat.key
+                    ? 'bg-yellow-400 text-zinc-900 shadow-lg'
+                    : 'bg-zinc-700 text-white hover:bg-yellow-500 hover:text-zinc-900'}`}
+              >
+                {cat.label}
+              </button>
+            ))}
+          </nav>
 
           <main className="w-full max-w-xl mx-auto px-2 sm:px-4 py-6 flex-1">
             {selectedCategory === 'lanches' && (
