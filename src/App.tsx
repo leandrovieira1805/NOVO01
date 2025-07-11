@@ -1242,9 +1242,6 @@ function App() {
           <main className="w-full max-w-xl mx-auto px-2 sm:px-4 py-6 flex-1">
             {!selectedCategory && (
               <div className="text-center">
-                <h2 className="text-2xl font-bold text-yellow-400 mb-6">🎯 Escolha uma categoria para começar!</h2>
-                <p className="text-white mb-8">Selecione uma das categorias acima para ver nossos produtos</p>
-                
                 {/* Mostrar oferta se houver */}
                 {ofertas.length > 0 && (
                   <div className="mb-8">
@@ -1258,15 +1255,15 @@ function App() {
                         />
                         <div className="absolute bottom-4 right-4 bg-red-600 text-white px-8 py-4 rounded-full font-bold text-2xl shadow-lg animate-pulse">
                           R$ {ofertas[0].price.toFixed(2)}
-                        </div>
-                        <button
+                </div>
+                <button
                           onClick={() => addToCart({ name: 'Oferta Especial', price: ofertas[0].price })}
                           className="absolute top-4 left-4 bg-green-600 text-white px-6 py-3 rounded-full font-bold text-lg shadow-lg hover:bg-green-700 transition-colors"
                         >
                           Adicionar ao Carrinho
-                        </button>
-                      </div>
-                    </div>
+                </button>
+              </div>
+          </div>
                   </div>
                 )}
               </div>
