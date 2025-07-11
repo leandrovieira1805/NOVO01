@@ -1,69 +1,24 @@
-import { useState, useEffect } from 'react';
-import { ShoppingCart, X as XIcon, Trash2 as TrashIcon, MapPin, Phone, Clock } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { ShoppingCart, Settings, X, Plus, Minus, QrCode, Eye, EyeOff } from 'lucide-react';
 import { AdminPanel } from './components/AdminPanel';
 import { PromotionBanner } from './components/PromotionBanner';
-
-import HEROIMAGE from './assets/HERO.jpeg';
-import LOGOIMAGE from './assets/LOGO.png';
-import FANTA1L from './assets/BEBIDAS/FANTA-removebg-preview.png';
-import COCA1L from './assets/BEBIDAS/COCA-COLA-1L.png';
-import GUARANA1L from './assets/BEBIDAS/GUARANA-1L.png';
-import FANTALT from './assets/BEBIDAS/FANTA_LT-removebg-preview.png';
-import COCAZERO_LT from './assets/BEBIDAS/COCA_ZERO_LT-removebg-preview.png';
-import GUARANA_LT from './assets/BEBIDAS/GUARANA_LT-removebg-preview.png';
-import SUCO_MORANGO from './assets/BEBIDAS/SUCO_MORANGO-removebg-preview.png';
-import SUCO_GOIABA from './assets/BEBIDAS/SUCO_GOIABA-removebg-preview.png';
-import SUCO_GRAVIOLA from './assets/BEBIDAS/SUCO_GRAVIOLA-removebg-preview.png';
-import SUCO_CAJU from './assets/BEBIDAS/SUCO_CAJU-removebg-preview.png';
-import SUCO_MARACUJA from './assets/BEBIDAS/SUCO_MARACUJA-removebg-preview.png';
-import COCA_LT from './assets/BEBIDAS/COCA_LT-removebg-preview.png';
-import CAJUINA1L from './assets/BEBIDAS/CAJUINA-removebg-preview.png';
-import CUSCUZ_FRANGO from './assets/CUSCUZ/CUSCUZ DE FRANGO.jpeg';
-import CUSCUZ_COSTELA from './assets/CUSCUZ/CUSCUZ DE COSTELS.jpeg';
-import CUSCUZ_CALABRESA from './assets/CUSCUZ/CUSCUZ CALABRESA.jpg';
-import TARTALETE from './assets/IMAGEN/TARTALETE.jpeg';
-import COXINHA_FRANGO from './assets/IMAGEN/COXINHA DE FRANGO.jpeg';
-import CACHORRO_QUENTE from './assets/IMAGEN/CACHORRO QUENTE.jpeg';
-import PUDIM from './assets/IMAGEN/PUDIM.jpeg';
-import COXINHA_CARNE_SECA from './assets/IMAGEN/COXINHA CARNE SECA.jpeg';
-import BOLO_CHOCOLATE from './assets/IMAGEN/BOLO DE CHOCOLATE.jpeg';
-import BOLO_SENHORA from './assets/IMAGEN/BOLO DE SENOURA.jpeg';
-import COMBO from './assets/IMAGEN/COMBO.jpeg';
-import PASTEL_P from './assets/IMAGEN/PASTEL P.jpeg';
-import PASTEL_G from './assets/IMAGEN/PASTEL G.jpeg';
-import ITAIPAVA_LATAO from './assets/BEBIDAS/Itaipava_latão-removebg-preview.png';
-import SKOL_LATAO from './assets/BEBIDAS/Skol_latão-removebg-preview.png';
-import BRAHMA_CHOPP from './assets/BEBIDAS/Brahma_chopp-removebg-preview.png';
-import BUDWEISER_LONGNECK from './assets/BEBIDAS/Budweiser_long_neck-removebg-preview.png';
-import HEINEKEN_LONGNECK from './assets/BEBIDAS/Heineken_long_neck-removebg-preview.png';
-import AGUA_COCO from './assets/BEBIDAS/AGUA DE COCO.jpeg';
-import H2OH_LIMONETO from './assets/BEBIDAS/H2oh_limoneto-removebg-preview.png';
-import ENROLADINHO from './assets/IMAGEN/ENROLADINHO-removebg-preview.png';
-import BARCA_COXINHA from './assets/IMAGEN/BARCA DE COXINHA.jpeg';
-import BARCA_PASTEL from './assets/IMAGEN/BARCA DE PASTEL.jpeg';
-import BATATA_SIMPLES from './assets/IMAGEN/BATATA SIMPLES.jpeg';
-import BATATA_COMPLETA from './assets/IMAGEN/BATATA COMPLETA.jpeg';
-import { generatePixPayload, getPixInfo } from './utils/pixUtils';
 import { productService, ofertaService, promotionService } from './firebase/services';
+import { generatePixPayload, getPixInfo } from './utils/pixUtils';
+import QRCode from 'qrcode.react';
+import toast, { Toaster } from 'react-hot-toast';
 
-interface Item {
-  name: string;
-  price: number;
-  image?: string;
-  description?: string;
-}
-
-interface CartItem {
-  name: string;
-  price: number;
-  quantity: number;
-}
-
-interface Product extends Item {
+interface Product {
   id: string;
-  available: boolean;
+  name: string;
+  price: number;
+  image: string;
   category: string;
-  image: string; // Tornar obrigatório para compatibilidade com AdminPanel
+  description?: string;
+  available: boolean;
+}
+
+interface CartItem extends Product {
+  quantity: number;
 }
 
 interface Promotion {
@@ -84,1463 +39,451 @@ interface Oferta {
 }
 
 function App() {
-  const [selectedCategory, setSelectedCategory] = useState('');
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [orderForm, setOrderForm] = useState({
-    name: '',
-    phone: '',
-    address: '',
-    neighborhood: '',
-    number: '',
-    referencePoint: '',
-    paymentMethod: '',
-    needChange: false,
-    changeFor: '',
-    deliveryType: '',
-    deliveryFee: 0,
-    localidade: '',
-  });
-  const [showOrderForm, setShowOrderForm] = useState(false);
-  const [isPastelGModalOpen, setIsPastelGModalOpen] = useState(false);
-  const [pastelGSelections, setPastelGSelections] = useState<{
-    sabores: string[];
-    complementos: string[];
-  }>({
-    sabores: [],
-    complementos: []
-  });
-  const [isEnroladinhoModalOpen, setIsEnroladinhoModalOpen] = useState(false);
-  const [enroladinhoSabor, setEnroladinhoSabor] = useState('');
   const [isAdminOpen, setIsAdminOpen] = useState(false);
-  const [adminPassword, setAdminPassword] = useState('');
-  const [showPasswordModal, setShowPasswordModal] = useState(false);
-  const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [showPromotionBanner, setShowPromotionBanner] = useState(true);
   const [promotions, setPromotions] = useState<Promotion[]>([]);
-  const [showOfertaModal, setShowOfertaModal] = useState(false);
   const [ofertas, setOfertas] = useState<Oferta[]>([]);
   const [showPixModal, setShowPixModal] = useState(false);
-  const [pixQrCode, setPixQrCode] = useState('');
-  const [pixCode, setPixCode] = useState('');
+  const [pixQRCode, setPixQRCode] = useState('');
+  const [showUnavailable, setShowUnavailable] = useState(false);
 
-  // useEffect para sincronizar produtos com Firebase
+  const categories = [
+    { id: 'all', label: 'Todos' },
+    { id: 'lanches', label: 'Lanches' },
+    { id: 'bebidas', label: 'Bebidas' },
+    { id: 'doces', label: 'Doces' },
+    { id: 'cuscuz', label: 'Cuscuz' },
+    { id: 'combo-salgados', label: 'Combo de Salgados' }
+  ];
+
   useEffect(() => {
-    const unsubscribe = productService.onProductsChange((products) => {
-      setAllProducts(products);
-    });
+    // Carregar dados iniciais
+    loadInitialData();
 
-    return () => unsubscribe();
+    // Configurar listeners em tempo real
+    const unsubscribeProducts = productService.onProductsChange(setProducts);
+    const unsubscribePromotions = promotionService.onPromotionsChange(setPromotions);
+    const unsubscribeOfertas = ofertaService.onOfertasChange(setOfertas);
+
+    return () => {
+      unsubscribeProducts();
+      unsubscribePromotions();
+      unsubscribeOfertas();
+    };
   }, []);
 
-  // useEffect para sincronizar ofertas com Firebase
-  useEffect(() => {
-    const unsubscribe = ofertaService.onOfertasChange((ofertas) => {
-      setOfertas(ofertas);
-    });
-
-    return () => unsubscribe();
-  }, []);
-
-  // useEffect para sincronizar promoções com Firebase
-  useEffect(() => {
-    const unsubscribe = promotionService.onPromotionsChange((promotions) => {
-      setPromotions(promotions);
-    });
-
-    return () => unsubscribe();
-  }, []);
-
-  const ADMIN_PASSWORD = "admin123"; // Altere para uma senha segura
-  const pixInfo = getPixInfo();
-
-  const addToCart = (item: Item) => {
+  const loadInitialData = async () => {
     try {
-      setCartItems(prevItems => [...prevItems, {
-        name: item.name,
-        price: item.price,
-        quantity: 1
-      }]);
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        console.error('Erro ao adicionar item ao carrinho:', error.message);
-      } else {
-      console.error('Erro ao adicionar item ao carrinho:', error);
-      }
+      const [productsData, promotionsData, ofertasData] = await Promise.all([
+        productService.getAllProducts(),
+        promotionService.getAllPromotions(),
+        ofertaService.getAllOfertas()
+      ]);
+      
+      setProducts(productsData);
+      setPromotions(promotionsData);
+      setOfertas(ofertasData);
+    } catch (error) {
+      console.error('Erro ao carregar dados:', error);
+      toast.error('Erro ao carregar dados do cardápio');
     }
   };
 
-  const removeFromCart = (itemName: string) => {
-    try {
-      setCartItems(prevItems => 
-        prevItems.filter(item => item.name !== itemName)
-      );
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        console.error('Erro ao remover item do carrinho:', error.message);
-      } else {
-      console.error('Erro ao remover item do carrinho:', error);
-      }
+  const filteredProducts = products.filter(product => {
+    const categoryMatch = selectedCategory === 'all' || product.category === selectedCategory;
+    const availabilityMatch = showUnavailable || product.available;
+    return categoryMatch && availabilityMatch;
+  });
+
+  const addToCart = (product: Product) => {
+    if (!product.available) {
+      toast.error('Este produto não está disponível no momento');
+      return;
     }
-  };
 
-  const updateQuantity = (itemName: string, newQuantity: number) => {
-    try {
-      if (newQuantity <= 0) {
-        removeFromCart(itemName);
-        return;
-      }
-
-      setCartItems(prevItems =>
-        prevItems.map(item =>
-          item.name === itemName
-            ? { ...item, quantity: newQuantity }
+    setCart(prevCart => {
+      const existingItem = prevCart.find(item => item.id === product.id);
+      if (existingItem) {
+        return prevCart.map(item =>
+          item.id === product.id
+            ? { ...item, quantity: item.quantity + 1 }
             : item
-        )
-      );
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        console.error('Erro ao atualizar quantidade:', error.message);
-      } else {
-      console.error('Erro ao atualizar quantidade:', error);
+        );
       }
-    }
+      return [...prevCart, { ...product, quantity: 1 }];
+    });
+    toast.success(`${product.name} adicionado ao carrinho!`);
+  };
+
+  const removeFromCart = (productId: string) => {
+    setCart(prevCart => {
+      const existingItem = prevCart.find(item => item.id === productId);
+      if (existingItem && existingItem.quantity > 1) {
+        return prevCart.map(item =>
+          item.id === productId
+            ? { ...item, quantity: item.quantity - 1 }
+            : item
+        );
+      }
+      return prevCart.filter(item => item.id !== productId);
+    });
+  };
+
+  const clearCart = () => {
+    setCart([]);
+    toast.success('Carrinho limpo!');
   };
 
   const getTotalPrice = () => {
-    try {
-      return cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
-    } catch (error) {
-      console.error('Erro ao calcular total:', error);
-      return 0;
-    }
+    return cart.reduce((total, item) => {
+      // Add null check for price
+      const price = item.price || 0;
+      return total + (price * item.quantity);
+    }, 0);
   };
 
-  const handleAdminAccess = () => {
-    if (adminPassword === ADMIN_PASSWORD) {
+  const getTotalItems = () => {
+    return cart.reduce((total, item) => total + item.quantity, 0);
+  };
+
+  const generatePixPayment = () => {
+    const total = getTotalPrice();
+    if (total <= 0) {
+      toast.error('Carrinho vazio!');
+      return;
+    }
+
+    const pixInfo = getPixInfo();
+    const payload = generatePixPayload({
+      ...pixInfo,
+      amount: total,
+      description: `Pedido - ${cart.length} itens`
+    });
+
+    setPixQRCode(payload);
+    setShowPixModal(true);
+  };
+
+  const openAdminPanel = () => {
+    const password = prompt('Digite a senha do administrador:');
+    if (password === 'admin123') {
       setIsAdminOpen(true);
-      setShowPasswordModal(false);
-      setAdminPassword('');
-    } else {
+    } else if (password !== null) {
       alert('Senha incorreta!');
     }
   };
 
-
-
-  const handleFinishOrder = () => {
-    if (cartItems.length === 0) {
-      alert('Adicione itens ao carrinho antes de finalizar o pedido');
-      return;
-    }
-    setShowOrderForm(true);
-  };
-
-  const generateStaticPix = () => {
-    try {
-      const total = getTotalPrice();
-      const pixInfo = getPixInfo();
-      
-      console.log('Gerando PIX estático...');
-      console.log('Total:', total);
-      console.log('PIX Info:', pixInfo);
-      
-      // Gerar payload PIX estático
-      const pixPayload = generatePixPayload({
-        ...pixInfo,
-        amount: total,
-        description: `Pedido - ${cartItems.map(item => item.name).join(', ')}`
-      });
-      
-      console.log('Payload PIX gerado:', pixPayload);
-      
-      if (!pixPayload) {
-        console.error('Erro: Payload PIX não foi gerado');
-        alert('Erro ao gerar código PIX');
-        return;
-      }
-      
-      setPixCode(pixPayload);
-      setPixQrCode(''); // Não temos QR Code para PIX estático
-      setShowPixModal(true);
-      setShowOrderForm(false);
-      
-      console.log('PIX estático configurado com sucesso');
-      console.log('Código PIX:', pixPayload);
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        console.error('Erro ao gerar PIX estático:', error.message);
-      alert('Erro ao gerar PIX estático: ' + error.message);
-      } else {
-        console.error('Erro ao gerar PIX estático:', error);
-        alert('Erro ao gerar PIX estático.');
-      }
-    }
-  };
-
-  const generatePixPayment = async () => {
-    try {
-      const total = getTotalPrice();
-      
-      console.log('Gerando PIX estático...');
-      console.log('Total:', total);
-      
-      // Usar diretamente o PIX estático que já funciona
-      generateStaticPix();
-      
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        console.error('Erro ao gerar PIX:', error.message);
-      } else {
-      console.error('Erro ao gerar PIX:', error);
-      }
-      // Usar PIX estático como fallback
-      generateStaticPix();
-    }
-  };
-
-  const handleSubmitOrder = () => {
-    try {
-      if (!orderForm.name || !orderForm.phone) {
-        alert('Por favor, preencha nome e telefone');
-        return;
-      }
-
-      if (orderForm.deliveryType === 'delivery' && !orderForm.address) {
-        alert('Por favor, preencha o endereço para entrega');
-        return;
-      }
-      // Validação da localidade para entregas
-      if (orderForm.deliveryType === 'delivery' && !orderForm.localidade) {
-        alert('Por favor, selecione a localidade para entrega.');
-        return;
-      }
-
-      // Validação adicional para garantir que a taxa foi calculada corretamente
-      if (orderForm.deliveryType === 'delivery' && orderForm.deliveryFee === 0) {
-        alert('Erro no cálculo da taxa de entrega. Por favor, selecione a localidade novamente.');
-        return;
-      }
-
-      const deliveryFee = orderForm.deliveryType === 'delivery' ? orderForm.deliveryFee : 0;
-      const total = getTotalPrice() + deliveryFee;
-
-      // Gerar payload PIX para uso futuro se necessário
-
-      const message = `*🌭 NOVO PEDIDO - HOTDOG DA PRAÇA 🌭*\n\n` +
-        `*DADOS DO CLIENTE*\n` +
-        `*Nome:* ${orderForm.name}\n` +
-        `*Telefone:* ${orderForm.phone}\n` +
-        `*Tipo:* ${orderForm.deliveryType === 'delivery' ? '🛵 Entrega' : '🏃 Retirada'}\n` +
-        (orderForm.deliveryType === 'delivery' ? `*Endereço:* ${orderForm.address}\n` +
-        `*Bairro:* ${orderForm.neighborhood}\n` +
-        `*Número:* ${orderForm.number}\n` +
-        `*Ponto de Referência:* ${orderForm.referencePoint}\n` : '') +
-        '\n*📋 ITENS DO PEDIDO:*\n' +
-        cartItems.map(item => 
-          `• ${item.name} (${item.quantity}x) - R$ ${(item.price * item.quantity).toFixed(2)}`
-        ).join('\n') +
-        `\n\n*💰 RESUMO DO PEDIDO:*` +
-        `\n*Subtotal:* R$ ${getTotalPrice().toFixed(2)}` +
-        (orderForm.deliveryType === 'delivery' ? `\n*Taxa de entrega:* R$ ${orderForm.deliveryFee.toFixed(2)}` : '') +
-        `\n*Total:* R$ ${total.toFixed(2)}\n\n` +
-        `*💳 PAGAMENTO:*\n` +
-        `*Forma:* ${
-          orderForm.paymentMethod === 'pix' ? '💠 PIX' :
-          orderForm.paymentMethod === 'cartao' ? '💳 Cartão' :
-          '💵 Dinheiro'
-        }` +
-        (orderForm.paymentMethod === 'pix' ? 
-          `\n*Chave PIX (CPF):* ${pixInfo.key}\n*Nome:* ${pixInfo.name}\n*Cidade:* ${pixInfo.city}` : '') +
-        (orderForm.paymentMethod === 'dinheiro' && orderForm.needChange ? 
-          `\n*Troco para:* R$ ${orderForm.changeFor}` : '') +
-        '\n\n*⏰ Tempo estimado de entrega: 30-45 minutos*\n' +
-        '*📍 Acompanhe seu pedido pelo WhatsApp*';
-
-      window.open(
-        `https://wa.me/55999211477?text=${encodeURIComponent(message)}`,
-        '_blank'
-      );
-
-      // Limpa o carrinho e fecha o modal
-      setCartItems([]);
-      setIsCartOpen(false);
-      setShowOrderForm(false);
-      setOrderForm({
-        name: '',
-        phone: '',
-        address: '',
-        neighborhood: '',
-        number: '',
-        referencePoint: '',
-        paymentMethod: '',
-        needChange: false,
-        changeFor: '',
-        deliveryType: '',
-        deliveryFee: 0,
-        localidade: '',
-      });
-    } catch (error) {
-      console.error('Erro ao enviar pedido:', error);
-      alert('Erro ao enviar pedido. Tente novamente.');
-    }
-  };
-
-  const handlePastelGSelection = () => {
-    if (pastelGSelections.sabores.length === 0) {
-      alert('Selecione pelo menos 1 sabor');
-      return;
-    }
-    if (pastelGSelections.sabores.length > 2) {
-      alert('Selecione no máximo 2 sabores');
-      return;
-    }
-    if (pastelGSelections.complementos.length > 3) {
-      alert('Selecione no máximo 3 complementos');
-      return;
-    }
-
-    const saboresText = pastelGSelections.sabores.join(', ');
-    const complementosText = pastelGSelections.complementos.length > 0 ? ` + ${pastelGSelections.complementos.join(', ')}` : '';
-    
-    const pastelGItem = {
-      name: `Pastel G - ${saboresText}${complementosText}`,
-      price: 15.00,
-      description: `Sabores: ${saboresText}${complementosText ? ` | Complementos: ${complementosText}` : ''}`
-    };
-
-    addToCart(pastelGItem);
-    setIsPastelGModalOpen(false);
-    setPastelGSelections({ sabores: [], complementos: [] });
-  };
-
-  const handleSaboresChange = (sabor: string) => {
-    setPastelGSelections(prev => ({
-      ...prev,
-      sabores: prev.sabores.includes(sabor) 
-        ? prev.sabores.filter(s => s !== sabor)
-        : prev.sabores.length < 2 
-          ? [...prev.sabores, sabor]
-          : prev.sabores
-    }));
-  };
-
-  const handleComplementosChange = (complemento: string) => {
-    setPastelGSelections(prev => ({
-      ...prev,
-      complementos: prev.complementos.includes(complemento)
-        ? prev.complementos.filter(c => c !== complemento)
-        : prev.complementos.length < 3
-          ? [...prev.complementos, complemento]
-          : prev.complementos
-    }));
-  };
-
-  const handleEnroladinhoSelection = () => {
-    if (!enroladinhoSabor) {
-      alert('Selecione o sabor do Enroladinho');
-      return;
-    }
-    const enroladinhoItem = {
-      name: `Enroladinho (${enroladinhoSabor})`,
-      price: 4.00,
-      description: `Sabor: ${enroladinhoSabor}`
-    };
-    addToCart(enroladinhoItem);
-    setIsEnroladinhoModalOpen(false);
-    setEnroladinhoSabor('');
-  };
-
-  const categories = [
-    { id: 'bebidas', label: 'Bebidas', icon: ShoppingCart },
-    { id: 'lanches', label: 'Lanches', icon: ShoppingCart },
-    { id: 'cuscuz', label: 'Cuscuz', icon: ShoppingCart },
-    { id: 'combo-salgados', label: 'Combo de Salgados', icon: ShoppingCart },
-    { id: 'doces', label: 'Doces', icon: ShoppingCart },
-  ];
-
-  const lanches: Item[] = [
-    { name: 'Coxinha de carne seca com queijo', price: 6.00, image: COXINHA_CARNE_SECA },
-    { name: 'Coxinha de frango cremoso', price: 5.00, image: COXINHA_FRANGO },
-    { name: 'Enroladinho (Misto, Salsicha)', price: 4.00, image: ENROLADINHO },
-    { name: 'Hot Dog', price: 8.00, image: CACHORRO_QUENTE },
-    { name: 'Barca de Coxinha', price: 18.00, image: BARCA_COXINHA },
-    { name: 'Barca de Pastel', price: 18.00, image: BARCA_PASTEL },
-    { name: 'Batata Frita Simples', price: 11.00, image: BATATA_SIMPLES },
-    { name: 'Batata Frita Completa', price: 18.00, image: BATATA_COMPLETA },
-    // Pastel P
-    { name: 'Pastel P - Carne seca com queijo', price: 7.00, image: PASTEL_P },
-    { name: 'Pastel P - Carne moída com queijo', price: 7.00, image: PASTEL_P },
-    { name: 'Pastel P - Calabresa com queijo', price: 7.00, image: PASTEL_P },
-    { name: 'Pastel P - Frango com queijo', price: 7.00, image: PASTEL_P },
-    { name: 'Pastel P - Bacon com queijo', price: 7.00, image: PASTEL_P },
-    { name: 'Pastel P - Misto', price: 7.00, image: PASTEL_P },
-    { name: 'Pastel P - Queijo', price: 7.00, image: PASTEL_P },
-    // Pastel G (sabores e complementos podem ser descritos na descrição)
-    { name: 'Pastel G', price: 15.00, image: PASTEL_G, description: 'Escolha até 2 sabores: Bacon, Carne moída, Carne seca, Frango, Presunto, Queijo. Até 3 complementos: Azeitona, Catupiry, Cheddar, Cebola, Tomate, Milho.' },
-  ];
-
-  const bebidas: Item[] = [
-    { name: 'Fanta 1L', price: 10.00, image: FANTA1L },
-    { name: 'Coca-Cola 1L', price: 10.00, image: COCA1L },
-    { name: 'Cajuína 1L', price: 10.00, image: CAJUINA1L },
-    { name: 'Guaraná 1L', price: 10.00, image: GUARANA1L },
-    { name: 'Fanta 350ml', price: 5.00, image: FANTALT },
-    { name: 'Coca-Cola 350ml', price: 5.00, image: COCA_LT },
-    { name: 'Coca Zero 350ml', price: 5.00, image: COCAZERO_LT },
-    { name: 'Guaraná 350ml', price: 5.00, image: GUARANA_LT },
-    { name: 'Suco de Morango 500ml', price: 7.00, image: SUCO_MORANGO },
-    { name: 'Suco de Goiaba 500ml', price: 7.00, image: SUCO_GOIABA },
-    { name: 'Suco de Graviola 500ml', price: 7.00, image: SUCO_GRAVIOLA },
-    { name: 'Suco de Caju 500ml', price: 7.00, image: SUCO_CAJU },
-    { name: 'Suco de Maracujá 500ml', price: 7.00, image: SUCO_MARACUJA },
-    { name: 'Itaipava latão', price: 6.00, image: ITAIPAVA_LATAO },
-    { name: 'Skol latão', price: 6.00, image: SKOL_LATAO },
-    { name: 'Brahma chopp', price: 7.00, image: BRAHMA_CHOPP },
-    { name: 'Budweiser long neck', price: 7.00, image: BUDWEISER_LONGNECK },
-    { name: 'Heineken long neck', price: 9.00, image: HEINEKEN_LONGNECK },
-    { name: 'Água de coco', price: 4.50, image: AGUA_COCO },
-    { name: 'H2oh limoneto', price: 6.00, image: H2OH_LIMONETO },
-  ];
-
-  const doces: Item[] = [
-    { name: 'Bolo de Chocolate (fatia)', price: 5.00, image: BOLO_CHOCOLATE },
-    { name: 'Bolo de Cenoura com Chocolate (fatia)', price: 5.00, image: BOLO_SENHORA },
-    { name: 'Pudim', price: 5.00, image: PUDIM },
-    { name: 'Tartelete', price: 2.00, image: TARTALETE },
-  ];
-
-  const cuscuz: Item[] = [
-    { name: 'Cuscuz com frango e catupiry', price: 14.00, image: CUSCUZ_FRANGO },
-    { name: 'Cuscuz com costela', price: 15.00, image: CUSCUZ_COSTELA },
-    { name: 'Cuscuz com calabresa e bacon', price: 16.00, image: CUSCUZ_CALABRESA },
-  ];
-
-  const comboSalgados: Item[] = [
-    { name: 'Combo de Salgados', price: 38.00, image: COMBO, description: 'Inclui: Coxinha, Pastel, Enroladinho, Batata' },
-  ];
-
-  const saboresPastelG = ['Bacon', 'Carne moída', 'Carne seca', 'Frango', 'Presunto', 'Queijo'];
-  const complementosPastelG = ['Azeitona', 'Catupiry', 'Cheddar', 'Cebola', 'Tomate', 'Milho'];
-
-  // useEffect para inicializar produtos
-  useEffect(() => {
-    const productsWithIds: Product[] = [
-      ...lanches.map((item, index) => ({ ...item, id: `lanche-${index}`, available: true, category: 'lanches', image: item.image || '' })),
-      ...bebidas.map((item, index) => ({ ...item, id: `bebida-${index}`, available: true, category: 'bebidas', image: item.image || '' })),
-      ...doces.map((item, index) => ({ ...item, id: `doce-${index}`, available: true, category: 'doces', image: item.image || '' })),
-      ...cuscuz.map((item, index) => ({ ...item, id: `cuscuz-${index}`, available: true, category: 'cuscuz', image: item.image || '' })),
-      ...comboSalgados.map((item, index) => ({ ...item, id: `combo-${index}`, available: true, category: 'combo-salgados', image: item.image || '' }))
-    ];
-    setAllProducts(productsWithIds);
-  }, []);
-
-  // Produtos fixos do código
-  const fixedProducts: Product[] = [
-    ...lanches.map((item, index) => ({ ...item, id: `lanche-${index}`, available: true, category: 'lanches', image: item.image || '' })),
-    ...bebidas.map((item, index) => ({ ...item, id: `bebida-${index}`, available: true, category: 'bebidas', image: item.image || '' })),
-    ...doces.map((item, index) => ({ ...item, id: `doce-${index}`, available: true, category: 'doces', image: item.image || '' })),
-    ...cuscuz.map((item, index) => ({ ...item, id: `cuscuz-${index}`, available: true, category: 'cuscuz', image: item.image || '' })),
-    ...comboSalgados.map((item, index) => ({ ...item, id: `combo-${index}`, available: true, category: 'combo-salgados', image: item.image || '' }))
-  ];
-
-  // Unir produtos do Firebase e fixos, removendo duplicados pelo nome
-  const allProductsUnified: Product[] = [
-    ...allProducts,
-    ...fixedProducts.filter(fixed => !allProducts.some(prod => prod.name === fixed.name))
-  ];
-
   return (
-    <div className="min-h-screen bg-zinc-900 flex flex-col items-center justify-center">
-      <div className="w-full max-w-5xl mx-auto flex-1 flex flex-col">
-        <button
-          onClick={() => setIsCartOpen(!isCartOpen)}
-          className="fixed top-4 right-4 bg-green-600 text-white p-2 rounded-full shadow-lg z-50 hover:bg-green-700"
-        >
-          <div className="relative">
-            <ShoppingCart className="w-6 h-6" />
-            {cartItems.length > 0 && (
-              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
-                {cartItems.length}
-              </span>
-            )}
-          </div>
-        </button>
+    <div className="min-h-screen bg-gray-900 text-white">
+      <Toaster position="top-right" />
+      
+      {/* Promotion Banner */}
+      {showPromotionBanner && (
+        <PromotionBanner 
+          promotions={promotions} 
+          onClose={() => setShowPromotionBanner(false)} 
+        />
+      )}
 
-        {isCartOpen && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-lg p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold">Carrinho</h2>
-                <button onClick={() => setIsCartOpen(false)} className="text-gray-500 hover:text-gray-700">
-                  <XIcon size={24} />
-                </button>
-              </div>
-
-              {cartItems.length === 0 ? (
-                <p className="text-center text-gray-500">Seu carrinho está vazio</p>
-              ) : (
-                <>
-                  {/* Lista de itens */}
-                  <div className="space-y-4 mb-4">
-                    {cartItems.map(item => (
-                      <div key={item.name} className="flex items-center justify-between bg-gray-50 p-2 rounded-lg">
-                        <div className="flex-1">
-                          <p className="font-semibold">{item.name}</p>
-                          <p className="text-green-600">R$ {(item.price * item.quantity).toFixed(2)}</p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => updateQuantity(item.name, item.quantity - 1)}
-                            className="text-gray-500 hover:text-gray-700"
-                          >
-                            -
-                          </button>
-                          <span className="w-8 text-center">{item.quantity}</span>
-                          <button
-                            onClick={() => updateQuantity(item.name, item.quantity + 1)}
-                            className="text-gray-500 hover:text-gray-700"
-                          >
-                            +
-                          </button>
-                          <button
-                            onClick={() => removeFromCart(item.name)}
-                            className="text-red-500 hover:text-red-700 ml-2"
-                          >
-                            <TrashIcon className="w-5 h-5" />
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Formulário de pedido */}
-                  {showOrderForm ? (
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700">Nome</label>
-                        <input
-                          type="text"
-                          value={orderForm.name}
-                          onChange={(e) => setOrderForm(prev => ({ ...prev, name: e.target.value }))}
-                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700">Telefone</label>
-                        <input
-                          type="text"
-                          value={orderForm.phone}
-                          onChange={(e) => setOrderForm(prev => ({ ...prev, phone: e.target.value }))}
-                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                        />
-                      </div>
-                      {orderForm.deliveryType === 'delivery' && (
-                        <>
-                      <div>
-                            <label className="block text-sm font-medium text-gray-700">Endereço</label>
-                        <input
-                          type="text"
-                          value={orderForm.address}
-                          onChange={(e) => setOrderForm(prev => ({ ...prev, address: e.target.value }))}
-                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700">Bairro</label>
-                        <input
-                          type="text"
-                          value={orderForm.neighborhood}
-                          onChange={(e) => setOrderForm(prev => ({ ...prev, neighborhood: e.target.value }))}
-                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                        />
-                      </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700">
-                              Localidade <span className="text-red-500">*</span>
-                            </label>
-                            <select
-                              value={orderForm.localidade}
-                              onChange={(e) => {
-                                const localidade = e.target.value;
-                                let taxa = 0;
-                                if (localidade === 'Lagoa Grande') taxa = 4;
-                                else if (localidade === 'Izacolândia') taxa = 5;
-                                setOrderForm(prev => ({ ...prev, localidade, deliveryFee: taxa }));
-                              }}
-                              className={`mt-1 block w-full rounded-md shadow-sm focus:ring-green-500 ${
-                                orderForm.deliveryType === 'delivery' && !orderForm.localidade 
-                                  ? 'border-red-300 focus:border-red-500' 
-                                  : 'border-gray-300 focus:border-green-500'
-                              }`}
-                            >
-                              <option value="">Selecione a localidade</option>
-                              <option value="Lagoa Grande">Lagoa Grande - R$ 4,00</option>
-                              <option value="Izacolândia">Izacolândia - R$ 5,00</option>
-                            </select>
-                            {orderForm.deliveryType === 'delivery' && !orderForm.localidade && (
-                              <p className="mt-1 text-sm text-red-600">Localidade é obrigatória para entrega</p>
-                            )}
-                            {orderForm.deliveryType === 'delivery' && orderForm.localidade && (
-                              <div className="mt-2 p-3 bg-green-100 border-2 border-green-300 rounded-lg animate-pulse">
-                                <div className="flex items-center justify-between">
-                                  <div>
-                                    <p className="text-sm font-medium text-green-800">
-                                      ✅ Localidade selecionada: <span className="font-bold">{orderForm.localidade}</span>
-                                    </p>
-                                    <p className="text-sm text-green-700 mt-1">
-                                      Taxa de entrega: <span className="font-bold text-lg">R$ {orderForm.deliveryFee.toFixed(2)}</span>
-                                    </p>
-                                  </div>
-                                  <div className="text-green-600">
-                                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                                    </svg>
-                                  </div>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700">Número</label>
-                        <input
-                          type="text"
-                          value={orderForm.number}
-                          onChange={(e) => setOrderForm(prev => ({ ...prev, number: e.target.value }))}
-                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700">Ponto de Referência</label>
-                        <input
-                          type="text"
-                          value={orderForm.referencePoint}
-                          onChange={(e) => setOrderForm(prev => ({ ...prev, referencePoint: e.target.value }))}
-                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                        />
-                      </div>
-                        </>
-                      )}
-                      <div className="mt-4">
-                        <label className="block text-sm font-medium text-gray-700">Tipo de Entrega</label>
-                        <select
-                          value={orderForm.deliveryType}
-                          onChange={(e) => {
-                            const type = e.target.value;
-                            setOrderForm(prev => {
-                              let taxa = 0;
-                              let localidade = prev.localidade;
-                              
-                              if (type === 'delivery') {
-                                // Manter a localidade se já estiver selecionada
-                                if (prev.localidade === 'Lagoa Grande') taxa = 4;
-                                else if (prev.localidade === 'Izacolândia') taxa = 5;
-                              } else if (type === 'retirada') {
-                                // Resetar localidade e taxa para retirada
-                                localidade = '';
-                                taxa = 0;
-                              }
-                              
-                              return { ...prev, deliveryType: type, deliveryFee: taxa, localidade };
-                            });
-                          }}
-                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                        >
-                          <option value="">Selecione um tipo de entrega</option>
-                          <option value="delivery">Entrega</option>
-                          <option value="retirada">Retirada</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700">Forma de Pagamento</label>
-                        <select
-                          value={orderForm.paymentMethod}
-                          onChange={(e) => {
-                            const method = e.target.value;
-                            setOrderForm(prev => ({ ...prev, paymentMethod: method }));
-                            if (method === 'dinheiro') {
-                              const needsChange = window.confirm('Você precisa de troco?');
-                              setOrderForm(prev => ({ ...prev, needChange: needsChange }));
-                            }
-                          }}
-                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                        >
-                          <option value="">Selecione uma forma de pagamento</option>
-                          <option value="dinheiro">Dinheiro</option>
-                          <option value="cartao">Cartão</option>
-                          <option value="pix">PIX</option>
-                        </select>
-                      </div>
-                      {orderForm.needChange && (
-                        <div className="mt-2">
-                          <label className="block text-sm font-medium text-gray-700">Valor para troco</label>
-                          <input
-                            type="text"
-                            value={orderForm.changeFor}
-                            onChange={(e) => setOrderForm(prev => ({ ...prev, changeFor: e.target.value }))}
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                            placeholder="R$ 0,00"
-                          />
-                        </div>
-                      )}
-                      {orderForm.paymentMethod === 'pix' && (
-                        <div className="mt-4 p-4 bg-gray-100 rounded-lg">
-                          <h3 className="text-lg font-bold text-center mb-4">💠 Pagamento PIX</h3>
-                          
-                          {/* Valor em destaque */}
-                          <div className="bg-green-100 p-3 rounded-lg mb-4 text-center">
-                            <p className="text-sm text-gray-600">Valor a pagar:</p>
-                            <p className="text-2xl font-bold text-green-600">
-                              R$ {(getTotalPrice() + orderForm.deliveryFee).toFixed(2)}
-                            </p>
-                          </div>
-                          
-                          {/* Código PIX para cópia */}
-                          <div className="mb-4">
-                            <p className="font-semibold mb-2 text-center">Código PIX (Cópia e Cola):</p>
-                            <div className="bg-white p-3 rounded border">
-                              <code className="text-xs break-all select-all">
-                                {generatePixPayload({
-                                  ...pixInfo,
-                                  amount: getTotalPrice() + orderForm.deliveryFee,
-                                  description: `Pedido Hotdog da Praça - ${orderForm.name}`
-                                })}
-                              </code>
-                            </div>
-                            <p className="text-xs text-blue-600 mt-1 text-center">
-                              👆 Toque para selecionar e copiar o código PIX
-                            </p>
-                          </div>
-                          
-                          {/* Informações PIX */}
-                          <div className="space-y-2 text-sm border-t pt-3">
-                            <p className="font-semibold text-center">Dados do Recebedor</p>
-                            <p><span className="font-medium">Nome:</span> {pixInfo.name}</p>
-                            <p><span className="font-medium">Chave PIX (CPF):</span> {pixInfo.key}</p>
-                            <p><span className="font-medium">Cidade:</span> {pixInfo.city}</p>
-                          </div>
-                          
-                          {/* Instruções */}
-                          <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-                            <p className="text-xs text-blue-800 text-center">
-                              📱 <strong>Como pagar:</strong><br/>
-                              1. Copie o código PIX acima<br/>
-                              2. Abra seu app bancário<br/>
-                              3. Escolha "PIX Copia e Cola"<br/>
-                              4. Cole o código e confirme<br/>
-                              5. Clique em "Finalizar Pedido"
-                            </p>
-                          </div>
-                        </div>
-                      )}
-                      <div className="border-t pt-4">
-                        <div className="flex justify-between items-center mb-4">
-                          <span className="font-bold">Subtotal:</span>
-                          <span className="text-xl font-bold text-green-600">
-                            R$ {getTotalPrice().toFixed(2)}
-                          </span>
-                        </div>
-                        {orderForm.deliveryType === 'delivery' && orderForm.localidade && (
-                          <div className="flex justify-between items-center mb-4 p-2 bg-green-50 border border-green-200 rounded">
-                            <span className="font-bold text-green-800">Taxa de Entrega ({orderForm.localidade}):</span>
-                            <span className="text-xl font-bold text-green-600">
-                              R$ {orderForm.deliveryFee.toFixed(2)}
-                            </span>
-                          </div>
-                        )}
-                        {orderForm.deliveryType === 'delivery' && !orderForm.localidade && (
-                          <div className="flex justify-between items-center mb-4 p-2 bg-red-50 border border-red-200 rounded">
-                            <span className="font-bold text-red-800">Taxa de Entrega:</span>
-                            <span className="text-xl font-bold text-red-600">
-                              Selecione a localidade
-                            </span>
-                          </div>
-                        )}
-                        <div className="flex justify-between items-center mb-4">
-                          <span className="font-bold">Total:</span>
-                          <span className="text-xl font-bold text-green-600">
-                            R$ {(getTotalPrice() + orderForm.deliveryFee).toFixed(2)}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="flex gap-2">
-                        <button
-                          type="button"
-                          onClick={handleSubmitOrder}
-                          className="bg-green-600 text-white px-4 py-2 rounded flex-1"
-                        >
-                          Finalizar Pedido
-                        </button>
-                        <button
-                          type="button"
-                          onClick={generatePixPayment}
-                          className="bg-blue-600 text-white px-4 py-2 rounded flex-1"
-                        >
-                          Pagar com PIX
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setShowOrderForm(false)}
-                          className="bg-gray-500 text-white px-4 py-2 rounded"
-                        >
-                          Cancelar
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    // ... botão existente para ir para o formulário
-                    <button
-                      onClick={handleFinishOrder}
-                      className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition-colors"
-                    >
-                      Finalizar Pedido
-                    </button>
-                  )}
-                </>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Modal do Pastel G */}
-        {isPastelGModalOpen && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-lg p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold">Personalizar Pastel G</h2>
-                <button 
-                  onClick={() => {
-                    setIsPastelGModalOpen(false);
-                    setPastelGSelections({ sabores: [], complementos: [] });
-                  }} 
-                  className="text-gray-500 hover:text-gray-700"
-                >
-                  <XIcon size={24} />
-                </button>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <h3 className="font-semibold mb-2">Escolha até 2 sabores:</h3>
-                  <div className="grid grid-cols-2 gap-2">
-                    {saboresPastelG.map(sabor => (
-                      <label key={sabor} className="flex items-center space-x-2">
-                        <input
-                          type="checkbox"
-                          checked={pastelGSelections.sabores.includes(sabor)}
-                          onChange={() => handleSaboresChange(sabor)}
-                          className="rounded"
-                        />
-                        <span className="text-sm">{sabor}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="font-semibold mb-2">Escolha até 3 complementos:</h3>
-                  <div className="grid grid-cols-2 gap-2">
-                    {complementosPastelG.map(complemento => (
-                      <label key={complemento} className="flex items-center space-x-2">
-                        <input
-                          type="checkbox"
-                          checked={pastelGSelections.complementos.includes(complemento)}
-                          onChange={() => handleComplementosChange(complemento)}
-                          className="rounded"
-                        />
-                        <span className="text-sm">{complemento}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="border-t pt-4">
-                  <div className="flex justify-between items-center mb-4">
-                    <span className="font-bold">Total:</span>
-                    <span className="text-xl font-bold text-green-600">R$ 15,00</span>
-                  </div>
-                  <button
-                    onClick={handlePastelGSelection}
-                    className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition-colors"
-                  >
-                    Adicionar ao Carrinho
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Modal do Enroladinho */}
-        {isEnroladinhoModalOpen && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-lg p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold">Escolher Sabor do Enroladinho</h2>
-                <button 
-                  onClick={() => {
-                    setIsEnroladinhoModalOpen(false);
-                    setEnroladinhoSabor('');
-                  }} 
-                  className="text-gray-500 hover:text-gray-700"
-                >
-                  <XIcon size={24} />
-                </button>
-              </div>
-              <div className="space-y-4">
-                <div>
-                  <h3 className="font-semibold mb-2">Selecione o sabor:</h3>
-                  <div className="flex flex-col gap-2">
-                    <label className="flex items-center space-x-2">
-                      <input
-                        type="radio"
-                        name="enroladinho-sabor"
-                        value="Misto"
-                        checked={enroladinhoSabor === 'Misto'}
-                        onChange={() => setEnroladinhoSabor('Misto')}
-                        className="rounded"
-                      />
-                      <span className="text-sm">Misto</span>
-                    </label>
-                    <label className="flex items-center space-x-2">
-                      <input
-                        type="radio"
-                        name="enroladinho-sabor"
-                        value="Salsicha"
-                        checked={enroladinhoSabor === 'Salsicha'}
-                        onChange={() => setEnroladinhoSabor('Salsicha')}
-                        className="rounded"
-                      />
-                      <span className="text-sm">Salsicha</span>
-                    </label>
-                  </div>
-                </div>
-                <div className="border-t pt-4">
-                  <div className="flex justify-between items-center mb-4">
-                    <span className="font-bold">Total:</span>
-                    <span className="text-xl font-bold text-green-600">R$ 4,00</span>
-                  </div>
-                  <button
-                    onClick={handleEnroladinhoSelection}
-                    className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition-colors"
-                  >
-                    Adicionar ao Carrinho
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-
-
-
-
-        {/* Modal de Pagamento PIX */}
-        {showPixModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-lg p-6 max-w-md w-full">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold">Pagamento PIX</h2>
-                <button onClick={() => setShowPixModal(false)} className="text-gray-500 hover:text-red-500">
-                  <XIcon size={24} />
-                </button>
-              </div>
-              
-              <div className="text-center mb-4">
-                <p className="text-lg font-semibold mb-2">Total: R$ {getTotalPrice().toFixed(2)}</p>
-              </div>
-
-              {pixQrCode ? (
-                <div className="text-center mb-4">
-                  <h3 className="font-semibold mb-2">Escaneie o QR Code</h3>
-                  <div className="bg-gray-100 p-4 rounded-lg inline-block">
-                    <img src={`data:image/png;base64,${pixQrCode}`} alt="QR Code PIX" className="w-48 h-48" />
-                  </div>
-                </div>
-              ) : (
-                <div className="text-center mb-4">
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-                    <h3 className="font-semibold text-blue-800 mb-2">Pagamento PIX</h3>
-                    <p className="text-blue-700 text-sm">
-                      Use o código PIX abaixo para pagar através do seu app bancário
-                    </p>
-                  </div>
-                  <button
-                    onClick={generatePixPayment}
-                    className="bg-blue-600 text-white px-4 py-2 rounded mt-2"
-                  >
-                    Gerar PIX
-                  </button>
-                </div>
-              )}
-
-              {pixCode ? (
-                <div className="mb-4">
-                  <h3 className="font-semibold mb-2">Código PIX (Copia e Cola)</h3>
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={pixCode}
-                      readOnly
-                      className="max-w-full h-auto rounded-xl mx-auto mb-4"
-                    />
-                    <button
-                      onClick={() => {
-                        navigator.clipboard.writeText(pixCode);
-                        alert('Código PIX copiado!');
-                      }}
-                      className="bg-blue-600 text-white px-3 py-2 rounded text-sm"
-                    >
-                      Copiar
-                    </button>
-                  </div>
-                  {!pixQrCode && (
-                    <div className="mt-2 text-sm text-gray-600">
-                      <p>💡 <strong>Como pagar:</strong></p>
-                      <p>1. Abra seu app bancário</p>
-                      <p>2. Vá em "PIX" → "Pagar"</p>
-                      <p>3. Cole o código acima</p>
-                      <p>4. Confirme o pagamento</p>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className="mb-4">
-                  <p className="text-red-600 text-center">Código PIX não disponível</p>
-                  <div className="flex gap-2 mt-2">
-                    <button
-                      onClick={generateStaticPix}
-                      className="bg-green-600 text-white px-4 py-2 rounded flex-1"
-                    >
-                      Gerar PIX Estático
-                    </button>
-                    <button
-                      onClick={() => {
-                        console.log('Testando geração de PIX...');
-                        const testPix = generatePixPayload({
-                          key: '87996005036',
-                          name: 'BRUNO OLIVEIRA DA SILVA',
-                          city: 'LAGOA GRANDE',
-                          amount: 10.00,
-                          description: 'Teste PIX'
-                        });
-                        console.log('PIX de teste:', testPix);
-                        setPixCode(testPix);
-                      }}
-                      className="bg-yellow-600 text-white px-4 py-2 rounded flex-1"
-                    >
-                      Teste PIX
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              <div className="text-center text-sm text-gray-600">
-                <p>Após o pagamento, o pedido será confirmado automaticamente.</p>
-                <p>Você receberá uma confirmação por WhatsApp.</p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Modal de senha para admin */}
-        {showPasswordModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 max-w-xs w-full flex flex-col items-center">
-              <h2 className="text-lg font-bold mb-4">Acesso Administrativo</h2>
-              <input
-                type="password"
-                placeholder="Digite a senha"
-                value={adminPassword}
-                onChange={e => setAdminPassword(e.target.value)}
-                className="border rounded px-3 py-2 w-full mb-4"
-                onKeyDown={e => { if (e.key === 'Enter') handleAdminAccess(); }}
-                autoFocus
+      {/* Header */}
+      <header className="bg-gray-800 shadow-lg sticky top-0 z-40">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <img 
+                src="/src/assets/LOGO.png" 
+                alt="Hotdog da Praça" 
+                className="w-12 h-12 rounded-full"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                }}
               />
-              <div className="flex gap-2 w-full">
-                <button
-                  onClick={handleAdminAccess}
-                  className="bg-blue-600 text-white px-4 py-2 rounded flex-1"
-                >
-                  Entrar
-                </button>
-                <button
-                  onClick={() => { setShowPasswordModal(false); setAdminPassword(''); }}
-                  className="bg-gray-400 text-white px-4 py-2 rounded flex-1"
-                >
-                  Cancelar
-                </button>
+              <div>
+                <h1 className="text-2xl font-bold text-yellow-400">Hotdog da Praça</h1>
+                <p className="text-gray-300 text-sm">Delícias que conquistam seu paladar</p>
               </div>
             </div>
-          </div>
-        )}
-
-
-        <div className="max-w-5xl mx-auto">
-          <section className="relative h-[300px] flex items-center justify-center mt-16">
-            <div className="absolute inset-0">
-              <img src={HEROIMAGE} alt="Hero Background" className="w-full h-full object-cover" />
-              <div className="absolute inset-0 bg-black/50"></div>
-            </div>
-            <div className="relative z-10 text-center">
-              <img
-                src={LOGOIMAGE}
-                alt="Logo"
-                className="w-28 h-28 mx-auto mb-4"
-              />
-              <h1 className="text-4xl font-bold text-yellow-400 mb-4">HOTDOG DA PRAÇA</h1>
-              <div className="text-white space-y-2 max-w-xl mx-auto px-4">
-                <div className="grid grid-cols-3 gap-4 text-sm mt-6">
-                  <div className="flex items-center justify-center">
-                    <MapPin className="w-5 h-5 text-yellow-400 mr-2" />
-                    <span>Terezinha Nunes</span>
-                  </div>
-                  <div className="flex items-center justify-center">
-                    <Phone className="w-5 h-5 text-yellow-400 mr-2" />
-                    <span>55999211477</span>
-                  </div>
-                  <div className="flex items-center justify-center">
-                    <Clock className="w-5 h-5 text-yellow-400 mr-2" />
-                    <span>15:00 - 23:00</span>
-                  </div>
-                </div>
-                {/* Botão Admin (discreto) */}
-                <div className="mt-4">
-                  <button
-                    onClick={() => setShowPasswordModal(true)}
-                    className="text-xs text-gray-400 hover:text-white opacity-50 hover:opacity-100"
-                  >
-                    Admin
-                  </button>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* Navegação de Categorias */}
-          <nav className="flex justify-center gap-2 my-4 flex-wrap">
-            {[
-              { key: 'lanches', label: 'Lanches' },
-              { key: 'bebidas', label: 'Bebidas' },
-              { key: 'doces', label: 'Doces' },
-              { key: 'cuscuz', label: 'Cuscuz' },
-              { key: 'combo-salgados', label: 'Combo de Salgados' },
-            ].map(cat => (
-                    <button
-                key={cat.key}
-                onClick={() => setSelectedCategory(cat.key)}
-                className={`px-4 py-2 rounded font-semibold transition-colors text-sm mb-2
-                  ${selectedCategory === cat.key
-                    ? 'bg-yellow-400 text-zinc-900 shadow-lg'
-                    : 'bg-zinc-700 text-white hover:bg-yellow-500 hover:text-zinc-900'}`}
+            
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={() => setShowUnavailable(!showUnavailable)}
+                className={`p-2 rounded-full transition-colors ${
+                  showUnavailable 
+                    ? 'bg-yellow-600 text-white' 
+                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                }`}
+                title={showUnavailable ? 'Ocultar indisponíveis' : 'Mostrar indisponíveis'}
               >
-                {cat.label}
-                    </button>
-            ))}
-            </nav>
-
-          <main className="w-full max-w-xl mx-auto px-2 sm:px-4 py-6 flex-1">
-            {!selectedCategory && (
-              <div className="text-center">
-                {/* Mostrar oferta se houver */}
-                {ofertas.length > 0 && (
-                  <div className="mb-8">
-                    <h3 className="text-xl font-bold text-yellow-400 mb-4">🔥 OFERTA ESPECIAL 🔥</h3>
-                    <div className="flex justify-center">
-                      <div className="relative">
-                        <img 
-                          src={ofertas[0].image} 
-                          alt="Oferta Especial" 
-                          className="w-full max-w-sm h-auto rounded-lg shadow-2xl border-4 border-yellow-400 transform hover:scale-105 transition-transform duration-300"
-                        />
-                        <div className="absolute bottom-4 right-4 bg-red-600 text-white px-8 py-4 rounded-full font-bold text-2xl shadow-lg animate-pulse">
-                          R$ {ofertas[0].price.toFixed(2)}
-                </div>
-                <button
-                          onClick={() => addToCart({ name: 'Oferta Especial', price: ofertas[0].price })}
-                          className="absolute top-4 left-4 bg-green-600 text-white px-6 py-3 rounded-full font-bold text-lg shadow-lg hover:bg-green-700 transition-colors"
-                        >
-                          Adicionar ao Carrinho
-                </button>
-              </div>
+                {showUnavailable ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+              
+              <button
+                onClick={() => setIsCartOpen(true)}
+                className="relative bg-yellow-600 hover:bg-yellow-700 text-white p-3 rounded-full transition-colors"
+              >
+                <ShoppingCart size={24} />
+                {getTotalItems() > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center">
+                    {getTotalItems()}
+                  </span>
+                )}
+              </button>
+              
+              <button
+                onClick={openAdminPanel}
+                className="bg-gray-700 hover:bg-gray-600 text-white p-3 rounded-full transition-colors"
+              >
+                <Settings size={24} />
+              </button>
+            </div>
           </div>
+        </div>
+      </header>
+
+      {/* Hero Section */}
+      <section className="relative h-64 bg-gradient-to-r from-yellow-600 to-orange-600 flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-4xl font-bold mb-4">Bem-vindo ao Hotdog da Praça!</h2>
+          <p className="text-xl">Os melhores sabores da cidade em um só lugar</p>
+        </div>
+      </section>
+
+      {/* Ofertas Section */}
+      {ofertas.length > 0 && (
+        <section className="py-8 bg-gray-800">
+          <div className="container mx-auto px-4">
+            <h2 className="text-2xl font-bold mb-6 text-center text-yellow-400">🔥 Ofertas Especiais 🔥</h2>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {ofertas.map((oferta) => (
+                <div key={oferta.id} className="bg-gradient-to-br from-red-600 to-orange-600 rounded-lg p-4 text-center shadow-lg">
+                  <img 
+                    src={oferta.image} 
+                    alt="Oferta especial" 
+                    className="w-full h-32 object-cover rounded-lg mb-3"
+                  />
+                  <div className="text-2xl font-bold text-white">
+                    R$ {(oferta.price || 0).toFixed(2)}
+                  </div>
+                  <div className="text-sm text-yellow-200 mt-1">Oferta Limitada!</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Category Filter */}
+      <section className="py-6 bg-gray-800">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-wrap justify-center gap-2">
+            {categories.map((category) => (
+              <button
+                key={category.id}
+                onClick={() => setSelectedCategory(category.id)}
+                className={`px-4 py-2 rounded-full transition-colors ${
+                  selectedCategory === category.id
+                    ? 'bg-yellow-600 text-white'
+                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                }`}
+              >
+                {category.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Products Grid */}
+      <main className="container mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {filteredProducts.map((product) => (
+            <div 
+              key={product.id} 
+              className={`bg-gray-800 rounded-lg shadow-lg overflow-hidden transition-transform hover:scale-105 ${
+                !product.available ? 'opacity-60' : ''
+              }`}
+            >
+              <div className="relative">
+                <img 
+                  src={product.image} 
+                  alt={product.name}
+                  className="w-full h-48 object-cover"
+                />
+                {!product.available && (
+                  <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                    <span className="text-white font-bold text-lg">Indisponível</span>
                   </div>
                 )}
               </div>
-            )}
-
-            {selectedCategory === 'lanches' && (
-              <div>
-                <h3 className="text-lg font-semibold mb-3 text-white text-center">Lanches</h3>
-                <div className="space-y-4">
-                  {lanches.map((item) => {
-                    const product = allProductsUnified.find(p => p.name === item.name);
-                    const isAvailable = product?.available !== false;
-                    
-                    return (
-                    <div key={item.name} className={`bg-white p-3 rounded-lg shadow-md ${!isAvailable ? 'opacity-50' : ''}`}>
-                      <div className="flex justify-center">
-                        {item.image && (
-                          <img src={item.image} alt={item.name} className="h-auto object-cover mb-2 rounded-lg" style={{ width: '80%' }} />
-                        )}
-                      </div>
-                      <h4 className="text-base font-semibold text-center">
-                        {item.name}
-                        {!isAvailable && <span className="text-red-500 text-sm ml-2">(Indisponível)</span>}
-                      </h4>
-                      {item.description && (
-                        <p className="text-gray-600 mb-2 text-sm text-center">{item.description}</p>
-                      )}
-                      <p className="text-xl text-green-600 font-bold mb-2 text-center">R$ {item.price.toFixed(2)}</p>
-                      <button
-                        onClick={() => {
-                          if (!isAvailable) {
-                            alert('Este produto está temporariamente indisponível');
-                            return;
-                          }
-                          item.name.startsWith('Enroladinho') ? setIsEnroladinhoModalOpen(true) : item.name === 'Pastel G' ? setIsPastelGModalOpen(true) : addToCart(item);
-                        }}
-                        className={`w-full py-2 rounded-lg transition-colors text-sm ${
-                          isAvailable 
-                            ? 'bg-green-600 text-white hover:bg-green-700' 
-                            : 'bg-gray-400 text-gray-200 cursor-not-allowed'
-                        }`}
-                        disabled={!isAvailable}
-                      >
-                        {!isAvailable ? 'Indisponível' : 
-                         item.name.startsWith('Enroladinho') ? 'Escolher Sabor' : 
-                         item.name === 'Pastel G' ? 'Personalizar' : 'Adicionar ao Carrinho'}
-                      </button>
-                    </div>
-                    );
-                  })}
+              
+              <div className="p-4">
+                <h3 className="text-lg font-semibold mb-2">{product.name}</h3>
+                {product.description && (
+                  <p className="text-gray-400 text-sm mb-3">{product.description}</p>
+                )}
+                <div className="flex items-center justify-between">
+                  <span className="text-2xl font-bold text-yellow-400">
+                    R$ {(product.price || 0).toFixed(2)}
+                  </span>
+                  <button
+                    onClick={() => addToCart(product)}
+                    disabled={!product.available}
+                    className={`px-4 py-2 rounded-lg transition-colors ${
+                      product.available
+                        ? 'bg-yellow-600 hover:bg-yellow-700 text-white'
+                        : 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                    }`}
+                  >
+                    <Plus size={20} />
+                  </button>
                 </div>
               </div>
-            )}
-
-            {selectedCategory === 'bebidas' && (
-              <div>
-                <h3 className="text-lg font-semibold mb-3 text-white text-center">Bebidas</h3>
-                <div className="space-y-4">
-                  {bebidas.map((item) => {
-                    const product = allProductsUnified.find(p => p.name === item.name);
-                    const isAvailable = product?.available !== false;
-                    
-                    return (
-                    <div key={item.name} className={`bg-white p-3 rounded-lg shadow-md ${!isAvailable ? 'opacity-50' : ''}`}>
-                      <div className="flex justify-center">
-                        {item.image && (
-                          <img src={item.image} alt={item.name} className="h-auto object-cover mb-2 rounded-lg" style={{ width: '80%' }} />
-                        )}
-                      </div>
-                      <h4 className="text-base font-semibold text-center">
-                        {item.name}
-                        {!isAvailable && <span className="text-red-500 text-sm ml-2">(Indisponível)</span>}
-                      </h4>
-                      <p className="text-xl text-green-600 font-bold mb-2 text-center">R$ {item.price.toFixed(2)}</p>
-                      <button
-                        onClick={() => {
-                          if (!isAvailable) {
-                            alert('Este produto está temporariamente indisponível');
-                            return;
-                          }
-                          addToCart(item);
-                        }}
-                        className={`w-full py-2 rounded-lg transition-colors text-sm ${
-                          isAvailable 
-                            ? 'bg-green-600 text-white hover:bg-green-700' 
-                            : 'bg-gray-400 text-gray-200 cursor-not-allowed'
-                        }`}
-                        disabled={!isAvailable}
-                      >
-                        {!isAvailable ? 'Indisponível' : 'Adicionar ao Carrinho'}
-                      </button>
-                    </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {selectedCategory === 'doces' && (
-              <div>
-                <h3 className="text-lg font-semibold mb-3 text-white text-center">Doces</h3>
-                <div className="space-y-4">
-                  {doces.map((item) => {
-                    const product = allProductsUnified.find(p => p.name === item.name);
-                    const isAvailable = product?.available !== false;
-                    
-                    return (
-                    <div key={item.name} className={`bg-white p-3 rounded-lg shadow-md ${!isAvailable ? 'opacity-50' : ''}`}>
-                      <div className="flex justify-center">
-                        {item.image && (
-                          <img src={item.image} alt={item.name} className="h-auto object-cover mb-2 rounded-lg" style={{ width: '80%' }} />
-                        )}
-                      </div>
-                      <h4 className="text-base font-semibold text-center">
-                        {item.name}
-                        {!isAvailable && <span className="text-red-500 text-sm ml-2">(Indisponível)</span>}
-                      </h4>
-                      <p className="text-xl text-green-600 font-bold mb-2 text-center">R$ {item.price.toFixed(2)}</p>
-                      <button
-                        onClick={() => {
-                          if (!isAvailable) {
-                            alert('Este produto está temporariamente indisponível');
-                            return;
-                          }
-                          addToCart(item);
-                        }}
-                        className={`w-full py-2 rounded-lg transition-colors text-sm ${
-                          isAvailable 
-                            ? 'bg-green-600 text-white hover:bg-green-700' 
-                            : 'bg-gray-400 text-gray-200 cursor-not-allowed'
-                        }`}
-                        disabled={!isAvailable}
-                      >
-                        {!isAvailable ? 'Indisponível' : 'Adicionar ao Carrinho'}
-                      </button>
-                    </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {selectedCategory === 'cuscuz' && (
-              <div>
-                <h3 className="text-lg font-semibold mb-3 text-white text-center">Cuscuz</h3>
-                <div className="space-y-4">
-                  {cuscuz.map((item) => {
-                    const product = allProductsUnified.find(p => p.name === item.name);
-                    const isAvailable = product?.available !== false;
-                    
-                    return (
-                    <div key={item.name} className={`bg-white p-3 rounded-lg shadow-md ${!isAvailable ? 'opacity-50' : ''}`}>
-                      <div className="flex justify-center">
-                        {item.image && (
-                          <img src={item.image} alt={item.name} className="h-auto object-cover mb-2 rounded-lg" style={{ width: '80%' }} />
-                        )}
-                      </div>
-                      <h4 className="text-base font-semibold text-center">
-                        {item.name}
-                        {!isAvailable && <span className="text-red-500 text-sm ml-2">(Indisponível)</span>}
-                      </h4>
-                      <p className="text-xl text-green-600 font-bold mb-2 text-center">R$ {item.price.toFixed(2)}</p>
-                      <button
-                        onClick={() => {
-                          if (!isAvailable) {
-                            alert('Este produto está temporariamente indisponível');
-                            return;
-                          }
-                          addToCart(item);
-                        }}
-                        className={`w-full py-2 rounded-lg transition-colors text-sm ${
-                          isAvailable 
-                            ? 'bg-green-600 text-white hover:bg-green-700' 
-                            : 'bg-gray-400 text-gray-200 cursor-not-allowed'
-                        }`}
-                        disabled={!isAvailable}
-                      >
-                        {!isAvailable ? 'Indisponível' : 'Adicionar ao Carrinho'}
-                      </button>
-                    </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {selectedCategory === 'combo-salgados' && (
-              <div>
-                <h3 className="text-lg font-semibold mb-3 text-white text-center">Combo de Salgados</h3>
-                <div className="space-y-4">
-                  {comboSalgados.map((item) => {
-                    const product = allProductsUnified.find(p => p.name === item.name);
-                    const isAvailable = product?.available !== false;
-                    
-                    return (
-                    <div key={item.name} className={`bg-white p-3 rounded-lg shadow-md ${!isAvailable ? 'opacity-50' : ''}`}>
-                      <div className="flex justify-center">
-                        {item.image && (
-                          <img src={item.image} alt={item.name} className="h-auto object-cover mb-2 rounded-lg" style={{ width: '80%' }} />
-                        )}
-                      </div>
-                      <h4 className="text-base font-semibold text-center">
-                        {item.name}
-                        {!isAvailable && <span className="text-red-500 text-sm ml-2">(Indisponível)</span>}
-                      </h4>
-                      {item.description && (
-                        <p className="text-gray-600 mb-2 text-sm text-center">{item.description}</p>
-                      )}
-                      <p className="text-xl text-green-600 font-bold mb-2 text-center">R$ {item.price.toFixed(2)}</p>
-                      <button
-                        onClick={() => {
-                          if (!isAvailable) {
-                            alert('Este produto está temporariamente indisponível');
-                            return;
-                          }
-                          addToCart(item);
-                        }}
-                        className={`w-full py-2 rounded-lg transition-colors text-sm ${
-                          isAvailable 
-                            ? 'bg-green-600 text-white hover:bg-green-700' 
-                            : 'bg-gray-400 text-gray-200 cursor-not-allowed'
-                        }`}
-                        disabled={!isAvailable}
-                      >
-                        {!isAvailable ? 'Indisponível' : 'Adicionar ao Carrinho'}
-                      </button>
-                    </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-          </main>
-
-
-
-          <footer className="bg-gray-900 text-white py-6 w-full">
-            <div className="max-w-xl mx-auto px-4 text-center flex flex-col items-center">
-              <img src={LOGOIMAGE} alt="Logo" className="w-16 h-16" />
-              <div>
-                <h2 className="text-xl font-bold text-yellow-400">HOTDOG DA PRAÇA</h2>
-                <p className="mt-1 text-sm">AQUI CADA LANCHE É UMA EXPERIÊNCIA NOVA</p>
-              </div>
-              <div className="flex items-center gap-4 mt-2">
-                <a
-                  href="https://wa.me/55999211477"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 hover:text-yellow-400"
-                >
-                  <Phone className="w-5 h-5 text-yellow-400 mr-2" />
-                  <span>(55) 99921-1477</span>
-                </a>
-                <div className="flex items-center gap-2">
-                  <MapPin className="w-5 h-5 text-yellow-400 mr-2" />
-                  <span>Terezinha Nunes</span>
-                </div>
-              </div>
-              <p className="text-xs text-gray-400"> 2024 Todos os direitos reservados</p>
             </div>
-          </footer>
+          ))}
         </div>
 
-        {/* Banner de Promoções */}
+        {filteredProducts.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-gray-400 text-lg">Nenhum produto encontrado nesta categoria.</p>
+          </div>
+        )}
+      </main>
 
-        {/* Painel de Administração */}
-        <AdminPanel
-          isOpen={isAdminOpen}
-          onClose={() => setIsAdminOpen(false)}
-          products={allProductsUnified}
-          onUpdateProducts={() => {}} // Não precisa mais atualizar manualmente, pois é em tempo real
-          promotions={promotions}
-          onUpdatePromotions={() => {}}
-          ofertas={ofertas}
-          onUpdateOfertas={() => {}}
-        />
-      </div>
+      {/* Cart Sidebar */}
+      {isCartOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50">
+          <div className="fixed right-0 top-0 h-full w-full max-w-md bg-gray-800 shadow-lg">
+            <div className="flex items-center justify-between p-4 border-b border-gray-700">
+              <h2 className="text-xl font-bold">Carrinho</h2>
+              <button
+                onClick={() => setIsCartOpen(false)}
+                className="text-gray-400 hover:text-white"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-4">
+              {cart.length === 0 ? (
+                <p className="text-gray-400 text-center py-8">Seu carrinho está vazio</p>
+              ) : (
+                <div className="space-y-4">
+                  {cart.map((item) => (
+                    <div key={item.id} className="flex items-center space-x-3 bg-gray-700 p-3 rounded-lg">
+                      <img 
+                        src={item.image} 
+                        alt={item.name}
+                        className="w-12 h-12 object-cover rounded"
+                      />
+                      <div className="flex-1">
+                        <h4 className="font-semibold">{item.name}</h4>
+                        <p className="text-yellow-400">R$ {(item.price || 0).toFixed(2)}</p>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <button
+                          onClick={() => removeFromCart(item.id)}
+                          className="bg-red-600 hover:bg-red-700 text-white p-1 rounded"
+                        >
+                          <Minus size={16} />
+                        </button>
+                        <span className="w-8 text-center">{item.quantity}</span>
+                        <button
+                          onClick={() => addToCart(item)}
+                          className="bg-green-600 hover:bg-green-700 text-white p-1 rounded"
+                        >
+                          <Plus size={16} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {cart.length > 0 && (
+              <div className="border-t border-gray-700 p-4">
+                <div className="flex justify-between items-center mb-4">
+                  <span className="text-lg font-bold">Total:</span>
+                  <span className="text-2xl font-bold text-yellow-400">
+                    R$ {getTotalPrice().toFixed(2)}
+                  </span>
+                </div>
+                <div className="space-y-2">
+                  <button
+                    onClick={generatePixPayment}
+                    className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg font-semibold flex items-center justify-center space-x-2"
+                  >
+                    <QrCode size={20} />
+                    <span>Pagar com PIX</span>
+                  </button>
+                  <button
+                    onClick={clearCart}
+                    className="w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg"
+                  >
+                    Limpar Carrinho
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* PIX Payment Modal */}
+      {showPixModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-gray-800 rounded-lg p-6 max-w-sm w-full">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">Pagamento PIX</h3>
+              <button
+                onClick={() => setShowPixModal(false)}
+                className="text-gray-400 hover:text-white"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="text-center">
+              <div className="bg-white p-4 rounded-lg mb-4">
+                <QRCode value={pixQRCode} size={200} />
+              </div>
+              <p className="text-sm text-gray-300 mb-2">
+                Escaneie o QR Code com seu app do banco
+              </p>
+              <p className="text-lg font-bold text-yellow-400">
+                Total: R$ {getTotalPrice().toFixed(2)}
+              </p>
+              <div className="mt-4 p-3 bg-gray-700 rounded text-xs">
+                <p className="text-gray-300">Chave PIX:</p>
+                <p className="font-mono break-all">{getPixInfo().key}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Admin Panel */}
+      <AdminPanel
+        isOpen={isAdminOpen}
+        onClose={() => setIsAdminOpen(false)}
+        products={products}
+        onUpdateProducts={setProducts}
+        promotions={promotions}
+        onUpdatePromotions={setPromotions}
+        ofertas={ofertas}
+        onUpdateOfertas={setOfertas}
+      />
+
+      {/* Footer */}
+      <footer className="bg-gray-800 text-center py-6 mt-12">
+        <p className="text-gray-400">
+          © 2024 Hotdog da Praça. Todos os direitos reservados.
+        </p>
+      </footer>
     </div>
   );
 }
