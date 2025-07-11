@@ -84,7 +84,7 @@ interface Oferta {
 }
 
 function App() {
-  const [selectedCategory, setSelectedCategory] = useState('lanches');
+  const [selectedCategory, setSelectedCategory] = useState('');
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [orderForm, setOrderForm] = useState({
@@ -1211,7 +1211,7 @@ function App() {
               { key: 'cuscuz', label: 'Cuscuz' },
               { key: 'combo-salgados', label: 'Combo de Salgados' },
             ].map(cat => (
-              <button
+                    <button
                 key={cat.key}
                 onClick={() => setSelectedCategory(cat.key)}
                 className={`px-4 py-2 rounded font-semibold transition-colors text-sm mb-2
@@ -1220,11 +1220,43 @@ function App() {
                     : 'bg-zinc-700 text-white hover:bg-yellow-500 hover:text-zinc-900'}`}
               >
                 {cat.label}
-              </button>
+                    </button>
             ))}
-          </nav>
+            </nav>
 
           <main className="w-full max-w-xl mx-auto px-2 sm:px-4 py-6 flex-1">
+            {!selectedCategory && (
+              <div className="text-center">
+                <h2 className="text-2xl font-bold text-yellow-400 mb-6">🎯 Escolha uma categoria para começar!</h2>
+                <p className="text-white mb-8">Selecione uma das categorias acima para ver nossos produtos</p>
+                
+                {/* Mostrar oferta se houver */}
+                {ofertas.length > 0 && (
+                  <div className="mb-8">
+                    <h3 className="text-xl font-bold text-yellow-400 mb-4">🔥 OFERTA ESPECIAL 🔥</h3>
+                    <div className="flex justify-center">
+                      <div className="relative">
+                        <img 
+                          src={ofertas[0].image} 
+                          alt="Oferta Especial" 
+                          className="w-full max-w-sm h-auto rounded-lg shadow-2xl border-4 border-yellow-400 transform hover:scale-105 transition-transform duration-300"
+                        />
+                        <div className="absolute bottom-4 right-4 bg-red-600 text-white px-8 py-4 rounded-full font-bold text-2xl shadow-lg animate-pulse">
+                          R$ {ofertas[0].price.toFixed(2)}
+                        </div>
+                        <button
+                          onClick={() => addToCart({ name: 'Oferta Especial', price: ofertas[0].price })}
+                          className="absolute top-4 left-4 bg-green-600 text-white px-6 py-3 rounded-full font-bold text-lg shadow-lg hover:bg-green-700 transition-colors"
+                        >
+                          Adicionar ao Carrinho
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
             {selectedCategory === 'lanches' && (
               <div>
                 <h3 className="text-lg font-semibold mb-3 text-white text-center">Lanches</h3>
@@ -1454,24 +1486,7 @@ function App() {
             )}
           </main>
 
-          {/* Seção de Ofertas */}
-          {ofertas.length > 0 && (
-            <div className="mb-8">
-              <h2 className="text-2xl font-bold text-center mb-6 text-yellow-400">🔥 OFERTAS ESPECIAIS 🔥</h2>
-              <div className="flex justify-center px-2">
-                <div className="relative">
-                  <img 
-                    src={ofertas[0].image} 
-                    alt="Oferta Especial" 
-                    className="w-full max-w-sm h-auto rounded-lg shadow-2xl border-4 border-yellow-400 transform hover:scale-105 transition-transform duration-300"
-                  />
-                  <div className="absolute bottom-4 right-4 bg-red-600 text-white px-8 py-4 rounded-full font-bold text-2xl shadow-lg animate-pulse">
-                    R$ {ofertas[0].price.toFixed(2)}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
+
 
           <footer className="bg-gray-900 text-white py-6 w-full">
             <div className="max-w-xl mx-auto px-4 text-center flex flex-col items-center">
