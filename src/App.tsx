@@ -140,8 +140,7 @@ function App() {
 
   const getTotalPrice = () => {
     return cart.reduce((total, item) => {
-      // Add null check for price
-      const price = item.price || 0;
+      const price = typeof item.price === 'number' ? item.price : 0;
       return total + (price * item.quantity);
     }, 0);
   };
@@ -266,7 +265,7 @@ function App() {
                     className="w-full h-32 object-cover rounded-lg mb-3"
                   />
                   <div className="text-2xl font-bold text-white">
-                    R$ {(oferta.price || 0).toFixed(2)}
+                    R$ {(typeof oferta.price === 'number' ? oferta.price : 0).toFixed(2)}
                   </div>
                   <div className="text-sm text-yellow-200 mt-1">Oferta Limitada!</div>
                 </div>
@@ -327,7 +326,7 @@ function App() {
                 )}
                 <div className="flex items-center justify-between">
                   <span className="text-2xl font-bold text-yellow-400">
-                    R$ {(product.price || 0).toFixed(2)}
+                    R$ {(typeof product.price === 'number' ? product.price : 0).toFixed(2)}
                   </span>
                   <button
                     onClick={() => addToCart(product)}
@@ -381,7 +380,7 @@ function App() {
                       />
                       <div className="flex-1">
                         <h4 className="font-semibold">{item.name}</h4>
-                        <p className="text-yellow-400">R$ {(item.price || 0).toFixed(2)}</p>
+                        <p className="text-yellow-400">R$ {(typeof item.price === 'number' ? item.price : 0).toFixed(2)}</p>
                       </div>
                       <div className="flex items-center space-x-2">
                         <button
