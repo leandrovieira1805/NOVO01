@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { ShoppingCart, Settings, X, Plus, Minus, QrCode, Eye, EyeOff } from 'lucide-react';
 import { AdminPanel } from './components/AdminPanel';
 import { PromotionBanner } from './components/PromotionBanner';
@@ -50,6 +50,15 @@ function App() {
   const [showPixModal, setShowPixModal] = useState(false);
   const [pixQRCode, setPixQRCode] = useState('');
   const [showUnavailable, setShowUnavailable] = useState(false);
+
+  // Helper function to safely format prices
+  const formatPrice = (price: any): string => {
+    if (price === null || price === undefined || isNaN(price)) {
+      return '0.00';
+    }
+    const numPrice = typeof price === 'number' ? price : parseFloat(price);
+    return isNaN(numPrice) ? '0.00' : numPrice.toFixed(2);
+  };
 
   const categories = [
     { id: 'all', label: 'Todos' },
@@ -140,7 +149,7 @@ function App() {
 
   const getTotalPrice = () => {
     return cart.reduce((total, item) => {
-      const price = typeof item.price === 'number' ? item.price : 0;
+      const price = item.price && typeof item.price === 'number' && !isNaN(item.price) ? item.price : 0;
       return total + (price * item.quantity);
     }, 0);
   };
@@ -265,7 +274,7 @@ function App() {
                     className="w-full h-32 object-cover rounded-lg mb-3"
                   />
                   <div className="text-2xl font-bold text-white">
-                    R$ {(typeof oferta.price === 'number' ? oferta.price : 0).toFixed(2)}
+                    R$ {formatPrice(oferta.price)}
                   </div>
                   <div className="text-sm text-yellow-200 mt-1">Oferta Limitada!</div>
                 </div>
@@ -326,7 +335,7 @@ function App() {
                 )}
                 <div className="flex items-center justify-between">
                   <span className="text-2xl font-bold text-yellow-400">
-                    R$ {(typeof product.price === 'number' ? product.price : 0).toFixed(2)}
+                    R$ {formatPrice(product.price)}
                   </span>
                   <button
                     onClick={() => addToCart(product)}
@@ -380,7 +389,7 @@ function App() {
                       />
                       <div className="flex-1">
                         <h4 className="font-semibold">{item.name}</h4>
-                        <p className="text-yellow-400">R$ {(typeof item.price === 'number' ? item.price : 0).toFixed(2)}</p>
+                        <p className="text-yellow-400">R$ {formatPrice(item.price)}</p>
                       </div>
                       <div className="flex items-center space-x-2">
                         <button
@@ -408,7 +417,7 @@ function App() {
                 <div className="flex justify-between items-center mb-4">
                   <span className="text-lg font-bold">Total:</span>
                   <span className="text-2xl font-bold text-yellow-400">
-                    R$ {getTotalPrice().toFixed(2)}
+                    R$ {formatPrice(getTotalPrice())}
                   </span>
                 </div>
                 <div className="space-y-2">
@@ -454,7 +463,7 @@ function App() {
                 Escaneie o QR Code com seu app do banco
               </p>
               <p className="text-lg font-bold text-yellow-400">
-                Total: R$ {getTotalPrice().toFixed(2)}
+                Total: R$ {formatPrice(getTotalPrice())}
               </p>
               <div className="mt-4 p-3 bg-gray-700 rounded text-xs">
                 <p className="text-gray-300">Chave PIX:</p>
