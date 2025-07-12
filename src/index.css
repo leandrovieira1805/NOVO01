@@ -2,40 +2,99 @@
 @tailwind components;
 @tailwind utilities;
 
-html, body {
-  min-height: 100vh;
-  width: 100vw;
+* {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+}
+
+html, body {
+  height: 100%;
+  width: 100%;
   background: #18181b;
+  color: white;
 }
 
 #root {
   width: 100%;
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
 }
 
-@keyframes fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-.animate-fade-in {
-  animation: fade-in 0.4s;
-}
-@keyframes bounce-in {
-  0% { transform: scale(0.8); }
-  60% { transform: scale(1.08); }
-  100% { transform: scale(1); }
-}
-.animate-bounce-in {
-  animation: bounce-in 0.5s cubic-bezier(.68,-0.55,.27,1.55);
+/* Remover estilos específicos do Tailwind */
+* {
+  -webkit-text-size-adjust: none !important;
+  tab-size: 0 !important;
+  font-family: inherit !important;
+  font-feature-settings: none !important;
+  font-variation-settings: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+  line-height: inherit !important;
+  --tw-bg-opacity: 1 !important;
+  text-align: inherit !important;
+  --tw-border-spacing-x: 0 !important;
+  --tw-border-spacing-y: 0 !important;
+  --tw-translate-x: 0 !important;
+  --tw-translate-y: 0 !important;
+  --tw-rotate: 0 !important;
+  --tw-skew-x: 0 !important;
+  --tw-skew-y: 0 !important;
+  --tw-scale-x: 1 !important;
+  --tw-scale-y: 1 !important;
+  --tw-pan-x: none !important;
+  --tw-pan-y: none !important;
+  --tw-pinch-zoom: none !important;
+  --tw-scroll-snap-strictness: none !important;
+  --tw-gradient-from-position: none !important;
+  --tw-gradient-via-position: none !important;
+  --tw-gradient-to-position: none !important;
+  --tw-ordinal: none !important;
+  --tw-slashed-zero: none !important;
+  --tw-numeric-figure: none !important;
+  --tw-numeric-spacing: none !important;
+  --tw-numeric-fraction: none !important;
+  --tw-ring-inset: none !important;
+  --tw-ring-offset-width: 0px !important;
+  --tw-ring-offset-color: transparent !important;
+  --tw-ring-color: transparent !important;
+  --tw-ring-offset-shadow: none !important;
+  --tw-ring-shadow: none !important;
+  --tw-blur: none !important;
+  --tw-brightness: none !important;
+  --tw-contrast: none !important;
+  --tw-grayscale: none !important;
+  --tw-hue-rotate: none !important;
+  --tw-invert: none !important;
+  --tw-saturate: none !important;
+  --tw-sepia: none !important;
+  --tw-drop-shadow: none !important;
+  --tw-backdrop-blur: none !important;
+  --tw-backdrop-brightness: none !important;
+  --tw-backdrop-contrast: none !important;
+  --tw-backdrop-grayscale: none !important;
+  --tw-backdrop-hue-rotate: none !important;
+  --tw-backdrop-invert: none !important;
+  --tw-backdrop-opacity: none !important;
+  --tw-backdrop-saturate: none !important;
+  --tw-backdrop-sepia: none !important;
+  --tw-contain-size: none !important;
+  --tw-contain-layout: none !important;
+  --tw-contain-paint: none !important;
+  --tw-contain-style: none !important;
+  border-style: none !important;
+  display: block !important;
+  vertical-align: baseline !important;
+  height: auto !important;
+  width: auto !important;
+  max-width: none !important;
+  transform: none !important;
+  border-radius: 0 !important;
+  border-width: 0 !important;
+  --tw-border-opacity: 1 !important;
+  border-color: transparent !important;
+  --tw-shadow: none !important;
+  --tw-shadow-colored: none !important;
+  box-shadow: none !important;
+  transition-property: none !important;
+  transition-timing-function: none !important;
+  transition-duration: 0s !important;
 }
