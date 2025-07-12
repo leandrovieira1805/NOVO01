@@ -4,7 +4,7 @@ import { AdminPanel } from './components/AdminPanel';
 import { PromotionBanner } from './components/PromotionBanner';
 import { productService, ofertaService, promotionService } from './firebase/services';
 import { generatePixPayload, getPixInfo } from './utils/pixUtils';
-import QRCode from 'qrcode.react';
+import { QRCodeSVG } from 'qrcode.react';
 import toast, { Toaster } from 'react-hot-toast';
 
 interface Product {
@@ -448,7 +448,7 @@ function App() {
             
             <div className="text-center">
               <div className="bg-white p-4 rounded-lg mb-4">
-                <QRCode value={pixQRCode} size={200} />
+                <QRCodeSVG value={pixQRCode} size={200} />
               </div>
               <p className="text-sm text-gray-300 mb-2">
                 Escaneie o QR Code com seu app do banco
