@@ -137,9 +137,9 @@ export const saveMenuData = async (data) => {
       const productCount = data.products?.length || 0;
       console.log(`Firebase: Verificando dados para salvar - ${productCount} produtos`);
       
-      if (productCount >= 5) {
-        console.error(`Firebase: Muitos produtos para estrutura antiga (${productCount}/5), erro de tamanho evitado`);
-        throw new Error(`Estrutura antiga não suporta muitos produtos (${productCount}/5). Use a nova estrutura.`);
+      if (productCount >= 10) {
+        console.error(`Firebase: Muitos produtos para estrutura antiga (${productCount}/10), erro de tamanho evitado`);
+        throw new Error(`Estrutura antiga não suporta muitos produtos (${productCount}/10). Use a nova estrutura.`);
       }
       
       // Fallback para estrutura antiga APENAS se poucos produtos
@@ -188,10 +188,10 @@ export const addProduct = async (product) => {
         
         console.log(`Firebase: Verificando estrutura antiga - ${currentProductCount} produtos existentes`);
         
-        // Limite mais rigoroso: máximo 5 produtos na estrutura antiga
-        if (currentProductCount >= 5) {
+        // Limite temporário aumentado: máximo 10 produtos na estrutura antiga
+        if (currentProductCount >= 10) {
           console.error(`Firebase: Estrutura antiga tem ${currentProductCount} produtos, erro de tamanho evitado`);
-          throw new Error(`Estrutura antiga não suporta mais produtos (${currentProductCount}/5). Use a nova estrutura.`);
+          throw new Error(`Estrutura antiga não suporta mais produtos (${currentProductCount}/10). Use a nova estrutura.`);
         }
       }
       
