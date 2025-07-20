@@ -20,9 +20,8 @@ const firebaseConfig = {
 };
 
 // Configuração do Supabase (destino)
-// SUBSTITUA pelas suas credenciais do Supabase
-const supabaseUrl = process.env.SUPABASE_URL || 'https://sua-url.supabase.co';
-const supabaseKey = process.env.SUPABASE_ANON_KEY || 'sua-chave-anonima';
+const supabaseUrl = 'https://mvflxblwnzhaotyzmyzf.supabase.co';
+const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || 'sua-chave-anonima';
 
 // Inicializar Firebase
 const app = initializeApp(firebaseConfig);
