@@ -5,19 +5,19 @@ console.log('🧪 Testando conexão com Supabase...\n');
 // Configuração do Supabase
 const supabaseUrl = 'https://mvflxblwnzhaotyzmyzf.supabase.co';
 
-// Você precisa substituir esta chave pela sua chave real
-const supabaseKey = process.env.SUPABASE_ANON_KEY || 'SUA_CHAVE_AQUI';
+// Chave do Supabase
+const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || 'sb_secret_LVWFC1IHzZ41KWCuFvwPGw_rizFCtK3';
 
 console.log('🔗 URL:', supabaseUrl);
 console.log('🔑 Chave configurada:', supabaseKey !== 'SUA_CHAVE_AQUI');
 
-if (supabaseKey === 'SUA_CHAVE_AQUI') {
+if (!supabaseKey || supabaseKey === 'SUA_CHAVE_AQUI') {
   console.log('\n❌ ERRO: Chave não configurada!');
   console.log('\n🔧 COMO CONFIGURAR:');
   console.log('1. Acesse: https://app.supabase.com/dashboard/project/mvflxblwnzhaotyzmyzf');
   console.log('2. Vá em Settings → API');
   console.log('3. Copie a "anon public" key');
-  console.log('4. Execute: set SUPABASE_ANON_KEY=sua-chave-aqui');
+  console.log('4. Execute: set VITE_SUPABASE_ANON_KEY=sua-chave-aqui');
   console.log('5. Execute este script novamente');
   process.exit(1);
 }
