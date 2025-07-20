@@ -1,16 +1,15 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { 
   getMenuData, 
-  saveMenuData, 
-  addProduct as firebaseAddProduct,
-  updateProduct as firebaseUpdateProduct,
-  deleteProduct as firebaseDeleteProduct,
-  setDailyOffer as firebaseSetDailyOffer,
-  updatePixConfig as firebaseUpdatePixConfig,
-  clearAllData as firebaseClearAllData,
-  restoreDefaultData as firebaseRestoreDefaultData,
+  saveMenuConfig, 
+  addProduct as supabaseAddProduct,
+  updateProduct as supabaseUpdateProduct,
+  deleteProduct as supabaseDeleteProduct,
+  setDailyOffer as supabaseSetDailyOffer,
+  updatePixConfig as supabaseUpdatePixConfig,
+  clearAllData as supabaseClearAllData,
   subscribeToMenuChanges
-} from '../firebase/menuService';
+} from '../supabase/menuService';
 
 const MenuContext = createContext();
 
@@ -59,32 +58,32 @@ const defaultProducts = [
     id: 5,
     name: 'Refrigerante',
     price: 4.00,
-    image: 'https://images.pexels.com/photos/50593/coca-cola-cold-drink-soft-drink-coke-50593.jpeg?auto=compress&cs=tinysrgb&w=400',
+    image: 'https://images.pexels.com/photos/2789328/pexels-photo-2789328.jpeg?auto=compress&cs=tinysrgb&w=400',
     category: 'Bebidas',
     available: true
   }
 ];
 
-// Função para salvar dados no Firebase
-const saveToFirebase = async (data) => {
+// Função para salvar dados no Supabase
+const saveToSupabase = async (data) => {
   try {
-    await saveMenuData(data);
-    console.log('Dados salvos no Firebase');
+    await saveMenuConfig(data);
+    console.log('Dados salvos no Supabase');
     return true;
   } catch (error) {
-    console.error('Erro ao salvar no Firebase:', error);
+    console.error('Erro ao salvar no Supabase:', error);
     return false;
   }
 };
 
-// Função para carregar dados do Firebase
-const loadFromFirebase = async () => {
+// Função para carregar dados do Supabase
+const loadFromSupabase = async () => {
   try {
     const data = await getMenuData();
-    console.log('Dados carregados do Firebase:', data);
+    console.log('Dados carregados do Supabase:', data);
     return data;
   } catch (error) {
-    console.log('Erro ao carregar do Firebase:', error);
+    console.log('Erro ao carregar do Supabase:', error);
   }
   return null;
 };
@@ -102,7 +101,7 @@ export const MenuProvider = ({ children }) => {
 
   // Carregar dados na inicialização e sincronizar em tempo real
   useEffect(() => {
-    console.log('MenuContext: Inicializando com Firebase...');
+    console.log('MenuContext: Inicializando com Supabase...');
     console.log('MenuContext: Ambiente:', process.env.NODE_ENV);
     console.log('MenuContext: URL atual:', window.location.href);
     
@@ -110,24 +109,24 @@ export const MenuProvider = ({ children }) => {
       setIsLoading(true);
       
       try {
-        // Carregar dados do Firebase
-        const firebaseData = await loadFromFirebase();
+        // Carregar dados do Supabase
+        const supabaseData = await loadFromSupabase();
         
-        if (firebaseData && firebaseData.products) {
-          console.log('MenuContext: Dados carregados do Firebase');
-          setProducts(firebaseData.products);
-          setDailyOffer(firebaseData.dailyOffer || null);
-          setPixKey(firebaseData.pixKey || '');
-          setPixName(firebaseData.pixName || '');
-          setLastUpdate(new Date(firebaseData.lastUpdate).getTime());
+        if (supabaseData && supabaseData.products) {
+          console.log('MenuContext: Dados carregados do Supabase');
+          setProducts(supabaseData.products);
+          setDailyOffer(supabaseData.dailyOffer || null);
+          setPixKey(supabaseData.pixKey || '');
+          setPixName(supabaseData.pixName || '');
+          setLastUpdate(new Date(supabaseData.lastUpdate).getTime());
         } else {
-          console.log('MenuContext: Firebase não disponível, usando dados padrão');
+          console.log('MenuContext: Supabase não disponível, usando dados padrão');
           setProducts(defaultProducts);
           setDailyOffer(null);
           setPixKey('');
           setPixName('');
           
-          // Salvar dados padrão no Firebase
+          // Salvar dados padrão no Supabase
           const defaultData = {
             products: defaultProducts,
             dailyOffer: null,
@@ -136,10 +135,10 @@ export const MenuProvider = ({ children }) => {
           };
           
           try {
-            await saveToFirebase(defaultData);
-            console.log('MenuContext: Dados padrão salvos no Firebase');
+            await saveToSupabase(defaultData);
+            console.log('MenuContext: Dados padrão salvos no Supabase');
           } catch (error) {
-            console.log('MenuContext: Erro ao salvar dados padrão no Firebase');
+            console.log('MenuContext: Erro ao salvar dados padrão no Supabase');
           }
         }
       } catch (error) {
@@ -163,10 +162,10 @@ export const MenuProvider = ({ children }) => {
     // Carregar dados iniciais
     loadData();
     
-    // Sincronização em tempo real com Firebase
+    // Sincronização em tempo real com Supabase
     const unsubscribe = subscribeToMenuChanges((data) => {
       if (data) {
-        console.log('MenuContext: Mudança detectada no Firebase, atualizando...');
+        console.log('MenuContext: Mudança detectada no Supabase, atualizando...');
         console.log(`📦 Produtos recebidos: ${data.products?.length || 0}`);
         console.log('MenuContext: Timestamp da mudança:', data.lastUpdate);
         console.log('MenuContext: Produtos IDs:', data.products?.map(p => p.id).slice(-5));
@@ -218,7 +217,7 @@ export const MenuProvider = ({ children }) => {
     console.log('MenuContext: Salvando produtos:', newProducts.length);
     setProducts(newProducts);
     
-    // Salvar no Firebase
+    // Salvar no Supabase
     setIsSaving(true);
     const dataToSave = {
       products: newProducts,
@@ -227,12 +226,12 @@ export const MenuProvider = ({ children }) => {
       pixName
     };
     
-    const success = await saveToFirebase(dataToSave);
+    const success = await saveToSupabase(dataToSave);
     if (success) {
-      console.log('MenuContext: Produtos salvos no Firebase com sucesso');
+      console.log('MenuContext: Produtos salvos no Supabase com sucesso');
       setLastUpdate(new Date().getTime());
     } else {
-      console.log('MenuContext: Erro ao salvar no Firebase');
+      console.log('MenuContext: Erro ao salvar no Supabase');
     }
     setIsSaving(false);
   };
@@ -241,7 +240,7 @@ export const MenuProvider = ({ children }) => {
   const addProduct = async (product) => {
     console.log('MenuContext: Adicionando produto:', product.name);
     try {
-      const newProduct = await firebaseAddProduct(product);
+      const newProduct = await supabaseAddProduct(product);
       console.log('MenuContext: Produto adicionado com sucesso');
       
       // A sincronização em tempo real vai atualizar automaticamente
@@ -258,7 +257,7 @@ export const MenuProvider = ({ children }) => {
   const updateProduct = async (id, updatedProduct) => {
     console.log('MenuContext: Atualizando produto ID:', id);
     try {
-      await firebaseUpdateProduct(id, updatedProduct);
+      await supabaseUpdateProduct(id, updatedProduct);
       console.log('MenuContext: Produto atualizado com sucesso');
       
       // A sincronização em tempo real vai atualizar automaticamente
@@ -272,7 +271,7 @@ export const MenuProvider = ({ children }) => {
   const deleteProduct = async (id) => {
     console.log('MenuContext: Deletando produto ID:', id);
     try {
-      await firebaseDeleteProduct(id);
+      await supabaseDeleteProduct(id);
       console.log('MenuContext: Produto deletado com sucesso');
       
       // A sincronização em tempo real vai atualizar automaticamente
@@ -285,8 +284,8 @@ export const MenuProvider = ({ children }) => {
   // Função para definir oferta do dia
   const setOffer = async (offer) => {
     try {
-      await firebaseSetDailyOffer(offer);
-      console.log('MenuContext: Oferta salva no Firebase com sucesso');
+      await supabaseSetDailyOffer(offer);
+      console.log('MenuContext: Oferta salva no Supabase com sucesso');
     } catch (error) {
       console.error('MenuContext: Erro ao salvar oferta:', error);
       throw error;
@@ -296,8 +295,8 @@ export const MenuProvider = ({ children }) => {
   // Função para atualizar configuração Pix
   const updatePixConfig = async (key, name) => {
     try {
-      await firebaseUpdatePixConfig(key, name);
-      console.log('MenuContext: Configuração Pix salva no Firebase com sucesso');
+      await supabaseUpdatePixConfig(key, name);
+      console.log('MenuContext: Configuração Pix salva no Supabase com sucesso');
     } catch (error) {
       console.error('MenuContext: Erro ao salvar configuração Pix:', error);
       throw error;
@@ -326,14 +325,14 @@ export const MenuProvider = ({ children }) => {
     setIsLoading(true);
     
     try {
-      // Recarregar dados do Firebase
-      const firebaseData = await loadFromFirebase();
-      if (firebaseData) {
-        setProducts(firebaseData.products || []);
-        setDailyOffer(firebaseData.dailyOffer || null);
-        setPixKey(firebaseData.pixKey || '');
-        setPixName(firebaseData.pixName || '');
-        setLastUpdate(new Date(firebaseData.lastUpdate).getTime());
+      // Recarregar dados do Supabase
+      const supabaseData = await loadFromSupabase();
+      if (supabaseData) {
+        setProducts(supabaseData.products || []);
+        setDailyOffer(supabaseData.dailyOffer || null);
+        setPixKey(supabaseData.pixKey || '');
+        setPixName(supabaseData.pixName || '');
+        setLastUpdate(new Date(supabaseData.lastUpdate).getTime());
         console.log('MenuContext: Sincronização concluída');
       } else {
         console.log('MenuContext: Nenhuma atualização encontrada');
@@ -350,10 +349,10 @@ export const MenuProvider = ({ children }) => {
     console.log('MenuContext: Limpando todos os dados...');
     
     try {
-      await firebaseClearAllData();
-      console.log('MenuContext: Dados limpos no Firebase');
+      await supabaseClearAllData();
+      console.log('MenuContext: Dados limpos no Supabase');
     } catch (error) {
-      console.error('MenuContext: Erro ao limpar dados no Firebase:', error);
+      console.error('MenuContext: Erro ao limpar dados no Supabase:', error);
     }
   };
 
@@ -362,8 +361,15 @@ export const MenuProvider = ({ children }) => {
     console.log('MenuContext: Restaurando produtos padrão...');
     
     try {
-      await firebaseRestoreDefaultData();
-      console.log('MenuContext: Produtos padrão restaurados no Firebase');
+      // Limpar dados primeiro
+      await supabaseClearAllData();
+      
+      // Adicionar produtos padrão
+      for (const product of defaultProducts) {
+        await supabaseAddProduct(product);
+      }
+      
+      console.log('MenuContext: Produtos padrão restaurados no Supabase');
     } catch (error) {
       console.error('MenuContext: Erro ao restaurar produtos padrão:', error);
     }
