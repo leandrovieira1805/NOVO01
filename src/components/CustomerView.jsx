@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { collection, getDocs } from 'firebase/firestore';
-import { db } from '../firebase'; // ajuste o caminho se necessário
+import { db } from '../firebase/config';
 import { useCart } from '../context/CartContext';
 import ProductCard from './ProductCard';
 
