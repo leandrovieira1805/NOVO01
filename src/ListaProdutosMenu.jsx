@@ -23,9 +23,11 @@ export default function ListaProdutosMenu() {
       {produtos.length === 0 && <p>Nenhum produto cadastrado.</p>}
       {produtos.map(produto => (
         <div key={produto.id} style={{ border: "1px solid #ccc", margin: 10, padding: 10 }}>
-          <h3>{produto.nome}</h3>
-          <p>Preço: {produto.preco}</p>
-          {produto.imagem && <img src={produto.imagem} alt={produto.nome} width={120} />}
+          <h3>{produto.nome || produto.name}</h3>
+          <p>Preço: {produto.preco || produto.price}</p>
+          {(produto.imagem || produto.image) && (
+            <img src={produto.imagem || produto.image} alt={produto.nome || produto.name} width={120} />
+          )}
         </div>
       ))}
     </div>
