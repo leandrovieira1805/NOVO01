@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { collection, getDocs } from "firebase/firestore";
-import { db } from "./src/firebase/config";
+import { db } from "./firebase/config";
 
 export default function ListaProdutosMenu() {
   const [produtos, setProdutos] = useState([]);
