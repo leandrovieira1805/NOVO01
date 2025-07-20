@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { collection, addDoc } from "firebase/firestore";
-import { db, storage } from "./firebase";
+import { db } from "./src/firebase/config";
+import { storage } from "./src/firebase/config";
 
 export default function UploadProdutoMenu() {
   const [nome, setNome] = useState("");
